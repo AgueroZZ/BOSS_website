@@ -1,14 +1,16 @@
-name: "BOSS_website"
+name: BOSS Tutorial
 output_dir: ../docs
 navbar:
-  title: "BOSS_website"
+  title: BOSS Tutorial
   left:
   - text: Home
     href: index.html
   - text: About
     href: about.html
-  - text: License
-    href: license.html
+  right:
+  - icon: fab fa-github
+    text: Source code
+    href: https://github.com/AgueroZZ/online_tut
 output:
   workflowr::wflow_html:
     toc: yes
