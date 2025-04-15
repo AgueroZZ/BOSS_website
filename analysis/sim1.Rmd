@@ -1,0 +1,297 @@
+---
+title: "Simulation 1: Inference of the Unknown Periodicity"
+author: "Ziang Zhang"
+date: "2025-04-15"
+output: 
+  workflowr::wflow_html:
+    code_folding: show
+editor_options:
+  chunk_output_type: console
+---
+
+## Data
+
+```{r message=FALSE, warning=FALSE}
+library(BayesGP)
+library(tidyverse)
+library(npreg)
+function_path <- "./code"
+output_path <- "./output/sim1"
+data_path <- "./data/sim1"
+source(paste0(function_path, "/00_BOSS.R"))
+```
+
+Simulate the data:
+
+```{r message=FALSE, warning=FALSE}
+lower = 0.5; upper = 4.5; a = 1.5
+### Simulate data:
+set.seed(123)
+n <- 100
+x <- runif(n = n, min = 0, max = 10)
+true_func <- function(x, true_alpha = 1.5){1 + 
+    0.5 * cos((2*pi*x)/true_alpha) - 1.3 * sin((2*pi*x)/true_alpha) +
+    1.1 * cos((4*pi*x)/true_alpha) + 0.3 * sin((4*pi*x)/true_alpha)}
+log_mu <- true_func(x) + rnorm(n, sd = 2)
+y <- rpois(n = n, lambda = exp(log_mu))
+data <- data.frame(y = y, x = x, indx = 1:n, log_mu = log_mu)
+plot(y ~ x, type = "p", data = arrange(data, x))
+```
+
+Define the objective function:
+
+```{r message=FALSE, warning=FALSE}
+log_prior <- function(alpha){
+  dnorm(x = alpha, mean = 3, log = T, sd = 0.5)
+}
+eval_once <- function(alpha){
+  a_fit <- (2*pi)/alpha
+  x <- data$x
+  data$cosx <- cos(a_fit * x)
+  data$sinx <- sin(a_fit * x)
+  data$cos2x <- cos(2*a_fit * x)
+  data$sin2x <- sin(2*a_fit * x)
+  mod <- model_fit(formula = y ~ cosx + sinx + cos2x + sin2x + f(x = indx, model = "IID", 
+                                                                 sd.prior = list(param = 1)),
+                   data = data, method = "aghq", family = "Poisson", aghq_k = 4
+  )
+  (mod$mod$normalized_posterior$lognormconst) + log_prior(alpha)
+}
+# Apply smoothing spline to smooth the grid result
+surrogate_ss <- function(xvalue, data_to_smooth){
+  predict(ss(x = data_to_smooth$x, y = data_to_smooth$y, df = length(unique(data_to_smooth$x)), m = 2, all.knots = TRUE), x = xvalue)$y
+}
+```
+
+
+
+## Exact Grid Implementation
+
+Set up a dense grid:
+
+```{r message=FALSE, warning=FALSE}
+x_vals <- seq(lower, upper, by = 0.005)
+```
+
+Compute the objective function on the grid:
+
+```{r eval=FALSE}
+begin_time <- Sys.time()
+total <- length(x_vals)
+pb <- txtProgressBar(min = 0, max = total, style = 3)
+exact_vals <- c()
+for (i in 1:total) {
+  xi <- x_vals[i]
+  exact_vals <- c(exact_vals, eval_once(xi))
+  setTxtProgressBar(pb, i)
+}
+close(pb)
+
+exact_grid_result <- data.frame(x = x_vals, exact_vals = exact_vals)
+exact_grid_result$exact_vals <- exact_grid_result$exact_vals - max(exact_grid_result$exact_vals)
+exact_grid_result$fx <- exp(exact_grid_result$exact_vals)
+end_time <- Sys.time()
+end_time - begin_time
+
+# Calculate the differences between adjacent x values
+dx <- diff(exact_grid_result$x)
+# Compute the trapezoidal areas and sum them up
+integral_approx <- sum(0.5 * (exact_grid_result$fx[-1] + exact_grid_result$fx[-length(exact_grid_result$fx)]) * dx)
+exact_grid_result$pos <- exact_grid_result$fx / integral_approx
+plot(exact_grid_result$x, exact_grid_result$pos, type = "l", col = "red", xlab = "x (0-10)", ylab = "density", main = "Posterior")
+abline(v = a, col = "purple")
+grid()
+save(exact_grid_result, file = paste0(output_path, "/exact_grid_result.rda"))
+```
+
+Take a quick look at the result:
+
+```{r message=FALSE, warning=FALSE}
+load(paste0(output_path, "/exact_grid_result.rda"))
+plot(x = exact_grid_result$x, y = exact_grid_result$pos, col = "black", cex = 0.5, type = "l",
+     xlab = "x", ylab = "density", main = "Posterior Density", lwd = 2)
+abline(v = exact_grid_result$x[which.max(exact_grid_result$exact_vals)], col = "green", lty = "dashed")
+abline(v = exact_grid_result$x[which.max(exact_grid_result$exact_vals)], col = "blue", lty = "dashed")
+abline(v = a, col = "purple", lty = "dashed")
+grid()
+```
+
+
+
+## BOSS Implementation
+
+Let's assess the performance of the BOSS algorithm with different choices of $B$.
+
+```{r message=FALSE, warning=FALSE}
+eval_num <- seq(from = 10, to = 80, by = 5)
+```
+
+Running the BOSS algorithm at each $B$:
+
+```{r eval=FALSE}
+objective_func <- eval_once
+rel_runtime <- c()
+BO_result_list <- list()
+BO_result_original_list <- list()
+for (i in 1:length(eval_num)) {
+  n_grid <- nrow(exact_grid_result)
+  eval_number <- eval_num[i]
+  begin_time <- Sys.time()
+  result_ad <- BO_adap_optim_AGHQ(func = objective_func,
+                       update_step = 5, max_iter = (eval_number - 5),
+                       # turning off AGHQ check
+                       AGHQ_iter_check = Inf, AGHQ_eps = 0,
+                       delta = 0.01, noise_var = 1e-6,
+                       lower = lower, upper = upper,
+                       initial_design = 5)
+  end_time <- Sys.time()
+  rel_runtime[i] <- as.numeric((end_time - begin_time), units = "mins")/1.344585
+  
+  data_to_smooth <- result_ad$result
+  BO_result_original_list[[i]] <- data_to_smooth
+
+  ff <- list()
+  ff$fn <- function(x) as.numeric(surrogate_ss(x, data_to_smooth = data_to_smooth))
+  x_vals <- (seq(from = lower, to = upper, length.out = n_grid) - lower)/(upper - lower)
+  fn_vals <- sapply(x_vals, ff$fn)
+  obj <- function(x) {exp(ff$fn(x))}
+  lognormal_const <- log(integrate(obj, lower = 0, upper = 1)$value)
+  post_x <- data.frame(y = x_vals, pos = exp(fn_vals - lognormal_const))
+  BO_result_list[[i]] <- data.frame(x = (lower + x_vals*(upper - lower)), pos = post_x$pos /(upper - lower))
+}
+save(BO_result_list, file = paste0(output_path, "/BO_result_list.rda"))
+save(BO_result_original_list, file = paste0(output_path, "/BO_result_original_list.rda"))
+save(rel_runtime, file = paste0(output_path, "/rel_runtime.rda"))
+```
+
+Visualize the results:
+
+```{r message=FALSE, warning=FALSE}
+load(paste0(output_path, "/BO_result_list.rda"))
+load(paste0(output_path, "/BO_result_original_list.rda"))
+load(paste0(output_path, "/rel_runtime.rda"))
+plot(rel_runtime ~ eval_num, type = "o", ylab = "rel-runtime", xlab = "eval number: B", cex.lab = 1.0, cex.axis = 1.0)
+plot_list <- list()
+for (i in 1:length(eval_num)) {
+    plot_list[[i]] <- ggplot() +
+    geom_line(data = BO_result_list[[i]], aes(x = x, y = pos), color = "red", size = 1) +
+    geom_line(data = exact_grid_result, aes(x = x, y = pos), color = "black", size = 1, linetype = "dashed") + 
+    ggtitle(paste0("Comparison Posterior Density: B = ", eval_num[i])) +
+    xlab("Value") +
+    ylab("Density") +
+    theme_minimal() +
+    theme(text = element_text(size = 10), axis.text = element_text(size = 15)) + # only change the lab and axis text size
+    lims(y = range(exact_grid_result$pos))
+}
+
+# show some plots
+plot_list[[2]]
+plot_list[[5]]
+plot_list[[15]]
+```
+
+```{r eval=FALSE}
+# Use tikzDevice to generate the tex file
+tikzDevice::tikz(file = paste0(output_path, "/runtime_compare.tex"),
+                 width = 8, height = 8, standAlone = TRUE)
+plot(rel_runtime ~ eval_num, type = "o", ylab = "rel-runtime", xlab = "eval number: B", cex.lab = 2.0, cex.axis = 2.0)
+dev.off()
+system(paste0('pdflatex -output-directory=', output_path, ' ', output_path, '/runtime_compare.tex'))
+file.remove(paste0(output_path, "/runtime_compare.tex"))
+file.remove(paste0(output_path, "/runtime_compare.aux"))
+file.remove(paste0(output_path, "/runtime_compare.log"))
+
+for (i in 1:length(eval_num)) {
+  base_name <- paste0("ComparisonPosteriorDensity_B_", eval_num[i])
+  tex_file_name <- paste0("/ComparisonPosteriorDensity_B_", eval_num[i], ".tex")
+  pdf_file_name <- paste0("/ComparisonPosteriorDensity_B_", eval_num[i], ".pdf")
+  tikzDevice::tikz(file = paste0(".//ComparisonPosteriorDensity_B_", eval_num[i], ".tex"),
+                   width = 8, height = 8, standAlone = TRUE)
+  ggplot() +
+    geom_line(data = BO_result_list[[i]], aes(x = x, y = pos), color = "red", size = 1) +
+    geom_line(data = exact_grid_result, aes(x = x, y = pos), color = "black", size = 1, linetype = "dashed") + 
+    ggtitle(paste0("Comparison Posterior Density: B = ", eval_num[i])) +
+    xlab("Value") +
+    ylab("Density") +
+    theme_minimal() +
+    theme(text = element_text(size = 20), axis.text = element_text(size = 25)) + # only change the lab and axis text size
+    lims(y = range(exact_grid_result$pos))
+  dev.off()
+  
+  # Run pdflatex to generate the PDF
+  if (file.exists(tex_file_name)) {
+    system(sprintf('pdflatex -output-directory=%s "%s"', output_path, tex_file_name))
+    
+    # Check if the PDF was created
+    if (file.exists(pdf_file_name)) {
+      # Delete the .tex, .aux, and .log files to clean up
+      file.remove(tex_file_name)
+      file.remove(paste0(output_path, base_name, ".aux"))
+      file.remove(paste0(output_path, base_name, ".log"))
+    } else {
+      warning("PDF file was not created: ", pdf_file_name)
+    }
+  } else {
+    warning("TeX file was not created: ", tex_file_name)
+  }
+  ggsave(filename = (paste0("figures/Comparison Posterior Density: B = ", eval_num[i], " .pdf")),
+         width = 8, height = 8)
+}
+```
+
+Use KL and KS statistics to assess the result:
+
+```{r message=FALSE, warning=FALSE}
+#### Compute the KL distance:
+Compute_KL <- function(x, qx, px){
+  to_kept <- which(px > 0)
+  x <- x[to_kept]
+  qx <- qx[to_kept]
+  px <- px[to_kept]
+  # px <- px + .Machine$double.eps
+  # qx <- qx + .Machine$double.eps
+  dx <- diff(x)
+  left <- c(0,dx)
+  right <- c(dx,0)
+  0.5 * sum(left * log(px/qx) * px) + 0.5 * sum(right * log(px/qx) * px)
+}
+KL_vec <- c()
+for (i in 1:length(eval_num)) {
+  KL_vec[i] <- Compute_KL(x = exact_grid_result$x, px = exact_grid_result$pos, qx = BO_result_list[[i]]$pos)
+}
+plot((KL_vec) ~ eval_num, type = "o", ylab = "KL", xlab = "eval number: B", cex.lab = 1, cex.axis = 1)
+
+#### Compute the KS distance:
+Compute_KS <- function(x, qx, px){
+  dx <- c(diff(x),0)
+  max(abs(cumsum(qx * dx) - cumsum(px * dx)))
+}
+KS_vec <- c()
+for (i in 1:length(eval_num)) {
+  KS_vec[i] <- Compute_KS(x = exact_grid_result$x, px = exact_grid_result$pos, qx = BO_result_list[[i]]$pos)
+}
+plot((KS_vec) ~ eval_num, type = "o", ylab = "KS", xlab = "eval number: B", cex.lab = 1, cex.axis = 1)
+```
+
+```{r eval=FALSE}
+tikzDevice::tikz(file = paste0(output_path, "/kl_compare.tex"),
+                 width = 8, height = 8, standAlone = TRUE)
+plot((KL_vec) ~ eval_num, type = "o", ylab = "KL", xlab = "eval number: B", cex.lab = 2.0, cex.axis = 2.0)
+dev.off()
+system(paste0('pdflatex -output-directory=', output_path, ' ', output_path, '/kl_compare.tex'))
+file.remove(paste0(output_path, "/kl_compare.tex"))
+file.remove(paste0(output_path, "/kl_compare.aux"))
+file.remove(paste0(output_path, "/kl_compare.log"))
+
+tikzDevice::tikz(file = paste0(output_path, "/ks_compare.tex"),
+                 width = 8, height = 8, standAlone = TRUE)
+plot((KS_vec) ~ eval_num, type = "o", ylab = "KS", xlab = "eval number: B", cex.lab = 2.0, cex.axis = 2.0)
+dev.off()
+system(paste0('pdflatex -output-directory=', output_path, ' ', output_path, '/ks_compare.tex'))
+file.remove(paste0(output_path, "/ks_compare.tex"))
+file.remove(paste0(output_path, "/ks_compare.aux"))
+file.remove(paste0(output_path, "/ks_compare.log"))
+```
+
+
+
