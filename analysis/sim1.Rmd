@@ -61,6 +61,14 @@ eval_once <- function(alpha){
 surrogate_ss <- function(xvalue, data_to_smooth){
   predict(ss(x = data_to_smooth$x, y = data_to_smooth$y, df = length(unique(data_to_smooth$x)), m = 2, all.knots = TRUE), x = xvalue)$y
 }
+surrogate_gp <- function(xvalue, data_to_smooth, choice_cov) {
+  predict_gp(
+    data = data_to_smooth,
+    x_pred = matrix(xvalue, ncol = 1),
+    choice_cov = choice_cov,
+    noise_var = 1e-6
+  )$mean
+}
 ```
 
 
@@ -137,8 +145,9 @@ for (i in 1:length(eval_num)) {
   n_grid <- nrow(exact_grid_result)
   eval_number <- eval_num[i]
   begin_time <- Sys.time()
-  result_ad <- BO_adap_optim_AGHQ(func = objective_func,
+  result_ad <- BOSS(func = objective_func, optim.n = 10,
                        update_step = 5, max_iter = (eval_number - 5),
+                       opt.lengthscale.grid = seq(from = 0.01, to = 0.99, length.out = 10),
                        # turning off AGHQ check
                        AGHQ_iter_check = Inf, AGHQ_eps = 0,
                        delta = 0.01, noise_var = 1e-6,
@@ -152,6 +161,7 @@ for (i in 1:length(eval_num)) {
 
   ff <- list()
   ff$fn <- function(x) as.numeric(surrogate_ss(x, data_to_smooth = data_to_smooth))
+  # ff$fn <- function(x) as.numeric(surrogate_gp(x, data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = result_ad$length_scale, signal_var = result_ad$signal_var)))
   x_vals <- (seq(from = lower, to = upper, length.out = n_grid) - lower)/(upper - lower)
   fn_vals <- sapply(x_vals, ff$fn)
   obj <- function(x) {exp(ff$fn(x))}
@@ -190,7 +200,7 @@ plot_list[[5]]
 plot_list[[15]]
 ```
 
-```{r eval=FALSE}
+```{r eval=FALSE, include=FALSE}
 # Use tikzDevice to generate the tex file
 tikzDevice::tikz(file = paste0(output_path, "/runtime_compare.tex"),
                  width = 8, height = 8, standAlone = TRUE)
@@ -273,7 +283,7 @@ for (i in 1:length(eval_num)) {
 plot((KS_vec) ~ eval_num, type = "o", ylab = "KS", xlab = "eval number: B", cex.lab = 1, cex.axis = 1)
 ```
 
-```{r eval=FALSE}
+```{r eval=FALSE, include=FALSE}
 tikzDevice::tikz(file = paste0(output_path, "/kl_compare.tex"),
                  width = 8, height = 8, standAlone = TRUE)
 plot((KL_vec) ~ eval_num, type = "o", ylab = "KL", xlab = "eval number: B", cex.lab = 2.0, cex.axis = 2.0)

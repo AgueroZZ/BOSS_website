@@ -128,150 +128,194 @@ obtain_aghq <- function(f, k = 100, startingvalue = NULL, optresult = NULL){
 
 
 #### Making BO adaptive:
-BO_adap_optim_AGHQ <- function(func, update_step = 5, max_iter = 100, D = 1,
-                               lower = rep(0, D), upper = rep(1, D),
-                               noise_var = 1e-6, prior_l_mean = log(1), prior_l_sd = 1,
-                               AGHQ_iter_check = 10, AGHQ_eps = 0.1, buffer = 1e-3, # to avoid aghq-transformation to infinity
-                               AGHQ_k = 3,
-                               initial_design = 5, delta = 0.01){
+BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
+                 lower = rep(0, D), upper = rep(1, D),
+                 noise_var = 1e-6, prior_l_mean = log(1), prior_l_sd = 1,
+                 AGHQ_k = 3, AGHQ_iter_check = 10, AGHQ_eps = 0.1, buffer = 1e-3,
+                 initial_design = 5, delta = 0.01, optim.n = 5,
+                 opt.lengthscale.grid = NULL,  # Grid-based option for lengthscale optimization.
+                 opt.grid = NULL,              # Grid-based option for AF optimization.
+                 verbose = 3) {              # Verbosity level: 0, 1, 2, or 3
 
-  # Check if dimensions of lower_bounds and upper_bounds match
-  if(length(lower) != D | length(upper) != D) {
-    stop("lower_bounds and upper_bounds must have the same length as function input dimension")
+  # Initialize a helper for verbose printing
+  vprint <- function(level, msg) {
+    if (verbose >= level) print(msg)
   }
 
-  # Initialize xvec and yvec to store evaluations
+  # If verbose == 1, set up a progress bar.
+  if (verbose == 1) {
+    pb <- txtProgressBar(min = 0, max = max_iter, style = 3)
+  }
+
+  # Check if dimensions of lower and upper bounds match.
+  if(length(lower) != D || length(upper) != D) {
+    stop("lower and upper must have the same length as the function's input dimension")
+  }
+
+  # Initialize matrices/vectors to store evaluations.
   xmat <- c()
   xmat_trans <- c()
   yvec <- c()
 
-  print('Initial random evaluation phase...')
+  if (verbose == 3) {
+    print('Initial random evaluation phase...')
+  }
+  # Initial design: uniformly random points.
   initial <- matrix(runif(initial_design * D, lower, upper),
-                    nrow = initial_design, ncol = D, byrow = T)
-
+                    nrow = initial_design, ncol = D, byrow = TRUE)
   for (i in 1:nrow(initial)) {
-    # Add the initial point to xvec and evaluate the function
     xmat_trans <- rbind(xmat_trans, (initial[i,] - lower)/(upper - lower))
     xmat <- rbind(xmat, initial[i,])
     yvec <- c(yvec, func(initial[i,]))
   }
-  # Assign the reference value
+  # Center the function values.
   rel <- mean(yvec)
   yvec <- yvec - rel
-
   num_initial <- initial_design
+  signal_var <- var(yvec)
 
-  signal_var = var(yvec)
-  opt <- optim(runif(1, 0.01, 0.9), function(l) compute_like(length_scale = l, y = yvec, x = xmat_trans,
-                                                             signal_var = signal_var, noise_var = noise_var,
-                                                             D, prior_l_mean, prior_l_sd),
-               control = list(maxit = 100), lower = 0.01, upper = 0.9, method = 'L-BFGS-B')
-  length_scale <- opt$par
-  lik <- opt$value
-
-  print(paste("The new length.scale:", length_scale))
-  print(paste("The new signal_var:", signal_var))
+  # Initial optimization for lengthscale.
+  if (!is.null(opt.lengthscale.grid)) {
+    length_scale_vec <- seq(0.01, 0.99, length.out = opt.lengthscale.grid)
+    like_vec <- sapply(length_scale_vec, function(l)
+      compute_like(length_scale = l, y = yvec, x = xmat_trans,
+                   signal_var = signal_var, noise_var = noise_var,
+                   D = D, prior_l_mean = prior_l_mean, prior_l_sd = prior_l_sd))
+    max_idx <- which.max(like_vec)
+    length_scale <- length_scale_vec[max_idx]
+    lik <- like_vec[max_idx]
+  } else {
+    opt <- optim(runif(1, 0.01, 0.9), function(l)
+      compute_like(length_scale = l, y = yvec, x = xmat_trans,
+                   signal_var = signal_var, noise_var = noise_var,
+                   D = D, prior_l_mean = prior_l_mean, prior_l_sd = prior_l_sd),
+      control = list(maxit = 100), lower = 0.01, upper = 0.9, method = 'L-BFGS-B')
+    length_scale <- opt$par
+    lik <- opt$value
+  }
+  vprint(3, paste("The new length.scale:", length_scale))
+  vprint(3, paste("The new signal_var:", signal_var))
 
   choice_cov <- square_exp_cov_generator_nd(length_scale = length_scale, signal_var = signal_var)
 
-  # Perform Bayesian Optimization
-
-  # Initialize AGHQ here
-  # Compute initial AGHQ points
-  # initialize AGHQ_f_moments_old, AGHQ_range_old
+  # Initialize AGHQ-related quantities.
   AGHQ_diff <- Inf
   AGHQ_f_moments_old <- list(first = rep(Inf, D), second = matrix(Inf, nrow = D, ncol = D))
   AGHQ_range_old <- matrix(Inf, nrow = 2, ncol = D)
+
   i <- 1
-  while(i <= max_iter & AGHQ_eps < AGHQ_diff){
-    print(paste("Iteration:", i))
+  while(i <= max_iter && AGHQ_eps < AGHQ_diff){
+    if(verbose == 1) setTxtProgressBar(pb, i)
+    if(verbose == 3) {
+      print(paste("Iteration:", i))
+    } else if(verbose == 2) {
+      cat(paste("Iteration:", i, "\n"))
+    }
+
     newdata <- list(x = xmat_trans, x_original = xmat, y = yvec)
 
     if(i %% update_step == 0){
-      print(paste("Time to update the parameters!"))
-      signal_var = var(newdata$y)
-      opt <- optim(runif(1, 0.01, 0.9), function(l) compute_like(length_scale = l, y = newdata$y, x = newdata$x,
-                                                                 signal_var = signal_var, noise_var = noise_var,
-                                                                 D, prior_l_mean, prior_l_sd),
-                   control = list(maxit = 100), lower = 0.01, upper = 0.9, method = 'L-BFGS-B')
-      length_scale <- opt$par
-      lik <- opt$value
-
-      print(paste("The new length.scale:", length_scale))
-      print(paste("The new signal_var:", signal_var))
+      if(verbose == 3) print("Time to update the parameters!")
+      signal_var <- var(newdata$y)
+      if(!is.null(opt.lengthscale.grid)) {
+        length_scale_vec <- seq(0.01, 0.9, length.out = opt.lengthscale.grid)
+        like_vec <- sapply(length_scale_vec, function(l)
+          compute_like(length_scale = l, y = newdata$y, x = newdata$x,
+                       signal_var = signal_var, noise_var = noise_var,
+                       D = D, prior_l_mean = prior_l_mean, prior_l_sd = prior_l_sd))
+        max_idx <- which.max(like_vec)
+        length_scale <- length_scale_vec[max_idx]
+        lik <- like_vec[max_idx]
+      } else {
+        opt <- optim(runif(1, 0.01, 0.9), function(l)
+          compute_like(length_scale = l, y = newdata$y, x = newdata$x,
+                       signal_var = signal_var, noise_var = noise_var,
+                       D = D, prior_l_mean = prior_l_mean, prior_l_sd = prior_l_sd),
+          control = list(maxit = 100), lower = 0.01, upper = 0.9, method = 'L-BFGS-B')
+        length_scale <- opt$par
+        lik <- opt$value
+      }
+      if(verbose == 3) {
+        print(paste("The new length.scale:", length_scale))
+        print(paste("The new signal_var:", signal_var))
+      }
       choice_cov <- square_exp_cov_generator_nd(length_scale = length_scale, signal_var = signal_var)
     }
 
-    # Update the GP
-    print('Maximize Acquisition Function')
-    initialize_UCB <- matrix(runif(D, lower, upper),
-                             nrow = 1, ncol = D, byrow = T)
-    initialize_UCB <- t((t(initialize_UCB) - lower)/(upper - lower))
-    next_point <- optim(initialize_UCB, function(x) UCB(x = matrix(x, nrow = 1, ncol = D), data = newdata,
-                                                        cov = choice_cov, nv = noise_var, D = i + num_initial, d = delta),
-                        control = list(maxit = 100), lower = rep(buffer, D),
-                        upper = rep((1 - buffer), D), method = 'L-BFGS-B')$par
+    # Optimize the acquisition function (UCB).
+    if(verbose == 3) print("Maximize Acquisition Function")
+    if(is.null(opt.grid)){
+      # Multi-start local optimization.
+      initialize_UCB <- matrix(runif(D*optim.n, rep(buffer, D), rep((1 - buffer), D)),
+                               nrow = optim.n, ncol = D, byrow = TRUE)
+      optimizer <- optimx::multistart(initialize_UCB, function(x)
+        UCB(x = matrix(x, nrow = 1, ncol = D), data = newdata,
+            cov = choice_cov, nv = noise_var, D = i + num_initial, d = delta),
+        control = list(maxit = 100),
+        lower = rep(buffer, D), upper = rep((1 - buffer), D),
+        method = 'L-BFGS-B')
+      next_point <- unlist(unname(unique(optimizer[which.min(optimizer$value), 1:D])))
+    } else {
+      # Grid-based search for the acquisition function.
+      grid_list <- replicate(D, seq(buffer, 1 - buffer, length.out = opt.grid), simplify = FALSE)
+      grid <- as.matrix(expand.grid(grid_list))
+      af_values <- apply(grid, 1, function(x)
+        UCB(x = matrix(x, nrow = 1, ncol = D), data = newdata,
+            cov = choice_cov, nv = noise_var, D = i + num_initial, d = delta))
+      best_idx <- which.max(af_values)
+      next_point <- grid[best_idx, ]
+    }
 
-    # Select the next point to evaluate
+    # Update design matrices and evaluate the function.
     xmat_trans <- rbind(xmat_trans, next_point)
-    next_point <- next_point*(upper - lower) + lower
-    xmat <- rbind(xmat, next_point)
-    yvec <- c(yvec + rel, (func(next_point)))
+    next_point_original <- next_point*(upper - lower) + lower
+    xmat <- rbind(xmat, next_point_original)
+    y_new <- func(next_point_original)
+    yvec <- c(yvec, y_new)
     rel <- mean(yvec)
     yvec <- yvec - rel
 
-    # Print some information for debugging
-    print(paste("Next point:", next_point))
-    print(paste("Function value:", yvec[i + 1]))
+    if(verbose == 3){
+      print(paste("Next point:", next_point_original))
+      print(paste("Function value:", y_new))
+    } else if(verbose == 2) {
+      print(paste("Iteration:", i, "Next point:", next_point_original, "Function value:", y_new))
+    }
 
+    # Check convergence with AGHQ every AGHQ_iter_check iterations.
     if(i %% AGHQ_iter_check == 0){
-      print(paste("Time to check AGHQ difference!"))
-
-      # surrogate function to be used in AGHQ
-      surrogate <- function(xvalue, data_to_smooth){
-        predict_gp(data = data_to_smooth, x_pred = matrix(xvalue, ncol = D), choice_cov = choice_cov, noise_var = noise_var)$mean
+      if(verbose == 3) print("Time to check AGHQ difference!")
+      surrogate <- function(xvalue, data_to_smooth) {
+        predict_gp(data = data_to_smooth, x_pred = matrix(xvalue, ncol = D),
+                   choice_cov = choice_cov, noise_var = noise_var)$mean
       }
-
-      # The set of design points
       lf_design <- list(x = xmat_trans, y = yvec)
-      # The set of design points after quantile transformation
       lg_design <- list(x = apply(lf_design$x, 2, qnorm),
-                        y = lf_design$y + apply(dnorm(apply(lf_design$x, 2, qnorm), log = TRUE), 1, sum)
-      )
-
+                        y = lf_design$y + apply(dnorm(apply(lf_design$x, 2, qnorm), log = TRUE), 1, sum))
       fn_new <- function(y) as.numeric(surrogate(xvalue = y, data_to_smooth = lg_design))
-
-      # Update the AGHQ difference here
-      AGHQ_f_new <- (obtain_aghq(f = fn_new, k = AGHQ_k, startingvalue = rep(0,D))$normalized_posterior$nodesandweights)
-
-      # AGHQ_diff update
+      AGHQ_f_new <- obtain_aghq(f = fn_new, k = AGHQ_k, startingvalue = rep(0, D))$normalized_posterior$nodesandweights
       AGHQ_f_new$prob <- (AGHQ_f_new$weights * exp(AGHQ_f_new$logpost_normalized))
-
-      # Compare the two AGHQ difference in terms of the moments
       AGHQ_f_moments_new <- list()
       AGHQ_f_moments_new$first <- colSums(AGHQ_f_new[,1:D, drop = FALSE] * AGHQ_f_new$prob)
-      AGHQ_f_moments_new$second <- t(as.matrix(AGHQ_f_new[,1:D, drop = FALSE])) %*% as.matrix(AGHQ_f_new[,1:D, drop = FALSE] * AGHQ_f_new$prob) - as.matrix(AGHQ_f_moments_new$first, nrow = D) %*% t(as.matrix(AGHQ_f_moments_new$first, nrow = D))
-
+      AGHQ_f_moments_new$second <- t(as.matrix(AGHQ_f_new[,1:D, drop = FALSE])) %*%
+        as.matrix(AGHQ_f_new[,1:D, drop = FALSE] * AGHQ_f_new$prob) -
+        as.matrix(AGHQ_f_moments_new$first, nrow = D) %*% t(as.matrix(AGHQ_f_moments_new$first, nrow = D))
       difference_in_moments <- list()
-      difference_in_moments$first <- sqrt(sum((AGHQ_f_moments_new$first - AGHQ_f_moments_old$first)^2))/sqrt(sum(AGHQ_f_moments_new$first^2))
-      difference_in_moments$second <- norm(as.matrix(AGHQ_f_moments_new$second - AGHQ_f_moments_old$second), type = "F")/norm(as.matrix(AGHQ_f_moments_new$second), type = "F")
-
-      # When k = 1, the second moment is always 0
-      if(AGHQ_k == 1){
+      difference_in_moments$first <- sqrt(sum((AGHQ_f_moments_new$first - AGHQ_f_moments_old$first)^2)) /
+        sqrt(sum(AGHQ_f_moments_new$first^2))
+      difference_in_moments$second <- norm(as.matrix(AGHQ_f_moments_new$second - AGHQ_f_moments_old$second),
+                                           type = "F")/norm(as.matrix(AGHQ_f_moments_new$second), type = "F")
+      if(AGHQ_k == 1) {
         difference_in_moments$second <- 0
       }
-
-      # Compare the two AGHQ difference in ranges
       AGHQ_range_new <- apply(AGHQ_f_new[,1:D, drop = FALSE], 2, range)
       AGHQ_range_diff <- max(abs(AGHQ_range_new - AGHQ_range_old)/abs(AGHQ_range_new))
       AGHQ_diff_new <- max(difference_in_moments$first, difference_in_moments$second, AGHQ_range_diff)
-
-      # print the AGHQ difference in each moment and the AGHQ range
-      print(paste("AGHQ rel-difference in first moment:", difference_in_moments$first))
-      print(paste("AGHQ rel-difference in second moment:", difference_in_moments$second))
-      print(paste("AGHQ rel-difference in range:", AGHQ_range_diff))
-
-      # update old AGHQ_f_moments, AGHQ_diff, AGHQ_range
+      if(verbose == 3) {
+        print(paste("AGHQ rel-difference in first moment:", difference_in_moments$first))
+        print(paste("AGHQ rel-difference in second moment:", difference_in_moments$second))
+        print(paste("AGHQ rel-difference in range:", AGHQ_range_diff))
+      }
       AGHQ_f_moments_old <- AGHQ_f_moments_new
       AGHQ_diff <- AGHQ_diff_new
       AGHQ_range_old <- AGHQ_range_new
@@ -279,14 +323,17 @@ BO_adap_optim_AGHQ <- function(func, update_step = 5, max_iter = 100, D = 1,
     i <- i + 1
   }
 
-  if(AGHQ_diff < AGHQ_eps){
-    print("Posterior surrogate converged based on AGHQ criteria!")
-  }
-  else{
-    print("Maximum iterations reached and posterior surrogate did not converge based on AGHQ criteria. Adjust your expectation on final results!")
+  if (AGHQ_diff < AGHQ_eps && AGHQ_eps > 0) {
+    if(verbose >= 2) print("Posterior surrogate converged based on AGHQ criteria!")
+  } else {
+    if(verbose >= 2) {
+      print(paste0("Maximum iterations reached! AGHQ difference: ", AGHQ_diff))
+    }
   }
 
-  # Return the result
+  if(verbose == 1) close(pb)
+
   return(list(result = list(x = xmat_trans, x_original = xmat, y = yvec + rel),
               length_scale = length_scale, signal_var = signal_var))
 }
+
