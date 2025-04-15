@@ -147,7 +147,7 @@ for (i in 1:length(eval_num)) {
   begin_time <- Sys.time()
   result_ad <- BOSS(func = objective_func, optim.n = 10,
                        update_step = 5, max_iter = (eval_number - 5),
-                       opt.lengthscale.grid = seq(from = 0.01, to = 0.99, length.out = 10),
+                       opt.lengthscale.grid = seq(from = 0.01, to = 0.99, by = 0.01),
                        # turning off AGHQ check
                        AGHQ_iter_check = Inf, AGHQ_eps = 0,
                        delta = 0.01, noise_var = 1e-6,
