@@ -18,7 +18,7 @@ These examples aim to provide the readers a reproducible way
 
 + [Simulation 2: Change Point Detection](sim2.html)
 
-+ [Simulation 3: Non-liner Regression](sim3.html)
++ [Simulation 3: Non-linear Regression](sim3.html)
 
 + [Example 1: Decomposition of CO2 Variation](co2.html)
 
