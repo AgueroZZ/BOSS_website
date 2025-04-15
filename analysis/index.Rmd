@@ -1,5 +1,5 @@
 ---
-title: "Home"
+title: "Bayesian Optimization Sequential Surrogate (BOSS) Algorithm"
 site: workflowr::wflow_site
 output:
   workflowr::wflow_html:
@@ -8,4 +8,41 @@ editor_options:
   chunk_output_type: console
 ---
 
-Welcome to my research website.
+For an overview of BOSS, see [this paper](https://arxiv.org/abs/2403.12250).
+
+**Examples:**
+
+These examples aim to provide the readers a reproducible way
+
++ [Simulation 1: Inference of the Unknown Periodicity](sim1.html)
+
++ [Simulation 2: Change Point Detection](sim2.html)
+
++ [Simulation 3: Non-liner Regression](sim3.html)
+
++ [Example 1: Decomposition of CO2 Variation](co2.html)
+
++ [Example 2: Change Points in All-Cause Mortality](mortality.html)
+
++ [Example 3: Detecting Ultra-Diffuse Galaxies](UDG.html)
+
+**Background Readings:**
+
+Our implementation of the BOSS is grounded in the framework of Bayesian hierarchical models, specifically the conditional Latent Gaussian Models (cLGMs). 
+
+Approximate Bayesian inference for LGMs typically relies on the Laplace approximation and Adaptive Gauss-Hermite Quadrature (AGHQ). For readers less familiar with these concepts, we recommend the following resources:
+
++ [Extended LGMs and their posterior approximation algorithm](https://www.tandfonline.com/doi/full/10.1080/10618600.2022.2099403?casa_token=ft2At-UOBTIAAAAA%3Ab1e5AGFyefDSdwFHE2r9Q7Mcpv-npuWnGIH1LwyGzYdhs9DjHwcq32JBbILmz_ukn7pgWtVa7lAytg)
+
++ [LGMs and the Integrated Nested Laplace Approximation (INLA)](https://academic.oup.com/jrsssb/article/71/2/319/7092907?login=false)
+
++ [AGHQ and its application in fitting LGMs
+](https://www.tandfonline.com/doi/full/10.1080/01621459.2022.2141635)
+
+
+For readers seeking a deeper understanding of Gaussian processes and the Bayesian optimization algorithm, which are central to the BOSS framework, we recommend the following books:
+
++ [Gaussian Processes](https://gaussianprocess.org/gpml/)
+
++ [Bayesian Optimization](https://bayesoptbook.com/)
+
