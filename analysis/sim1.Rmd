@@ -21,7 +21,7 @@ data_path <- "./data/sim1"
 source(paste0(function_path, "/00_BOSS.R"))
 ```
 
-Simulate the data:
+We simulate $n = 100$ data with true periodicity $a = 1.5$:
 
 ```{r message=FALSE, warning=FALSE}
 lower = 0.5; upper = 4.5; a = 1.5; noise_var = 1e-6
@@ -38,7 +38,7 @@ data <- data.frame(y = y, x = x, indx = 1:n, log_mu = log_mu)
 plot(y ~ x, type = "p", data = arrange(data, x))
 ```
 
-Define the objective function:
+Assume the prior is $\alpha \sim N(3, 0.5^2)$, we then define the objective function needed for BOSS:
 
 ```{r message=FALSE, warning=FALSE}
 log_prior <- function(alpha){
@@ -57,11 +57,7 @@ eval_once <- function(alpha){
   )
   (mod$mod$normalized_posterior$lognormconst) + log_prior(alpha)
 }
-# Apply smoothing spline to smooth the grid result
-surrogate_ss <- function(xvalue, data_to_smooth){
-  predict(ss(x = data_to_smooth$x, y = data_to_smooth$y, df = length(unique(data_to_smooth$x)), m = 2, all.knots = TRUE), x = xvalue)$y
-}
-surrogate_gp <- function(xvalue, data_to_smooth, choice_cov) {
+surrogate <- function(xvalue, data_to_smooth, choice_cov) {
   predict_gp(
     data = data_to_smooth,
     x_pred = matrix(xvalue, ncol = 1),
@@ -75,7 +71,7 @@ surrogate_gp <- function(xvalue, data_to_smooth, choice_cov) {
 
 ## Exact Grid Implementation
 
-Set up a dense grid:
+First, as an oracle approach, we set up a dense grid on $\[0.5,4.5\]$:
 
 ```{r message=FALSE, warning=FALSE}
 x_vals <- seq(lower, upper, by = 0.005)
@@ -94,7 +90,6 @@ for (i in 1:total) {
   setTxtProgressBar(pb, i)
 }
 close(pb)
-
 exact_grid_result <- data.frame(x = x_vals, exact_vals = exact_vals)
 exact_grid_result$exact_vals <- exact_grid_result$exact_vals - max(exact_grid_result$exact_vals)
 exact_grid_result$fx <- exp(exact_grid_result$exact_vals)
@@ -112,7 +107,8 @@ grid()
 save(exact_grid_result, file = paste0(output_path, "/exact_grid_result.rda"))
 ```
 
-Take a quick look at the result:
+We can take a quick look at the posterior density obtained from the exact grid.
+Because of the strong prior centered at $\alpha = 3$, the posterior density is not exactly unimodal at the true value $1.5$.
 
 ```{r message=FALSE, warning=FALSE}
 load(paste0(output_path, "/exact_grid_result.rda"))
@@ -128,10 +124,12 @@ grid()
 
 ## BOSS Implementation
 
-Let's assess the performance of the BOSS algorithm with different choices of $B$.
+Now, let's assess the performance of the BOSS algorithm with different choices of $B$, ranging from $10$ to $80$.
 
 ```{r message=FALSE, warning=FALSE}
-eval_num <- seq(from = 10, to = 80, by = 5)
+eval_num <- c(15, 30, 45, 60, 80)
+# Initialize BOSS with 3 equally spaced design points
+initial_design <- 5
 ```
 
 Running the BOSS algorithm at each $B$:
@@ -145,15 +143,14 @@ for (i in 1:length(eval_num)) {
   n_grid <- nrow(exact_grid_result)
   eval_number <- eval_num[i]
   begin_time <- Sys.time()
-  result_ad <- BOSS(func = objective_func, optim.n = 10,
-                       update_step = 5, max_iter = (eval_number - 5),
-                       opt.lengthscale.grid = 100,
-                       opt.grid = nrow(exact_grid_result),
-                       # turning off AGHQ check
-                       AGHQ_iter_check = Inf, AGHQ_eps = 0,
+  result_ad <- BOSS(func = objective_func, update_step = 5, max_iter = (eval_number - initial_design),
+                       opt.lengthscale.grid = 100, opt.grid = nrow(exact_grid_result),
                        delta = 0.01, noise_var = noise_var,
                        lower = lower, upper = upper,
-                       initial_design = 5)
+                       # turning off AGHQ check
+                       AGHQ_iter_check = Inf, AGHQ_eps = 0,
+                       initial_design = initial_design)
+
   end_time <- Sys.time()
   rel_runtime[i] <- as.numeric((end_time - begin_time), units = "mins")/1.344585
   
@@ -162,8 +159,7 @@ for (i in 1:length(eval_num)) {
   BO_result_original_list[[i]] <- data_to_smooth
 
   ff <- list()
-  # ff$fn <- function(x) as.numeric(surrogate_ss(x, data_to_smooth = data_to_smooth))
-  ff$fn <- function(x) as.numeric(surrogate_gp(x, data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = result_ad$length_scale, signal_var = result_ad$signal_var)))
+  ff$fn <- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = result_ad$length_scale, signal_var = result_ad$signal_var)))
   x_vals <- (seq(from = lower, to = upper, length.out = n_grid) - lower)/(upper - lower)
   fn_vals <- sapply(x_vals, ff$fn)
   obj <- function(x) {exp(ff$fn(x))}
@@ -176,7 +172,9 @@ save(BO_result_original_list, file = paste0(output_path, "/BO_result_original_li
 save(rel_runtime, file = paste0(output_path, "/rel_runtime.rda"))
 ```
 
-Visualize the results:
+Let's compare the first from the BOSS algorithm with the exact grid result:
+
+### {.tabset .tabset-pills}
 
 ```{r message=FALSE, warning=FALSE}
 load(paste0(output_path, "/BO_result_list.rda"))
@@ -195,12 +193,30 @@ for (i in 1:length(eval_num)) {
     theme(text = element_text(size = 10), axis.text = element_text(size = 15)) + # only change the lab and axis text size
     lims(y = range(exact_grid_result$pos))
 }
-
-# show some plots
-plot_list[[2]]
-plot_list[[5]]
-plot_list[[15]]
 ```
+
+#### B = `r eval_num[1]`
+
+```{r}
+plot_list[[1]]
+```
+
+#### B = `r eval_num[2]`
+
+```{r}
+plot_list[[2]]
+```
+
+
+#### B = `r eval_num[5]`
+
+```{r}
+plot_list[[5]]
+```
+
+
+
+
 
 ```{r eval=FALSE, include=FALSE}
 # Use tikzDevice to generate the tex file
@@ -251,7 +267,10 @@ for (i in 1:length(eval_num)) {
 }
 ```
 
-Use KL and KS statistics to assess the result:
+
+## Comparison of KL and KS statistics
+
+To assess the accuracy of BOSS, we will compute the KL and KS statistics comparing to the posterior from oracle approach:
 
 ```{r message=FALSE, warning=FALSE}
 #### Compute the KL distance:
@@ -284,6 +303,9 @@ for (i in 1:length(eval_num)) {
 }
 plot((KS_vec) ~ eval_num, type = "o", ylab = "KS", xlab = "eval number: B", cex.lab = 1, cex.axis = 1)
 ```
+
+This is the KL and KS distance between BOSS and the exact grid result for this particular replication.
+To more robustly assess the performance, let's 
 
 ```{r eval=FALSE, include=FALSE}
 tikzDevice::tikz(file = paste0(output_path, "/kl_compare.tex"),
