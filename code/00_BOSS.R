@@ -132,7 +132,8 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
                  lower = rep(0, D), upper = rep(1, D),
                  noise_var = 1e-6,
                  AGHQ_k = 3, AGHQ_iter_check = 10, AGHQ_eps = 0.1, buffer = 1e-3,
-                 initial_design = 5, delta = 0.01, optim.n = 5,
+                 initial_design = 5, delta = 0.01,
+                 optim.n = 5, optim.max.iter = 1000,
                  opt.lengthscale.grid = NULL,  # Grid-based option for lengthscale optimization.
                  opt.grid = NULL,              # Grid-based option for AF optimization.
                  verbose = 3) {              # Verbosity level: 0, 1, 2, or 3
@@ -161,7 +162,7 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
     print('Initial fixed evaluation phase...')
   }
   # Initial design: uniformly fixed points.
-  initial <- matrix(rep(seq(from = lower, to = upper, length.out = initial_design), D),
+  initial <- matrix(rep(seq(from = (lower + buffer), to = (upper - buffer), length.out = initial_design), D),
                     nrow = initial_design, ncol = D, byrow = FALSE)
   for (i in 1:nrow(initial)) {
     xmat_trans <- rbind(xmat_trans, (initial[i,] - lower)/(upper - lower))
@@ -187,7 +188,7 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
     opt <- optim(runif(1, 0.01, 0.99), function(l)
       compute_like(length_scale = l, y = yvec, x = xmat_trans,
                    signal_var = signal_var, noise_var = noise_var),
-      control = list(maxit = 100), lower = 0.01, upper = 0.9, method = 'L-BFGS-B')
+      control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
     length_scale <- opt$par
     lik <- opt$value
   }
@@ -227,7 +228,7 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
         opt <- optim(runif(1, 0.01, 0.99), function(l)
           compute_like(length_scale = l, y = newdata$y, x = newdata$x,
                        signal_var = signal_var, noise_var = noise_var),
-          control = list(maxit = 100), lower = 0.01, upper = 0.9, method = 'L-BFGS-B')
+          control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
         length_scale <- opt$par
         lik <- opt$value
       }
@@ -253,7 +254,7 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
       next_point <- unlist(unname(unique(optimizer[which.min(optimizer$value), 1:D])))
     } else {
       # Grid-based search for the acquisition function.
-      grid_list <- replicate(D, seq(buffer, 1 - buffer, length.out = opt.grid), simplify = FALSE)
+      grid_list <- replicate(D, seq(buffer, (1 - buffer), length.out = opt.grid), simplify = FALSE)
       grid <- as.matrix(expand.grid(grid_list))
       af_values <- apply(grid, 1, function(x)
         -UCB(x = matrix(x, nrow = 1, ncol = D), data = newdata,
@@ -270,7 +271,8 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
     next_point_original <- next_point*(upper - lower) + lower
     xmat <- rbind(xmat, next_point_original)
     y_new <- func(next_point_original)
-    yvec <- c(yvec, y_new)
+
+    yvec <- c(yvec + rel, (y_new))
     rel <- mean(yvec)
     yvec <- yvec - rel
 
@@ -284,15 +286,19 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
     # Check convergence with AGHQ every AGHQ_iter_check iterations.
     if(i %% AGHQ_iter_check == 0){
       if(verbose == 3) print("Time to check AGHQ difference!")
-      surrogate <- function(xvalue, data_to_smooth) {
-        predict_gp(data = data_to_smooth, x_pred = matrix(xvalue, ncol = D),
-                   choice_cov = choice_cov, noise_var = noise_var)$mean
+      # surrogate <- function(xvalue, data_to_smooth) {
+      #   predict_gp(data = data_to_smooth, x_pred = matrix(xvalue, ncol = D),
+      #              choice_cov = choice_cov, noise_var = noise_var)$mean
+      # }
+      surrogate <- function(xvalue, data_to_smooth){
+        predict(ss(x = as.numeric(data_to_smooth$x), y = data_to_smooth$y, df = length(unique(data_to_smooth$y)), m = 2, all.knots = TRUE), x = xvalue)$y
       }
       lf_design <- list(x = xmat_trans, y = yvec)
       lg_design <- list(x = apply(lf_design$x, 2, qnorm),
                         y = lf_design$y + apply(dnorm(apply(lf_design$x, 2, qnorm), log = TRUE), 1, sum))
       fn_new <- function(y) as.numeric(surrogate(xvalue = y, data_to_smooth = lg_design))
-      AGHQ_f_new <- obtain_aghq(f = fn_new, k = AGHQ_k, startingvalue = rep(0, D))$normalized_posterior$nodesandweights
+
+      AGHQ_f_new <- obtain_aghq(f = fn_new, k = AGHQ_k, startingvalue = xmat_trans[which.max(yvec),])$normalized_posterior$nodesandweights
       AGHQ_f_new$prob <- (AGHQ_f_new$weights * exp(AGHQ_f_new$logpost_normalized))
       AGHQ_f_moments_new <- list()
       AGHQ_f_moments_new$first <- colSums(AGHQ_f_new[,1:D, drop = FALSE] * AGHQ_f_new$prob)
