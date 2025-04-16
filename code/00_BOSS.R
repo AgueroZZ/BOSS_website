@@ -75,7 +75,7 @@ predict_gp <- function(data, x_pred, noise_var = 1e-6, choice_cov) {
 }
 
 # Compute likelihood using Square Exponential:
-compute_like <- function(length_scale, x, y, signal_var, noise_var, D, prior_l_mean, prior_l_sd){
+compute_like <- function(length_scale, x, y, signal_var, noise_var){
   square_exp_cov <- square_exp_cov_generator_nd(length_scale = length_scale, signal_var = signal_var)
   C <- square_exp_cov(x = x, x_prime = x)
   A <- C + noise_var * diag(nrow(x))
@@ -90,8 +90,7 @@ compute_like <- function(length_scale, x, y, signal_var, noise_var, D, prior_l_m
 
   # Compute the likelihood in a numerically stable way.
   # Here, tcrossprod(t(y), Q) %*% y is equivalent to t(y) %*% Q %*% y.
-  like <- as.numeric((t(y) %*% Q %*% y) / 2 - log_det_Q -
-                       dlnorm(length_scale, prior_l_mean + log(D)/2, prior_l_sd, log = TRUE))
+  like <- as.numeric((t(y) %*% Q %*% y) / 2 - log_det_Q)
 
   if(is.nan(like) | is.na(like)){
     return(1e20)
@@ -106,6 +105,7 @@ compute_like <- function(length_scale, x, y, signal_var, noise_var, D, prior_l_m
     return(like)
   }
 }
+
 
 UCB <- function(x, data, cov, nv, D, d){
   fnew <- predict_gp(data, x, choice_cov = cov, noise_var = nv)
@@ -130,7 +130,7 @@ obtain_aghq <- function(f, k = 100, startingvalue = NULL, optresult = NULL){
 #### Making BO adaptive:
 BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
                  lower = rep(0, D), upper = rep(1, D),
-                 noise_var = 1e-6, prior_l_mean = log(1), prior_l_sd = 1,
+                 noise_var = 1e-6,
                  AGHQ_k = 3, AGHQ_iter_check = 10, AGHQ_eps = 0.1, buffer = 1e-3,
                  initial_design = 5, delta = 0.01, optim.n = 5,
                  opt.lengthscale.grid = NULL,  # Grid-based option for lengthscale optimization.
@@ -158,11 +158,11 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
   yvec <- c()
 
   if (verbose == 3) {
-    print('Initial random evaluation phase...')
+    print('Initial fixed evaluation phase...')
   }
-  # Initial design: uniformly random points.
-  initial <- matrix(runif(initial_design * D, lower, upper),
-                    nrow = initial_design, ncol = D, byrow = TRUE)
+  # Initial design: uniformly fixed points.
+  initial <- matrix(rep(seq(from = lower, to = upper, length.out = initial_design), D),
+                    nrow = initial_design, ncol = D, byrow = FALSE)
   for (i in 1:nrow(initial)) {
     xmat_trans <- rbind(xmat_trans, (initial[i,] - lower)/(upper - lower))
     xmat <- rbind(xmat, initial[i,])
@@ -179,16 +179,14 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
     length_scale_vec <- seq(0.01, 0.99, length.out = opt.lengthscale.grid)
     like_vec <- sapply(length_scale_vec, function(l)
       compute_like(length_scale = l, y = yvec, x = xmat_trans,
-                   signal_var = signal_var, noise_var = noise_var,
-                   D = D, prior_l_mean = prior_l_mean, prior_l_sd = prior_l_sd))
+                   signal_var = signal_var, noise_var = noise_var))
     max_idx <- which.max(like_vec)
     length_scale <- length_scale_vec[max_idx]
     lik <- like_vec[max_idx]
   } else {
-    opt <- optim(runif(1, 0.01, 0.9), function(l)
+    opt <- optim(runif(1, 0.01, 0.99), function(l)
       compute_like(length_scale = l, y = yvec, x = xmat_trans,
-                   signal_var = signal_var, noise_var = noise_var,
-                   D = D, prior_l_mean = prior_l_mean, prior_l_sd = prior_l_sd),
+                   signal_var = signal_var, noise_var = noise_var),
       control = list(maxit = 100), lower = 0.01, upper = 0.9, method = 'L-BFGS-B')
     length_scale <- opt$par
     lik <- opt$value
@@ -218,19 +216,17 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
       if(verbose == 3) print("Time to update the parameters!")
       signal_var <- var(newdata$y)
       if(!is.null(opt.lengthscale.grid)) {
-        length_scale_vec <- seq(0.01, 0.9, length.out = opt.lengthscale.grid)
+        length_scale_vec <- seq(0.01, 0.99, length.out = opt.lengthscale.grid)
         like_vec <- sapply(length_scale_vec, function(l)
-          compute_like(length_scale = l, y = newdata$y, x = newdata$x,
-                       signal_var = signal_var, noise_var = noise_var,
-                       D = D, prior_l_mean = prior_l_mean, prior_l_sd = prior_l_sd))
+          -compute_like(length_scale = l, y = newdata$y, x = newdata$x,
+                       signal_var = signal_var, noise_var = noise_var))
         max_idx <- which.max(like_vec)
         length_scale <- length_scale_vec[max_idx]
         lik <- like_vec[max_idx]
       } else {
-        opt <- optim(runif(1, 0.01, 0.9), function(l)
+        opt <- optim(runif(1, 0.01, 0.99), function(l)
           compute_like(length_scale = l, y = newdata$y, x = newdata$x,
-                       signal_var = signal_var, noise_var = noise_var,
-                       D = D, prior_l_mean = prior_l_mean, prior_l_sd = prior_l_sd),
+                       signal_var = signal_var, noise_var = noise_var),
           control = list(maxit = 100), lower = 0.01, upper = 0.9, method = 'L-BFGS-B')
         length_scale <- opt$par
         lik <- opt$value
@@ -260,12 +256,15 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
       grid_list <- replicate(D, seq(buffer, 1 - buffer, length.out = opt.grid), simplify = FALSE)
       grid <- as.matrix(expand.grid(grid_list))
       af_values <- apply(grid, 1, function(x)
-        UCB(x = matrix(x, nrow = 1, ncol = D), data = newdata,
+        -UCB(x = matrix(x, nrow = 1, ncol = D), data = newdata,
             cov = choice_cov, nv = noise_var, D = i + num_initial, d = delta))
       best_idx <- which.max(af_values)
       next_point <- grid[best_idx, ]
+      # if next_point is already covered, add a small perturbation
+      if(any(apply(xmat_trans, 1, function(row) all(abs(row - next_point) == 0)))) {
+        next_point <- next_point + runif(D, (-buffer/2), (buffer/2))
+      }
     }
-
     # Update design matrices and evaluate the function.
     xmat_trans <- rbind(xmat_trans, next_point)
     next_point_original <- next_point*(upper - lower) + lower
