@@ -24,10 +24,10 @@ source(paste0(function_path, "/00_BOSS.R"))
 Simulate the data:
 
 ```{r message=FALSE, warning=FALSE}
-lower = 0.5; upper = 4.5; a = 1.7
+lower = 0.5; upper = 4.5; a = 1.5; noise_var = 1e-6
 ### Simulate data:
 set.seed(123)
-n <- 50
+n <- 100
 x <- runif(n = n, min = 0, max = 10)
 true_func <- function(x, true_alpha = 1.5){1 + 
     0.5 * cos((2*pi*x)/true_alpha) - 1.3 * sin((2*pi*x)/true_alpha) +
@@ -66,7 +66,7 @@ surrogate_gp <- function(xvalue, data_to_smooth, choice_cov) {
     data = data_to_smooth,
     x_pred = matrix(xvalue, ncol = 1),
     choice_cov = choice_cov,
-    noise_var = 1e-6
+    noise_var = noise_var
   )$mean
 }
 ```
@@ -147,25 +147,27 @@ for (i in 1:length(eval_num)) {
   begin_time <- Sys.time()
   result_ad <- BOSS(func = objective_func, optim.n = 10,
                        update_step = 5, max_iter = (eval_number - 5),
-                       opt.lengthscale.grid = seq(from = 0.01, to = 0.99, by = 0.01),
+                       opt.lengthscale.grid = 100,
+                       opt.grid = nrow(exact_grid_result),
                        # turning off AGHQ check
                        AGHQ_iter_check = Inf, AGHQ_eps = 0,
-                       delta = 0.01, noise_var = 1e-6,
+                       delta = 0.01, noise_var = noise_var,
                        lower = lower, upper = upper,
                        initial_design = 5)
   end_time <- Sys.time()
   rel_runtime[i] <- as.numeric((end_time - begin_time), units = "mins")/1.344585
   
   data_to_smooth <- result_ad$result
+  data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
   BO_result_original_list[[i]] <- data_to_smooth
 
   ff <- list()
-  ff$fn <- function(x) as.numeric(surrogate_ss(x, data_to_smooth = data_to_smooth))
-  # ff$fn <- function(x) as.numeric(surrogate_gp(x, data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = result_ad$length_scale, signal_var = result_ad$signal_var)))
+  # ff$fn <- function(x) as.numeric(surrogate_ss(x, data_to_smooth = data_to_smooth))
+  ff$fn <- function(x) as.numeric(surrogate_gp(x, data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = result_ad$length_scale, signal_var = result_ad$signal_var)))
   x_vals <- (seq(from = lower, to = upper, length.out = n_grid) - lower)/(upper - lower)
   fn_vals <- sapply(x_vals, ff$fn)
   obj <- function(x) {exp(ff$fn(x))}
-  lognormal_const <- log(integrate(obj, lower = 0, upper = 1)$value)
+  lognormal_const <- log(integrate(obj, lower = 0, upper = 1, subdivisions = 1000)$value)
   post_x <- data.frame(y = x_vals, pos = exp(fn_vals - lognormal_const))
   BO_result_list[[i]] <- data.frame(x = (lower + x_vals*(upper - lower)), pos = post_x$pos /(upper - lower))
 }
