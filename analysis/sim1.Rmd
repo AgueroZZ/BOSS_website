@@ -304,9 +304,6 @@ for (i in 1:length(eval_num)) {
 plot((KS_vec) ~ eval_num, type = "o", ylab = "KS", xlab = "eval number: B", cex.lab = 1, cex.axis = 1)
 ```
 
-This is the KL and KS distance between BOSS and the exact grid result for this particular replication.
-To more robustly assess the performance, let's 
-
 ```{r eval=FALSE, include=FALSE}
 tikzDevice::tikz(file = paste0(output_path, "/kl_compare.tex"),
                  width = 8, height = 8, standAlone = TRUE)
@@ -327,5 +324,206 @@ file.remove(paste0(output_path, "/ks_compare.aux"))
 file.remove(paste0(output_path, "/ks_compare.log"))
 ```
 
+
+This is the KL and KS distance between BOSS and the exact grid result for this particular replication.
+To more robustly assess the performance, let's consider the KL and KS distance over $10$ independent replications.
+
+
+```{r}
+simulate_once <- function(seed){
+  set.seed(seed)
+  n <- 100; x <- runif(n = n, min = 0, max = 10)
+  true_func <- function(x, true_alpha = 1.5) {
+    1 +
+      0.5 * cos((2 * pi * x) / true_alpha) - 1.3 * sin((2 * pi * x) / true_alpha) +
+      1.1 * cos((4 * pi * x) / true_alpha) + 0.3 * sin((4 * pi * x) / true_alpha)
+  }
+  log_mu <- true_func(x) + rnorm(n, sd = 2)
+  y <- rpois(n = n, lambda = exp(log_mu))
+  data <- data.frame(
+    y = y,
+    x = x,
+    indx = 1:n,
+    log_mu = log_mu
+  )
+  
+  # Define the objective function
+  eval_once <- function(alpha){
+  a_fit <- (2*pi)/alpha
+  x <- data$x
+  data$cosx <- cos(a_fit * x)
+  data$sinx <- sin(a_fit * x)
+  data$cos2x <- cos(2*a_fit * x)
+  data$sin2x <- sin(2*a_fit * x)
+  mod <- model_fit(formula = y ~ cosx + sinx + cos2x + sin2x + f(x = indx, model = "IID", 
+                                                                 sd.prior = list(param = 1)),
+                   data = data, method = "aghq", family = "Poisson", aghq_k = 4
+  )
+  (mod$mod$normalized_posterior$lognormconst) + log_prior(alpha)
+}
+
+  
+  #################################
+  #################################
+  #########  Fitting Grid: ########
+  #################################
+  #################################
+  #################################
+  exact_vals <- c()
+  total <- length(x_vals)
+  pb <- txtProgressBar(min = 0, max = total, style = 3)
+  for (i in 1:total) {
+    xi <- x_vals[i]
+    exact_vals <- c(exact_vals, eval_once(xi))
+    setTxtProgressBar(pb, i)
+  }
+  close(pb)
+  exact_grid_result <- data.frame(x = x_vals, exact_vals = exact_vals)
+  exact_grid_result$exact_vals <- exact_grid_result$exact_vals - max(exact_grid_result$exact_vals)
+  exact_grid_result$fx <- exp(exact_grid_result$exact_vals)
+  
+  # Calculate the differences between adjacent x values
+  dx <- diff(exact_grid_result$x)
+  # Compute the trapezoidal areas and sum them up
+  integral_approx <- sum(0.5 * (exact_grid_result$fx[-1] + exact_grid_result$fx[-length(exact_grid_result$fx)]) * dx)
+  exact_grid_result$pos <- exact_grid_result$fx / integral_approx
+  
+  #################################
+  #################################
+  #########  Fitting BOSS: ########
+  #################################
+  #################################
+  #################################
+  objective_func <- eval_once
+  rel_runtime <- c()
+  BO_result_list <- list()
+  BO_result_original_list <- list()
+  for (i in 1:length(eval_num)) {
+    n_grid <- nrow(exact_grid_result)
+    eval_number <- eval_num[i]
+    result_ad <- BOSS(
+      func = objective_func,
+      update_step = 5,
+      max_iter = (eval_number - initial_design),
+      opt.lengthscale.grid = 100,
+      opt.grid = nrow(exact_grid_result),
+      delta = 0.01,
+      noise_var = noise_var,
+      lower = lower,
+      upper = upper,
+      # turning off AGHQ check
+      AGHQ_iter_check = Inf,
+      AGHQ_eps = 0,
+      initial_design = initial_design
+    )
+    data_to_smooth <- result_ad$result
+    data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
+    BO_result_original_list[[i]] <- data_to_smooth
+    
+    ff <- list()
+    ff$fn <- function(x)
+      as.numeric(
+        surrogate(
+          x,
+          data_to_smooth = data_to_smooth,
+          choice_cov = square_exp_cov_generator_nd(
+            length_scale = result_ad$length_scale,
+            signal_var = result_ad$signal_var
+          )
+        )
+      )
+    x_vals <- (seq(
+      from = lower,
+      to = upper,
+      length.out = n_grid
+    ) - lower) / (upper - lower)
+    fn_vals <- sapply(x_vals, ff$fn)
+    obj <- function(x) {
+      exp(ff$fn(x))
+    }
+    lognormal_const <- log(integrate(
+      obj,
+      lower = 0,
+      upper = 1,
+      subdivisions = 1000
+    )$value)
+    post_x <- data.frame(y = x_vals, pos = exp(fn_vals - lognormal_const))
+    BO_result_list[[i]] <- data.frame(x = (lower + x_vals * (upper - lower)),
+                                      pos = post_x$pos / (upper - lower))
+  }
+  
+  #################################
+  #################################
+  ######### Compute KS/KL: ########
+  #################################
+  #################################
+  #################################
+  #### Compute the KL distance:
+  KL_vec <- c()
+  for (i in 1:length(eval_num)) {
+    KL_vec[i] <- Compute_KL(x = exact_grid_result$x,
+                            px = exact_grid_result$pos,
+                            qx = BO_result_list[[i]]$pos)
+  }
+  
+  #### Compute the KS distance:
+  KS_vec <- c()
+  for (i in 1:length(eval_num)) {
+    KS_vec[i] <- Compute_KS(x = exact_grid_result$x,
+                            px = exact_grid_result$pos,
+                            qx = BO_result_list[[i]]$pos)
+  }
+  
+  return(data.frame(eval_num = eval_num, KL = KL_vec, KS = KS_vec))
+}
+```
+
+
+```{r eval=FALSE}
+all_result <- data.frame(eval_num = eval_num,
+                         KL = KL_vec,
+                         KS = KS_vec)
+seed_vec <- 1:10
+for (i in 1:length(seed_vec)) {
+  seed <- seed_vec[i]
+  result <- simulate_once(seed = seed)
+  all_result <- rbind(all_result, result)
+}
+save(all_result, file = paste0(output_path, "/all_result.rda"))
+```
+
+
+Plot the results across $10$ independent replications:
+
+```{r}
+load(paste0(output_path, "/all_result.rda"))
+
+mean_result <- all_result %>% group_by(eval_num) %>%
+  summarise(KL = mean(KL), KS = mean(KS))
+
+lower_result <- all_result %>% group_by(eval_num) %>%
+  summarise(KL = quantile(KL, 0.1), KS = quantile(KS, 0.1))
+
+upper_result <- all_result %>% group_by(eval_num) %>%
+  summarise(KL = quantile(KL, 0.9), KS = quantile(KS, 0.9))
+
+plot(mean_result$eval_num, mean_result$KL, type = "o", 
+     ylab = "KL", xlab = "eval number: B",
+     # log = "y",
+     # ylim = c(min(lower_result$KL), max(upper_result$KL)),
+     cex.lab = 1.0, cex.axis = 1.0)
+polygon(c(mean_result$eval_num, rev(mean_result$eval_num)), 
+        c(lower_result$KL, rev(upper_result$KL)), 
+        col = rgb(0.2, 0.2, 0.2, 0.2), border = NA)
+
+plot(mean_result$eval_num, mean_result$KS, type = "o",
+     ylab = "KS", xlab = "eval number: B", 
+     # log = "y",
+     # ylim = c(min(lower_result$KS), max(upper_result$KS)),
+     cex.lab = 1.0, cex.axis = 1.0)
+polygon(c(mean_result$eval_num, rev(mean_result$eval_num)), 
+        c(lower_result$KS, rev(upper_result$KS)), 
+        col = rgb(0.2, 0.2, 0.2, 0.2), border = NA)
+```
 
 
