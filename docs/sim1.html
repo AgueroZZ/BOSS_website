@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree841823698113786e68aabc68d993f5832c3f3b6atargetblank8418236a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreebdb322df47bb2451e45aa93bc5e3f8953cf0e78btargetblankbdb322da">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/841823698113786e68aabc68d993f5832c3f3b6a" target="_blank">8418236</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/bdb322df47bb2451e45aa93bc5e3f8953cf0e78b" target="_blank">bdb322d</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree841823698113786e68aabc68d993f5832c3f3b6atargetblank8418236a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreebdb322df47bb2451e45aa93bc5e3f8953cf0e78btargetblankbdb322da"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/841823698113786e68aabc68d993f5832c3f3b6a" target="_blank">8418236</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/bdb322df47bb2451e45aa93bc5e3f8953cf0e78b" target="_blank">bdb322d</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -568,7 +568,6 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.Rhistory
-    Ignored:    analysis/figure/
     Ignored:    code/.DS_Store
     Ignored:    data/.DS_Store
     Ignored:    data/sim1/
@@ -622,6 +621,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/bdb322df47bb2451e45aa93bc5e3f8953cf0e78b/analysis/sim1.Rmd" target="_blank">bdb322d</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-16
+</td>
+<td>
+workflowr::wflow_publish("analysis/sim1.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/4f1051154b22222d53135a767987ab791d8c3a4f/docs/sim1.html" target="_blank">4f10511</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-16
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -757,7 +790,8 @@ function_path &lt;- &quot;./code&quot;
 output_path &lt;- &quot;./output/sim1&quot;
 data_path &lt;- &quot;./data/sim1&quot;
 source(paste0(function_path, &quot;/00_BOSS.R&quot;))</code></pre>
-<p>Simulate the data:</p>
+<p>We simulate <span class="math inline">\(n = 100\)</span> data with
+true periodicity <span class="math inline">\(a = 1.5\)</span>:</p>
 <pre class="r"><code>lower = 0.5; upper = 4.5; a = 1.5; noise_var = 1e-6
 ### Simulate data:
 set.seed(123)
@@ -808,7 +842,9 @@ Ziang Zhang
 </table>
 </div>
 </div>
-<p>Define the objective function:</p>
+<p>Assume the prior is <span class="math inline">\(\alpha \sim N(3,
+0.5^2)\)</span>, we then define the objective function needed for
+BOSS:</p>
 <pre class="r"><code>log_prior &lt;- function(alpha){
   dnorm(x = alpha, mean = 3, log = T, sd = 0.5)
 }
@@ -825,11 +861,7 @@ eval_once &lt;- function(alpha){
   )
   (mod$mod$normalized_posterior$lognormconst) + log_prior(alpha)
 }
-# Apply smoothing spline to smooth the grid result
-surrogate_ss &lt;- function(xvalue, data_to_smooth){
-  predict(ss(x = data_to_smooth$x, y = data_to_smooth$y, df = length(unique(data_to_smooth$x)), m = 2, all.knots = TRUE), x = xvalue)$y
-}
-surrogate_gp &lt;- function(xvalue, data_to_smooth, choice_cov) {
+surrogate &lt;- function(xvalue, data_to_smooth, choice_cov) {
   predict_gp(
     data = data_to_smooth,
     x_pred = matrix(xvalue, ncol = 1),
@@ -840,7 +872,8 @@ surrogate_gp &lt;- function(xvalue, data_to_smooth, choice_cov) {
 </div>
 <div id="exact-grid-implementation" class="section level2">
 <h2>Exact Grid Implementation</h2>
-<p>Set up a dense grid:</p>
+<p>First, as an oracle approach, we set up a dense grid on <span
+class="math inline">\(\[0.5,4.5\]\)</span>:</p>
 <pre class="r"><code>x_vals &lt;- seq(lower, upper, by = 0.005)</code></pre>
 <p>Compute the objective function on the grid:</p>
 <pre class="r"><code>begin_time &lt;- Sys.time()
@@ -853,7 +886,6 @@ for (i in 1:total) {
   setTxtProgressBar(pb, i)
 }
 close(pb)
-
 exact_grid_result &lt;- data.frame(x = x_vals, exact_vals = exact_vals)
 exact_grid_result$exact_vals &lt;- exact_grid_result$exact_vals - max(exact_grid_result$exact_vals)
 exact_grid_result$fx &lt;- exp(exact_grid_result$exact_vals)
@@ -869,7 +901,11 @@ plot(exact_grid_result$x, exact_grid_result$pos, type = &quot;l&quot;, col = &qu
 abline(v = a, col = &quot;purple&quot;)
 grid()
 save(exact_grid_result, file = paste0(output_path, &quot;/exact_grid_result.rda&quot;))</code></pre>
-<p>Take a quick look at the result:</p>
+<p>We can take a quick look at the posterior density obtained from the
+exact grid. Because of the strong prior centered at <span
+class="math inline">\(\alpha = 3\)</span>, the posterior density is not
+exactly unimodal at the true value <span
+class="math inline">\(1.5\)</span>.</p>
 <pre class="r"><code>load(paste0(output_path, &quot;/exact_grid_result.rda&quot;))
 plot(x = exact_grid_result$x, y = exact_grid_result$pos, col = &quot;black&quot;, cex = 0.5, type = &quot;l&quot;,
      xlab = &quot;x&quot;, ylab = &quot;density&quot;, main = &quot;Posterior Density&quot;, lwd = 2)
@@ -918,9 +954,13 @@ Ziang Zhang
 </div>
 <div id="boss-implementation" class="section level2">
 <h2>BOSS Implementation</h2>
-<p>Let’s assess the performance of the BOSS algorithm with different
-choices of <span class="math inline">\(B\)</span>.</p>
-<pre class="r"><code>eval_num &lt;- seq(from = 10, to = 80, by = 5)</code></pre>
+<p>Now, let’s assess the performance of the BOSS algorithm with
+different choices of <span class="math inline">\(B\)</span>, ranging
+from <span class="math inline">\(10\)</span> to <span
+class="math inline">\(80\)</span>.</p>
+<pre class="r"><code>eval_num &lt;- c(15, 30, 45, 60, 80)
+# Initialize BOSS with 3 equally spaced design points
+initial_design &lt;- 5</code></pre>
 <p>Running the BOSS algorithm at each <span
 class="math inline">\(B\)</span>:</p>
 <pre class="r"><code>objective_func &lt;- eval_once
@@ -931,15 +971,14 @@ for (i in 1:length(eval_num)) {
   n_grid &lt;- nrow(exact_grid_result)
   eval_number &lt;- eval_num[i]
   begin_time &lt;- Sys.time()
-  result_ad &lt;- BOSS(func = objective_func, optim.n = 10,
-                       update_step = 5, max_iter = (eval_number - 5),
-                       opt.lengthscale.grid = 100,
-                       opt.grid = nrow(exact_grid_result),
-                       # turning off AGHQ check
-                       AGHQ_iter_check = Inf, AGHQ_eps = 0,
+  result_ad &lt;- BOSS(func = objective_func, update_step = 5, max_iter = (eval_number - initial_design),
+                       opt.lengthscale.grid = 100, opt.grid = nrow(exact_grid_result),
                        delta = 0.01, noise_var = noise_var,
                        lower = lower, upper = upper,
-                       initial_design = 5)
+                       # turning off AGHQ check
+                       AGHQ_iter_check = Inf, AGHQ_eps = 0,
+                       initial_design = initial_design)
+
   end_time &lt;- Sys.time()
   rel_runtime[i] &lt;- as.numeric((end_time - begin_time), units = &quot;mins&quot;)/1.344585
   
@@ -948,8 +987,7 @@ for (i in 1:length(eval_num)) {
   BO_result_original_list[[i]] &lt;- data_to_smooth
 
   ff &lt;- list()
-  # ff$fn &lt;- function(x) as.numeric(surrogate_ss(x, data_to_smooth = data_to_smooth))
-  ff$fn &lt;- function(x) as.numeric(surrogate_gp(x, data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = result_ad$length_scale, signal_var = result_ad$signal_var)))
+  ff$fn &lt;- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = result_ad$length_scale, signal_var = result_ad$signal_var)))
   x_vals &lt;- (seq(from = lower, to = upper, length.out = n_grid) - lower)/(upper - lower)
   fn_vals &lt;- sapply(x_vals, ff$fn)
   obj &lt;- function(x) {exp(ff$fn(x))}
@@ -960,7 +998,10 @@ for (i in 1:length(eval_num)) {
 save(BO_result_list, file = paste0(output_path, &quot;/BO_result_list.rda&quot;))
 save(BO_result_original_list, file = paste0(output_path, &quot;/BO_result_original_list.rda&quot;))
 save(rel_runtime, file = paste0(output_path, &quot;/rel_runtime.rda&quot;))</code></pre>
-<p>Visualize the results:</p>
+<p>Let’s compare the first from the BOSS algorithm with the exact grid
+result:</p>
+<div id="section" class="section level3 tabset tabset-pills">
+<h3 class="tabset tabset-pills"></h3>
 <pre class="r"><code>load(paste0(output_path, &quot;/BO_result_list.rda&quot;))
 load(paste0(output_path, &quot;/BO_result_original_list.rda&quot;))
 load(paste0(output_path, &quot;/rel_runtime.rda&quot;))
@@ -988,6 +1029,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/4f1051154b22222d53135a767987ab791d8c3a4f/docs/figure/sim1.Rmd/unnamed-chunk-9-1.png" target="_blank">4f10511</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-16
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/d6fe802c3eb5b59d3a534450673970c7434c8c31/docs/figure/sim1.Rmd/unnamed-chunk-9-1.png" target="_blank">d6fe802</a>
@@ -1025,178 +1077,15 @@ for (i in 1:length(eval_num)) {
     theme_minimal() +
     theme(text = element_text(size = 10), axis.text = element_text(size = 15)) + # only change the lab and axis text size
     lims(y = range(exact_grid_result$pos))
-}
-
-# show some plots
-plot_list[[2]]</code></pre>
-<p><img src="figure/sim1.Rmd/unnamed-chunk-9-2.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-2">
-Past versions of unnamed-chunk-9-2.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-9-2" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/d6fe802c3eb5b59d3a534450673970c7434c8c31/docs/figure/sim1.Rmd/unnamed-chunk-9-2.png" target="_blank">d6fe802</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-15
-</td>
-</tr>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/facb4d4d4d81de529a9c8aaf730cfdf34798f137/docs/figure/sim1.Rmd/unnamed-chunk-9-2.png" target="_blank">facb4d4</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-15
-</td>
-</tr>
-</tbody>
-</table>
+}</code></pre>
+<div id="b-15" class="section level4">
+<h4>B = 15</h4>
+<pre class="r"><code>plot_list[[1]]</code></pre>
+<p><img src="figure/sim1.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
-</div>
-<pre class="r"><code>plot_list[[5]]</code></pre>
-<p><img src="figure/sim1.Rmd/unnamed-chunk-9-3.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-3">
-Past versions of unnamed-chunk-9-3.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-9-3" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/d6fe802c3eb5b59d3a534450673970c7434c8c31/docs/figure/sim1.Rmd/unnamed-chunk-9-3.png" target="_blank">d6fe802</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-15
-</td>
-</tr>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/facb4d4d4d81de529a9c8aaf730cfdf34798f137/docs/figure/sim1.Rmd/unnamed-chunk-9-3.png" target="_blank">facb4d4</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-15
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>plot_list[[15]]</code></pre>
-<p><img src="figure/sim1.Rmd/unnamed-chunk-9-4.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-4">
-Past versions of unnamed-chunk-9-4.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-9-4" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/d6fe802c3eb5b59d3a534450673970c7434c8c31/docs/figure/sim1.Rmd/unnamed-chunk-9-4.png" target="_blank">d6fe802</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-15
-</td>
-</tr>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/facb4d4d4d81de529a9c8aaf730cfdf34798f137/docs/figure/sim1.Rmd/unnamed-chunk-9-4.png" target="_blank">facb4d4</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-15
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>Use KL and KS statistics to assess the result:</p>
-<pre class="r"><code>#### Compute the KL distance:
-Compute_KL &lt;- function(x, qx, px){
-  to_kept &lt;- which(px &gt; 0)
-  x &lt;- x[to_kept]
-  qx &lt;- qx[to_kept]
-  px &lt;- px[to_kept]
-  # px &lt;- px + .Machine$double.eps
-  # qx &lt;- qx + .Machine$double.eps
-  dx &lt;- diff(x)
-  left &lt;- c(0,dx)
-  right &lt;- c(dx,0)
-  0.5 * sum(left * log(px/qx) * px) + 0.5 * sum(right * log(px/qx) * px)
-}
-KL_vec &lt;- c()
-for (i in 1:length(eval_num)) {
-  KL_vec[i] &lt;- Compute_KL(x = exact_grid_result$x, px = exact_grid_result$pos, qx = BO_result_list[[i]]$pos)
-}
-plot((KL_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KL&quot;, xlab = &quot;eval number: B&quot;, cex.lab = 1, cex.axis = 1)</code></pre>
+<div id="b-30" class="section level4">
+<h4>B = 30</h4>
+<pre class="r"><code>plot_list[[2]]</code></pre>
 <p><img src="figure/sim1.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
@@ -1220,6 +1109,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/4f1051154b22222d53135a767987ab791d8c3a4f/docs/figure/sim1.Rmd/unnamed-chunk-11-1.png" target="_blank">4f10511</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-16
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/d6fe802c3eb5b59d3a534450673970c7434c8c31/docs/figure/sim1.Rmd/unnamed-chunk-11-1.png" target="_blank">d6fe802</a>
@@ -1246,6 +1146,37 @@ Ziang Zhang
 </table>
 </div>
 </div>
+</div>
+<div id="b-80" class="section level4">
+<h4>B = 80</h4>
+<pre class="r"><code>plot_list[[5]]</code></pre>
+<p><img src="figure/sim1.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="comparison-of-kl-and-ks-statistics" class="section level2">
+<h2>Comparison of KL and KS statistics</h2>
+<p>To assess the accuracy of BOSS, we will compute the KL and KS
+statistics comparing to the posterior from oracle approach:</p>
+<pre class="r"><code>#### Compute the KL distance:
+Compute_KL &lt;- function(x, qx, px){
+  to_kept &lt;- which(px &gt; 0)
+  x &lt;- x[to_kept]
+  qx &lt;- qx[to_kept]
+  px &lt;- px[to_kept]
+  # px &lt;- px + .Machine$double.eps
+  # qx &lt;- qx + .Machine$double.eps
+  dx &lt;- diff(x)
+  left &lt;- c(0,dx)
+  right &lt;- c(dx,0)
+  0.5 * sum(left * log(px/qx) * px) + 0.5 * sum(right * log(px/qx) * px)
+}
+KL_vec &lt;- c()
+for (i in 1:length(eval_num)) {
+  KL_vec[i] &lt;- Compute_KL(x = exact_grid_result$x, px = exact_grid_result$pos, qx = BO_result_list[[i]]$pos)
+}
+plot((KL_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KL&quot;, xlab = &quot;eval number: B&quot;, cex.lab = 1, cex.axis = 1)</code></pre>
+<p><img src="figure/sim1.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>#### Compute the KS distance:
 Compute_KS &lt;- function(x, qx, px){
   dx &lt;- c(diff(x),0)
@@ -1256,55 +1187,10 @@ for (i in 1:length(eval_num)) {
   KS_vec[i] &lt;- Compute_KS(x = exact_grid_result$x, px = exact_grid_result$pos, qx = BO_result_list[[i]]$pos)
 }
 plot((KS_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KS&quot;, xlab = &quot;eval number: B&quot;, cex.lab = 1, cex.axis = 1)</code></pre>
-<p><img src="figure/sim1.Rmd/unnamed-chunk-11-2.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-2">
-Past versions of unnamed-chunk-11-2.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-11-2" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/d6fe802c3eb5b59d3a534450673970c7434c8c31/docs/figure/sim1.Rmd/unnamed-chunk-11-2.png" target="_blank">d6fe802</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-15
-</td>
-</tr>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/facb4d4d4d81de529a9c8aaf730cfdf34798f137/docs/figure/sim1.Rmd/unnamed-chunk-11-2.png" target="_blank">facb4d4</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-15
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/sim1.Rmd/unnamed-chunk-14-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>This is the KL and KS distance between BOSS and the exact grid result
+for this particular replication. To more robustly assess the
+performance, let’s</p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
