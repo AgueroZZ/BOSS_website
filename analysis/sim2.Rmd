@@ -255,13 +255,13 @@ for (i in 1:length(eval_num)) {
     update_step = 5,
     max_iter = (eval_number - initial_design),
     opt.lengthscale.grid = 100,
-    # opt.grid = nrow(exact_grid_result),
+    opt.grid = nrow(exact_grid_result),
     delta = 0.01,
     noise_var = noise_var,
     lower = lower,
     upper = upper,
     # turning off AGHQ stopping criterion
-    AGHQ_iter_check = 5, AGHQ_k = 10, AGHQ_eps = 0, AGHQ_check_warmup = 20,
+    AGHQ_iter_check = 5, AGHQ_k = 10, AGHQ_eps = 0, AGHQ_check_warmup = 30, buffer = 1e-5,
     initial_design = initial_design
   )
   

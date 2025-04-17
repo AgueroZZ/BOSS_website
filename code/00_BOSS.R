@@ -131,7 +131,297 @@ obtain_aghq <- function(f, k = 100, startingvalue = NULL, optresult = NULL){
 
 
 #### Making BO adaptive:
-BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
+#' Single entry point for BOSS
+#'
+#' @param func The function to optimize.
+#' @param criterion One of "modal" (calls BOSS_modal) or "aghq" (calls BOSS_aghq).
+#' @param ... Further arguments passed on to BOSS_modal or BOSS_aghq.
+#' @export
+BOSS <- function(func,
+                 criterion = c("aghq", "modal"),
+                 update_step          = 5,
+                 max_iter             = 100,
+                 D                    = 1,
+                 lower                = rep(0, D),
+                 upper                = rep(1, D),
+                 noise_var            = 1e-6,
+                 initial_design       = 5,
+                 delta                = 0.01,
+                 optim.n              = 5,
+                 optim.max.iter       = 1000,
+                 opt.lengthscale.grid = NULL,
+                 opt.grid             = NULL,
+                 # modal-specific
+                 modal_iter_check     = 10,
+                 modal_check_warmup   = 20,
+                 modal_eps            = 0.1,
+                 # AGHQ-specific
+                 AGHQ_k               = 3,
+                 AGHQ_iter_check      = 10,
+                 AGHQ_check_warmup    = 20,
+                 AGHQ_eps             = 0.1,
+                 buffer               = 1e-4,
+                 verbose              = 3) {
+
+  criterion <- match.arg(criterion)
+
+  # collect the arguments common to both
+  args <- list(
+    func                 = func,
+    update_step          = update_step,
+    max_iter             = max_iter,
+    D                    = D,
+    lower                = lower,
+    upper                = upper,
+    noise_var            = noise_var,
+    initial_design       = initial_design,
+    delta                = delta,
+    optim.n              = optim.n,
+    optim.max.iter       = optim.max.iter,
+    opt.lengthscale.grid = opt.lengthscale.grid,
+    opt.grid             = opt.grid,
+    verbose              = verbose
+  )
+
+  if (criterion == "modal") {
+    # add the modal‐only args
+    args <- c(args, list(
+      modal_iter_check   = modal_iter_check,
+      modal_check_warmup = modal_check_warmup,
+      modal_eps          = modal_eps
+    ))
+    return(do.call(BOSS_modal, args))
+
+  } else {
+    # add the AGHQ‐only args
+    args <- c(args, list(
+      AGHQ_k            = AGHQ_k,
+      AGHQ_iter_check   = AGHQ_iter_check,
+      AGHQ_check_warmup = AGHQ_check_warmup,
+      AGHQ_eps          = AGHQ_eps,
+      buffer            = buffer
+    ))
+    return(do.call(BOSS_aghq, args))
+  }
+}
+
+
+BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
+                       lower = rep(0, D), upper = rep(1, D),
+                       noise_var = 1e-6,
+                       modal_iter_check = 10,  modal_check_warmup = 20, modal_eps = 0.1,
+                       initial_design = 5, delta = 0.01,
+                       optim.n = 5, optim.max.iter = 1000,
+                       opt.lengthscale.grid = NULL,  # Grid-based option for lengthscale optimization.
+                       opt.grid = NULL,              # Grid-based option for AF optimization.
+                       verbose = 3) {              # Verbosity level: 0, 1, 2, or 3
+
+  # Initialize a helper for verbose printing
+  vprint <- function(level, msg) {
+    if (verbose >= level) print(msg)
+  }
+
+  # If verbose == 1, set up a progress bar.
+  if (verbose == 1) {
+    pb <- txtProgressBar(min = 0, max = max_iter, style = 3)
+  }
+
+  # Check if dimensions of lower and upper bounds match.
+  if(length(lower) != D || length(upper) != D) {
+    stop("lower and upper must have the same length as the function's input dimension")
+  }
+
+  # Initialize matrices/vectors to store evaluations.
+  xmat <- c()
+  xmat_trans <- c()
+  yvec <- c()
+
+  if (verbose == 3) {
+    print('Initial fixed evaluation phase...')
+  }
+  # Initial design: uniformly fixed points.
+  initial <- matrix(rep(seq(from = (lower), to = (upper), length.out = initial_design), D),
+                    nrow = initial_design, ncol = D, byrow = FALSE)
+  for (i in 1:nrow(initial)) {
+    xmat_trans <- rbind(xmat_trans, (initial[i,] - lower)/(upper - lower))
+    xmat <- rbind(xmat, initial[i,])
+    yvec <- c(yvec, func(initial[i,]))
+  }
+  # Center the function values.
+  rel <- mean(yvec)
+  yvec <- yvec - rel
+  num_initial <- initial_design
+  signal_var <- var(yvec)
+
+  # Initial optimization for lengthscale.
+  if (!is.null(opt.lengthscale.grid)) {
+    length_scale_vec <- seq(0.01, 0.99, length.out = opt.lengthscale.grid)
+    like_vec <- sapply(length_scale_vec, function(l)
+      compute_like(length_scale = l, y = yvec, x = xmat_trans,
+                   signal_var = signal_var, noise_var = noise_var))
+    max_idx <- which.max(like_vec)
+    length_scale <- length_scale_vec[max_idx]
+    lik <- like_vec[max_idx]
+  } else {
+    opt <- optim(runif(1, 0.01, 0.99), function(l)
+      compute_like(length_scale = l, y = yvec, x = xmat_trans,
+                   signal_var = signal_var, noise_var = noise_var),
+      control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
+    length_scale <- opt$par
+    lik <- opt$value
+  }
+  vprint(3, paste("The new length.scale:", length_scale))
+  vprint(3, paste("The new signal_var:", signal_var))
+
+  choice_cov <- square_exp_cov_generator_nd(length_scale = length_scale, signal_var = signal_var)
+
+  # Initialize modal-related quantities.
+  modal_max_diff <- Inf
+  modal_f_old <- list(mode = NA, hessian = NA)
+
+  # Initialize the grid for the acquisition function, if provided.
+  if (!is.null(opt.grid)) {
+    grid_list <- replicate(D, seq(0, 1, length.out = opt.grid), simplify = FALSE)
+    grid <- as.matrix(expand.grid(grid_list))
+  }
+
+  i <- 1
+  while(i <= max_iter && modal_eps < modal_max_diff){
+    if(verbose == 1) setTxtProgressBar(pb, i)
+    if(verbose == 3) {
+      print(paste("Iteration:", i))
+    } else if(verbose == 2) {
+      cat(paste("Iteration:", i, "\n"))
+    }
+
+    newdata <- list(x = xmat_trans, x_original = xmat, y = yvec)
+
+    if(i %% update_step == 0){
+      if(verbose == 3) print("Time to update the parameters!")
+      signal_var <- var(newdata$y)
+      if(!is.null(opt.lengthscale.grid)) {
+        length_scale_vec <- seq(0.01, 0.99, length.out = opt.lengthscale.grid)
+        like_vec <- sapply(length_scale_vec, function(l)
+          -compute_like(length_scale = l, y = newdata$y, x = newdata$x,
+                        signal_var = signal_var, noise_var = noise_var))
+        max_idx <- which.max(like_vec)
+        length_scale <- length_scale_vec[max_idx]
+        lik <- like_vec[max_idx]
+      } else {
+        opt <- optim(runif(1, 0.01, 0.99), function(l)
+          compute_like(length_scale = l, y = newdata$y, x = newdata$x,
+                       signal_var = signal_var, noise_var = noise_var),
+          control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
+        length_scale <- opt$par
+        lik <- opt$value
+      }
+      if(verbose == 3) {
+        print(paste("The new length.scale:", length_scale))
+        print(paste("The new signal_var:", signal_var))
+      }
+      choice_cov <- square_exp_cov_generator_nd(length_scale = length_scale, signal_var = signal_var)
+    }
+
+    # Optimize the acquisition function (UCB).
+    if(verbose == 3) print("Maximize Acquisition Function")
+    if(is.null(opt.grid)){
+      # Multi-start local optimization.
+      initialize_UCB <- matrix(runif(D*optim.n, rep(0, D), rep((1), D)),
+                               nrow = optim.n, ncol = D, byrow = TRUE)
+      optimizer <- optimx::multistart(initialize_UCB, function(x)
+        UCB(x = matrix(x, nrow = 1, ncol = D), data = newdata,
+            cov = choice_cov, nv = noise_var, D = i + num_initial, d = delta),
+        control = list(maxit = 100),
+        lower = rep(0, D), upper = rep((1), D),
+        method = 'L-BFGS-B')
+      next_point <- unlist(unname(unique(optimizer[which.min(optimizer$value), 1:D])))
+    } else {
+      # Grid-based search for the acquisition function.
+      af_values <- apply(grid, 1, function(x)
+        -UCB(x = matrix(x, nrow = 1, ncol = D), data = newdata,
+             cov = choice_cov, nv = noise_var, D = i + num_initial, d = delta))
+      best_idx <- which.max(af_values)
+      next_point <- grid[best_idx, ]
+      # Take out the best point from the grid.
+      grid <- grid[-best_idx, , drop = FALSE]
+    }
+    # if next_point is already covered, skip
+    if(any(apply(xmat_trans, 1, function(row) all(abs(row - next_point) == 0)))) {
+      next
+      warning("Next point is already covered, skipping.")
+    }
+    # Update design matrices and evaluate the function.
+    xmat_trans <- rbind(xmat_trans, next_point)
+    next_point_original <- next_point*(upper - lower) + lower
+    xmat <- rbind(xmat, next_point_original)
+    y_new <- func(next_point_original)
+
+    yvec <- c(yvec + rel, (y_new))
+    rel <- mean(yvec)
+    yvec <- yvec - rel
+
+    if(verbose == 3){
+      print(paste("Next point:", next_point_original))
+      print(paste("Function value:", y_new))
+    } else if(verbose == 2) {
+      print(paste("Iteration:", i, "Next point:", next_point_original, "Function value:", y_new))
+    }
+
+    # Check convergence with modal every modal_iter_check iterations.
+    if(i %% modal_iter_check == 0  && i >= modal_check_warmup){
+      if(verbose == 3) print("Time to check modal difference!")
+      surrogate <- function(xvalue, data_to_smooth) {
+        predict_gp(data = data_to_smooth, x_pred = matrix(xvalue, ncol = D),
+                   choice_cov = choice_cov, noise_var = noise_var)$mean
+      }
+      lf_design <- list(x = xmat_trans, y = yvec)
+      fn_new <- function(y) as.numeric(surrogate(xvalue = y, data_to_smooth = lf_design))
+
+      modal_f_new <- list()
+      opt_surrogate <- optim(par = lf_design$x[which.max(yvec),],
+                             fn = fn_new,
+                             method = "L-BFGS-B",
+                             lower = lower, upper = upper,
+                             hessian = TRUE)
+      modal_f_new$mode <- opt_surrogate$par
+      modal_f_new$hessian <- opt_surrogate$hessian
+      modal_diff_new <- list(
+        mode = abs(modal_f_new$mode - modal_f_old$mode)/abs(modal_f_old$mode + 1e-4),
+        hessian = abs(modal_f_new$hessian - modal_f_old$hessian)/abs(modal_f_old$hessian + 1e-4)
+      )
+
+      # if any of the modal differences is NaN or NA, set it to Inf
+      modal_diff_new$mode <- ifelse(is.na(modal_diff_new$mode) | is.nan(modal_diff_new$mode), Inf, modal_diff_new$mode)
+      modal_diff_new$hessian <- ifelse(is.na(modal_diff_new$hessian) | is.nan(modal_diff_new$hessian), Inf, modal_diff_new$hessian)
+
+      if(verbose == 3) {
+        print(paste("Modal rel-difference:", modal_diff_new$mode))
+        print(paste("Hessian rel-difference in second moment:", modal_diff_new$hessian))
+      }
+
+      modal_max_diff <- max(modal_diff_new$mode, modal_diff_new$hessian)
+      modal_diff <- modal_diff_new
+      modal_f_old <- modal_f_new
+    }
+    i <- i + 1
+  }
+
+  if (modal_max_diff < modal_eps && modal_eps > 0) {
+    if(verbose >= 2) print("Posterior surrogate converged based on modal criteria!")
+  } else {
+    if(verbose >= 2) {
+      print(paste0("Maximum iterations reached! Maximum modal difference: ", modal_max_diff))
+    }
+  }
+
+  if(verbose == 1) close(pb)
+
+  return(list(result = list(x = xmat_trans, x_original = xmat, y = yvec + rel),
+              length_scale = length_scale, signal_var = signal_var))
+}
+
+
+BOSS_aghq <- function(func, update_step = 5, max_iter = 100, D = 1,
                  lower = rep(0, D), upper = rep(1, D),
                  noise_var = 1e-6,
                  AGHQ_k = 3, AGHQ_iter_check = 10,  AGHQ_check_warmup = 20, AGHQ_eps = 0.1, buffer = 1e-4,
