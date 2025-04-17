@@ -129,6 +129,27 @@ obtain_aghq <- function(f, k = 100, startingvalue = NULL, optresult = NULL){
   }
 }
 
+#### Compute the KL distance:
+Compute_KL <- function(x, qx, px){
+  to_kept <- which(px > 0)
+  x <- x[to_kept]
+  qx <- qx[to_kept]
+  px <- px[to_kept]
+  # px <- px + .Machine$double.eps
+  # qx <- qx + .Machine$double.eps
+  dx <- diff(x)
+  left <- c(0,dx)
+  right <- c(dx,0)
+  0.5 * sum(left * log(px/qx) * px) + 0.5 * sum(right * log(px/qx) * px)
+}
+
+#### Compute the KS distance:
+Compute_KS <- function(x, qx, px){
+  dx <- c(diff(x),0)
+  max(abs(cumsum(qx * dx) - cumsum(px * dx)))
+}
+
+
 
 #### Making BO adaptive:
 #' Single entry point for BOSS
@@ -237,11 +258,19 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
   yvec <- c()
 
   if (verbose == 3) {
-    print('Initial fixed evaluation phase...')
+    print('Initial evaluation phase...')
   }
-  # Initial design: uniformly fixed points.
-  initial <- matrix(rep(seq(from = (lower), to = (upper), length.out = initial_design), D),
-                    nrow = initial_design, ncol = D, byrow = FALSE)
+
+  if(D > 1){
+    print("Using Latin Hypercube Sampling for initial design for D > 1.")
+    initial <- lhs::randomLHS(initial_design, D)
+    initial <- t(apply(initial, 1, function(x) x*(upper - lower - 2*buffer) + lower - buffer))
+  }else{
+    print("Using equally spaced spaced initial design for D = 1.")
+    initial <- matrix(rep(seq(from = (lower + buffer), to = (upper - buffer), length.out = initial_design), D),
+                      nrow = initial_design, ncol = D, byrow = FALSE)
+  }
+
   for (i in 1:nrow(initial)) {
     xmat_trans <- rbind(xmat_trans, (initial[i,] - lower)/(upper - lower))
     xmat <- rbind(xmat, initial[i,])
@@ -452,11 +481,19 @@ BOSS_aghq <- function(func, update_step = 5, max_iter = 100, D = 1,
   yvec <- c()
 
   if (verbose == 3) {
-    print('Initial fixed evaluation phase...')
+    print('Initial evaluation phase...')
   }
-  # Initial design: uniformly fixed points.
-  initial <- matrix(rep(seq(from = (lower + buffer), to = (upper - buffer), length.out = initial_design), D),
-                    nrow = initial_design, ncol = D, byrow = FALSE)
+  # Initial design: uniformly initial points.
+  if(D > 1){
+    print("Using Latin Hypercube Sampling for initial design for D > 1.")
+    initial <- lhs::randomLHS(initial_design, D)
+    initial <- t(apply(initial, 1, function(x) x*(upper - lower - 2*buffer) + lower - buffer))
+  }else{
+    print("Using equally spaced spaced initial design for D = 1.")
+    initial <- matrix(rep(seq(from = (lower + buffer), to = (upper - buffer), length.out = initial_design), D),
+                      nrow = initial_design, ncol = D, byrow = FALSE)
+  }
+
   for (i in 1:nrow(initial)) {
     xmat_trans <- rbind(xmat_trans, (initial[i,] - lower)/(upper - lower))
     xmat <- rbind(xmat, initial[i,])
