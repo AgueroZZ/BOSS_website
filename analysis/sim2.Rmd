@@ -1,0 +1,331 @@
+---
+title: "Simulation 2: Change Point Detection"
+author: "Ziang Zhang"
+date: "2025-04-15"
+output: 
+  workflowr::wflow_html:
+    code_folding: show
+editor_options:
+  chunk_output_type: console
+---
+
+## Data
+
+```{r message=FALSE, warning=FALSE}
+library(BayesGP)
+library(tidyverse)
+library(npreg)
+function_path <- "./code"
+output_path <- "./output/sim2"
+data_path <- "./data/sim2"
+source(paste0(function_path, "/00_BOSS.R"))
+```
+
+Let's use the following function to simulate $n = 1000$ observations from a change point model.
+The true change point is at $a = 6.5$.
+
+```{r}
+set.seed(123)
+lower = 0
+upper = 10
+x_grid <- seq(lower, upper, length.out = 1000)
+
+func_generator <- function(f1, f2) {
+  func <- function(x, a) {
+    sapply(x, function(xi) {
+      if (xi <= a) {
+        f1(xi)
+      } else {
+        f2(xi) - f2(a) + f1(a)
+      }
+    })
+  }
+  func
+}
+my_func <- func_generator(f1 = function(x) x*log(x^2 + 1), f2 = function(x) 3.3*x)
+
+# Simulate observations from a regression model with a piecewise linear function
+simulate_observation <- function(a, func, x_grid, measurement = 3) {
+  # Generate n random x values between 0 and 1
+  x <- rep(x_grid, each = measurement)
+  n <- length(x)
+  
+  # Initialize y
+  y <- numeric(n)
+  
+  # Loop through each x to compute the corresponding y value based on the piecewise function
+  fx <- func(x = x, a = a)
+  
+  # Add random noise e from a standard normal distribution
+  e <- rnorm(n, mean = 0, sd = 0.3)
+  y <- fx + e
+  
+  return(data.frame(x, y))
+}
+
+# Knot value
+a <- 6.5
+# Simulate the data
+plot(my_func(x = seq(0.1,10,length.out = 100), a = a)~seq(0.1,10,length.out = 100), type = "l")
+data <- simulate_observation(a = a, func = my_func, x_grid = x_grid, measurement = 1)
+plot(y~x, data)
+save(data, file = paste0(data_path, "/data.rda"))
+```
+
+
+
+
+## MCMC
+
+First, we try to implement the MCMC-based method to detect the change point.
+
+```{r}
+eval_once <- function(alpha){
+  a_fit <- alpha
+  data$x1 <- ifelse(data$x <= a_fit, data$x, a_fit)
+  data$x2 <- ifelse(data$x > a_fit, (data$x - a_fit), 0)
+  mod <- model_fit(formula = y ~ f(x1, model = "IWP", order = 2, sd.prior = list(param = 1, h = 1), initial_location = 0) + f(x2, model = "IWP", order = 2, sd.prior = list(param = 1, h = 1), initial_location = 0), 
+                   data = data, method = "aghq", family = "Gaussian", aghq_k = 3
+  )
+  (mod$mod$normalized_posterior$lognormconst)
+}
+
+### MCMC with symmetric (RW) proposal:
+propose <- function(ti, step_size = 0.1){
+  ti + rnorm(n = 1, sd = step_size)
+}
+
+## prior: uniform prior over [0,10]
+prior <- function(t){
+  ifelse(t <= 0 | t >= 10, 0, 0.1)
+}
+
+### Acceptance rate:
+acceptance_Rate <- function(ti1, ti2){
+  ## To make the algorithm numerically stable.
+  if(ti2 >= 9.9 | ti2 <= 0.1){
+    0
+  }
+  else{
+    min(1, exp(log(prior(ti2)+.Machine$double.eps) + eval_once(ti2) - log(prior(ti1)+.Machine$double.eps) - eval_once(ti1)))
+  }
+}
+
+### Run MCMC:
+run_mcmc <- function(ti0 = 2, M = 10, size = 0.3){
+  samps <- numeric(M)
+  ti1 <- ti0
+  for (i in 1:M) {
+    ti2 <- propose(ti = ti1, step_size = size)
+    ui <- runif(1)
+    Rate <- acceptance_Rate(ti1, ti2)
+    if(ui <= acceptance_Rate(ti1, ti2)){
+      cat(paste0(ti2, " is accepted by ", ti1, " at iteration ", i, "\n"))
+      ti1 <- ti2
+    }
+    else{
+      cat(paste0(ti2, " is rejected by ", ti1, " at iteration ", i, "\n"))
+    }
+    samps[i] <- ti1
+  }
+  samps
+}
+
+# Apply smoothing to the result
+surrogate <- function(xvalue, data_to_smooth){
+  data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
+  predict(ss(x = as.numeric(data_to_smooth$x), y = data_to_smooth$y, df = length(unique(as.numeric(data_to_smooth$x))), m = 2, all.knots = TRUE), x = xvalue)$y
+}
+```
+
+Let's run the MCMC algorithm with 10,000 iterations and a step size of 0.5.
+
+```{r eval=FALSE}
+begin_runtime <- Sys.time()
+mcmc_samps <- run_mcmc(ti0 = 2, M = 10000, size = 0.5)
+end_runtime <- Sys.time()
+end_runtime - begin_runtime
+save(mcmc_samps, file = paste0(output_path, "/mcmc_samps.rda"))
+```
+
+Take a look at the MCMC samples.
+
+```{r}
+load(paste0(output_path, "/mcmc_samps.rda"))
+plot(mcmc_samps)
+burnin <- 500
+hist(mcmc_samps[-c(1:burnin)], breaks = 30)
+thinning <- 3
+mcmc_samps_selected <- mcmc_samps[-c(1:burnin)][seq(1, length(mcmc_samps[-c(1:burnin)]), by=thinning)]
+dens <- density(mcmc_samps_selected, from = 0, to = 10)
+plot(dens, xlim = c(0, 10), main = "Kernel Density Estimation of MCMC samples", xlab = "Change point location (a)", ylab = "Density")
+```
+
+
+Let's see how much time it takes to run the MCMC algorithm with 100 iterations:
+
+```{r eval=FALSE}
+### For run-time:
+begin_runtime <- Sys.time()
+mcmc_samps <- run_mcmc(ti0 = 2, M = 100, size = 0.5)
+end_runtime <- Sys.time()
+end_runtime - begin_runtime
+```
+
+
+
+## Exact Grid
+
+Next, we implement the exact grid approach, which is viewed as the oracle in this case.
+
+```{r eval=FALSE}
+x_vals <- seq(lower, upper, length.out = 1000)
+# Initialize the progress bar
+begin_time <- Sys.time()
+total <- length(x_vals)
+pb <- txtProgressBar(min = 0, max = total, style = 3)
+# Initialize exact_vals if needed
+exact_vals <- c()
+# Loop with progress bar update
+for (i in 1:total) {
+  xi <- x_vals[i]
+  # Your existing code
+  exact_vals <- c(exact_vals, eval_once(xi))
+  # Update the progress bar
+  setTxtProgressBar(pb, i)
+}
+# Close the progress bar
+close(pb)
+exact_grid_result <- data.frame(x = x_vals, exact_vals = exact_vals)
+exact_grid_result$exact_vals <- exact_grid_result$exact_vals - max(exact_grid_result$exact_vals)
+exact_grid_result$fx <- exp(exact_grid_result$exact_vals)
+end_time <- Sys.time()
+end_time - begin_time
+# Time difference of 1.27298 hours
+# Calculate the differences between adjacent x values
+dx <- diff(exact_grid_result$x)
+# Compute the trapezoidal areas and sum them up
+integral_approx <- sum(0.5 * (exact_grid_result$fx[-1] + exact_grid_result$fx[-length(exact_grid_result$fx)]) * dx)
+exact_grid_result$pos <- exact_grid_result$fx / integral_approx
+save(exact_grid_result, file = paste0(output_path, "/exact_grid_result.rda"))
+
+# Convert to the internal scale:
+exact_grid_result_internal <- data.frame(x = (exact_grid_result$x - lower)/(upper-lower),
+                                         exact_vals = exact_grid_result$exact_vals + log(upper - lower))
+
+exact_grid_result_internal_smooth <- data.frame(x = exact_grid_result_internal$x)
+exact_grid_result_internal_smooth$exact_vals <- surrogate(xvalue = exact_grid_result_internal$x, data_to_smooth = exact_grid_result_internal)
+# Convert back:
+exact_grid_result_smooth <- data.frame(x = (exact_grid_result_internal_smooth$x)*(upper - lower) + lower, exact_vals = exact_grid_result_internal_smooth$exact_vals - log(upper - lower))
+exact_grid_result_smooth$exact_vals <- exact_grid_result_smooth$exact_vals - max(exact_grid_result_smooth$exact_vals)
+exact_grid_result_smooth$fx <- exp(exact_grid_result_smooth$exact_vals)
+dx <- diff(exact_grid_result_smooth$x)
+integral_approx <- sum(0.5 * (exact_grid_result_smooth$fx[-1] + exact_grid_result_smooth$fx[-length(exact_grid_result_smooth$fx)]) * dx)
+exact_grid_result_smooth$pos <- exact_grid_result_smooth$fx / integral_approx
+save(exact_grid_result_smooth, file = paste0(output_path, "/exact_grid_result_smooth.rda"))
+```
+
+Let's visualize the posterior distribution.
+
+```{r}
+load(paste0(output_path, "/exact_grid_result.rda"))
+load(paste0(output_path, "/exact_grid_result_smooth.rda"))
+plot(exact_grid_result$x, exact_grid_result$pos, type = "l", col = "red", xlab = "x (0-10)", ylab = "density", main = "Posterior")
+abline(v = a, col = "purple")
+grid()
+```
+
+
+
+## BOSS
+
+Finally, we implement the BOSS algorithm to this problem.
+
+```{r}
+eval_num <- seq(from = 15, to = 40, by = 5); noise_var = 1e-6; initial_design = 5
+rel_runtime <- c()
+BO_result_list <- list(); BO_result_original_list <- list()
+
+for (i in 1:length(eval_num)) {
+  eval_number <- eval_num[i]
+  begin_time <- Sys.time()
+  
+  result_ad <- BOSS(
+    func = eval_once,
+    update_step = 5,
+    max_iter = (eval_number - initial_design),
+    opt.lengthscale.grid = 100,
+    # opt.grid = nrow(exact_grid_result),
+    delta = 0.01,
+    noise_var = noise_var,
+    lower = lower,
+    upper = upper,
+    # turning off AGHQ stopping criterion
+    AGHQ_iter_check = 5, AGHQ_k = 10, AGHQ_eps = 0, AGHQ_check_warmup = 20,
+    initial_design = initial_design
+  )
+  
+  data_to_smooth <- result_ad$result
+  BO_result_original_list[[i]] <- data_to_smooth
+  
+  ff <- list()
+  ff$fn <- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth))
+  x_vals <- (seq(from = lower, to = upper, length.out = 1000) - lower)/(upper - lower)
+  fn_vals <- sapply(x_vals, ff$fn)
+  obj <- function(x) {exp(ff$fn(x))}
+  lognormal_const <- log(integrate(obj, lower = 0, upper = 1)$value)
+  post_x <- data.frame(y = x_vals, pos = exp(fn_vals - lognormal_const))
+  BO_result_list[[i]] <- data.frame(x = (lower + x_vals*(upper - lower)), pos = post_x$pos /(upper - lower))
+  end_time <- Sys.time()
+  rel_runtime[i] <- as.numeric((end_time - begin_time), units = "mins")/1.961008
+}
+save(rel_runtime, file = paste0(output_path, "/rel_runtime.rda"))
+save(BO_result_list, file = paste0(output_path, "/BO_result_list.rda"))
+save(BO_result_original_list, file = paste0(output_path, "/BO_data_to_smooth.rda"))
+```
+
+### {.tabset .tabset-pills}
+
+
+```{r}
+load(paste0(output_path, "/rel_runtime.rda"))
+load(paste0(output_path, "/BO_result_list.rda"))
+load(paste0(output_path, "/BO_data_to_smooth.rda"))
+plot_list <- list()
+for (i in 1:length(eval_num)) {
+  plot_list[[i]] <- ggplot() +
+    geom_histogram(aes(x = mcmc_samps_selected, y = ..density..), bins = 300, alpha = 0.8, fill = "skyblue") +
+    geom_line(data = BO_result_list[[i]], aes(x = x, y = pos), color = "red", size = 1) +
+    geom_line(data = exact_grid_result_smooth, aes(x = x, y = pos), color = "black", size = 0.5, linetype = "dashed") +
+    ggtitle(paste0("Comparison Posterior Density: B = ", eval_num[i])) +
+    xlab("Value") +
+    ylab("Density") +
+    coord_cartesian(ylim = c(0,10), xlim = c(5,8)) + 
+    theme(text=element_text(size=10)) +
+    theme_minimal() 
+}
+```
+
+#### B = `r eval_num[1]`
+
+```{r}
+plot_list[[1]]
+```
+
+#### B = `r eval_num[2]`
+
+```{r}
+plot_list[[2]]
+```
+
+
+#### B = `r eval_num[4]`
+
+```{r}
+plot_list[[4]]
+```
+
+
+
+
+

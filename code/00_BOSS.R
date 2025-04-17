@@ -109,7 +109,10 @@ compute_like <- function(length_scale, x, y, signal_var, noise_var){
 
 UCB <- function(x, data, cov, nv, D, d){
   fnew <- predict_gp(data, x, choice_cov = cov, noise_var = nv)
-
+  # Check if fnew$var is a matrix, if so take out its diagonal
+  if(is.matrix(fnew$var)){
+    fnew$var <- diag(fnew$var)
+  }
   # Compute the UCB acquisition function
   beta <- 2*log((D^2)*(pi^2)/(6*d))
   return(as.numeric(-fnew$mean - sqrt(beta) * sqrt(fnew$var)))
@@ -131,7 +134,7 @@ obtain_aghq <- function(f, k = 100, startingvalue = NULL, optresult = NULL){
 BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
                  lower = rep(0, D), upper = rep(1, D),
                  noise_var = 1e-6,
-                 AGHQ_k = 3, AGHQ_iter_check = 10, AGHQ_eps = 0.1, buffer = 1e-3,
+                 AGHQ_k = 3, AGHQ_iter_check = 10,  AGHQ_check_warmup = 20, AGHQ_eps = 0.1, buffer = 1e-4,
                  initial_design = 5, delta = 0.01,
                  optim.n = 5, optim.max.iter = 1000,
                  opt.lengthscale.grid = NULL,  # Grid-based option for lengthscale optimization.
@@ -202,6 +205,12 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
   AGHQ_f_moments_old <- list(first = rep(Inf, D), second = matrix(Inf, nrow = D, ncol = D))
   AGHQ_range_old <- matrix(Inf, nrow = 2, ncol = D)
 
+  # Initialize the grid for the acquisition function, if provided.
+  if (!is.null(opt.grid)) {
+    grid_list <- replicate(D, seq(buffer, (1 - buffer), length.out = opt.grid), simplify = FALSE)
+    grid <- as.matrix(expand.grid(grid_list))
+  }
+
   i <- 1
   while(i <= max_iter && AGHQ_eps < AGHQ_diff){
     if(verbose == 1) setTxtProgressBar(pb, i)
@@ -254,17 +263,18 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
       next_point <- unlist(unname(unique(optimizer[which.min(optimizer$value), 1:D])))
     } else {
       # Grid-based search for the acquisition function.
-      grid_list <- replicate(D, seq(buffer, (1 - buffer), length.out = opt.grid), simplify = FALSE)
-      grid <- as.matrix(expand.grid(grid_list))
       af_values <- apply(grid, 1, function(x)
         -UCB(x = matrix(x, nrow = 1, ncol = D), data = newdata,
             cov = choice_cov, nv = noise_var, D = i + num_initial, d = delta))
       best_idx <- which.max(af_values)
       next_point <- grid[best_idx, ]
-      # if next_point is already covered, add a small perturbation
-      if(any(apply(xmat_trans, 1, function(row) all(abs(row - next_point) == 0)))) {
-        next_point <- next_point + runif(D, (-buffer/2), (buffer/2))
-      }
+      # Take out the best point from the grid.
+      grid <- grid[-best_idx, , drop = FALSE]
+    }
+    # if next_point is already covered, add a small perturbation
+    if(any(apply(xmat_trans, 1, function(row) all(abs(row - next_point) == 0)))) {
+      next_point <- next_point + runif(D, (-buffer/2), (buffer/2))
+      warning("Next point is already covered, adding a small perturbation.")
     }
     # Update design matrices and evaluate the function.
     xmat_trans <- rbind(xmat_trans, next_point)
@@ -284,21 +294,22 @@ BOSS <- function(func, update_step = 5, max_iter = 100, D = 1,
     }
 
     # Check convergence with AGHQ every AGHQ_iter_check iterations.
-    if(i %% AGHQ_iter_check == 0){
+    if(i %% AGHQ_iter_check == 0  && i >= AGHQ_check_warmup){
       if(verbose == 3) print("Time to check AGHQ difference!")
-      # surrogate <- function(xvalue, data_to_smooth) {
-      #   predict_gp(data = data_to_smooth, x_pred = matrix(xvalue, ncol = D),
-      #              choice_cov = choice_cov, noise_var = noise_var)$mean
-      # }
-      surrogate <- function(xvalue, data_to_smooth){
-        predict(ss(x = as.numeric(data_to_smooth$x), y = data_to_smooth$y, df = length(unique(data_to_smooth$y)), m = 2, all.knots = TRUE), x = xvalue)$y
+      surrogate <- function(xvalue, data_to_smooth) {
+        predict_gp(data = data_to_smooth, x_pred = matrix(xvalue, ncol = D),
+                   choice_cov = choice_cov, noise_var = noise_var)$mean
       }
+      # surrogate <- function(xvalue, data_to_smooth){
+      #   data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
+      #   predict(ss(x = as.numeric(data_to_smooth$x), y = data_to_smooth$y, df = length(unique(data_to_smooth$y)), m = 2, all.knots = TRUE), x = xvalue)$y
+      # }
       lf_design <- list(x = xmat_trans, y = yvec)
       lg_design <- list(x = apply(lf_design$x, 2, qnorm),
                         y = lf_design$y + apply(dnorm(apply(lf_design$x, 2, qnorm), log = TRUE), 1, sum))
       fn_new <- function(y) as.numeric(surrogate(xvalue = y, data_to_smooth = lg_design))
 
-      AGHQ_f_new <- obtain_aghq(f = fn_new, k = AGHQ_k, startingvalue = xmat_trans[which.max(yvec),])$normalized_posterior$nodesandweights
+      AGHQ_f_new <- obtain_aghq(f = fn_new, k = AGHQ_k, startingvalue = lg_design$x[which.max(yvec),])$normalized_posterior$nodesandweights
       AGHQ_f_new$prob <- (AGHQ_f_new$weights * exp(AGHQ_f_new$logpost_normalized))
       AGHQ_f_moments_new <- list()
       AGHQ_f_moments_new$first <- colSums(AGHQ_f_new[,1:D, drop = FALSE] * AGHQ_f_new$prob)
