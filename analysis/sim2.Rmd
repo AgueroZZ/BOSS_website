@@ -328,7 +328,7 @@ plot_list[[2]]
 plot_list[[5]]
 ```
 
-#### KS and KL
+### KS and KL
 
 We can also compute the KS and KL divergence between the posterior distribution from BOSS and the exact grid.
 
