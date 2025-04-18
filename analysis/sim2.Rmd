@@ -242,7 +242,7 @@ grid()
 Finally, we implement the BOSS algorithm to this problem.
 
 ```{r}
-eval_num <- seq(from = 10, to = 50, by = 10); noise_var = 1e-6; initial_design = 5
+eval_num <- seq(from = 10, to = 50, by = 5); noise_var = 1e-6; initial_design = 5
 ```
 
 
@@ -453,14 +453,14 @@ plot(weights ~ theta1, type = "o", col = "black",
      xlim = c(0, 1),
      xlab = "quadrature", ylab = "weights")
 points(weights ~ theta1, type = "o", col = "purple", 
-       data = quad_BO_list[[5]], pch = 4)
+       data = quad_BO_list[[9]], pch = 4)
 points(weights ~ theta1, type = "o", col = "red", 
-       data = quad_BO_list[[4]], pch = 3)
+       data = quad_BO_list[[6]], pch = 3)
 points(weights ~ theta1, type = "o", col = "blue", 
-       data = quad_BO_list[[2]], pch = 19)
+       data = quad_BO_list[[4]], pch = 19)
 points(weights ~ theta1, type = "o", col = "green",
-       data = quad_BO_list[[1]], pch = 2)
-legend("topright", legend = c("Exact grid", "BOSS: B = 40", "BOSS: B = 30", "BOSS: B = 20", "BOSS: B = 15"),
+       data = quad_BO_list[[2]], pch = 2)
+legend("topright", legend = c("Exact grid", paste0("BOSS: B = ", eval_num[9]), paste0("BOSS: B = ", eval_num[6]), paste0("BOSS: B = ", eval_num[4]), paste0("BOSS: B = ", eval_num[2])),
        col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2))
        
        
@@ -508,16 +508,16 @@ compute_aghq_mcmc <- function(samps){
   return(quad_mcmc)
 }
 quad_mcmc_list <- list()
-quad_mcmc_list[[1]] <- compute_aghq_mcmc(mcmc_samps_selected[1:10])
-quad_mcmc_list[[2]] <- compute_aghq_mcmc(mcmc_samps_selected[1:20])
-quad_mcmc_list[[3]] <- compute_aghq_mcmc(mcmc_samps_selected[1:30])
+quad_mcmc_list[[1]] <- compute_aghq_mcmc(mcmc_samps_selected[1:15])
+quad_mcmc_list[[2]] <- compute_aghq_mcmc(mcmc_samps_selected[1:25])
+quad_mcmc_list[[3]] <- compute_aghq_mcmc(mcmc_samps_selected[1:35])
 quad_mcmc_list[[4]] <- compute_aghq_mcmc(mcmc_samps_selected[1:40])
 quad_mcmc_list[[5]] <- compute_aghq_mcmc(mcmc_samps_selected[1:50])
 ```
 
 ```{r}
 plot(weights ~ theta1, type = "o", col = "black", 
-     data = quad_exact, ylim = c(0, 1), 
+     data = quad_exact, ylim = c(0, 0.2), 
      xlim = c(0, 1),
      xlab = "quadrature", ylab = "weights")
 points(weights ~ theta1, type = "o", col = "purple", 
@@ -529,7 +529,7 @@ points(weights ~ theta1, type = "o", col = "blue",
 points(weights ~ theta1, type = "o", col = "green",
        data = quad_mcmc_list[[1]], pch = 2)
 
-legend("topright", legend = c("Exact grid", "MCMC: n = 2000", "MCMC: n = 100", "MCMC: n = 30", "MCMC: n = 15"),
+legend("topright", legend = c("Exact grid", "MCMC: n = 50", "MCMC: n = 35", "MCMC: n = 25", "MCMC: n = 15"),
        col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2))
 
 ```
@@ -623,9 +623,10 @@ result_sparser <- function(length.out.integer = 100) {
 ```
 
 ```{r eval=FALSE}
+num_grid <- seq(from = 10, to = 50, by = 5)
 quad_sparse_list <- list()
 for (i in 1:length(eval_num)) {
-  quad_sparse_list[[i]] <- result_sparser(length.out.integer = eval_num[i])
+  quad_sparse_list[[i]] <- result_sparser(length.out.integer = num_grid[i])
 }
 save(quad_sparse_list, file = paste0(output_path, "/quad_sparse_list.rda"))
 ```
@@ -637,14 +638,14 @@ plot(weights ~ theta1, type = "o", col = "black",
      xlim = c(0, 1),
      xlab = "quadrature", ylab = "weights")
 points(weights ~ theta1, type = "o", col = "purple", 
-       data = quad_sparse_list[[5]], pch = 4)
+       data = quad_sparse_list[[9]], pch = 4)
 points(weights ~ theta1, type = "o", col = "red",
-       data = quad_sparse_list[[4]], pch = 3)
+       data = quad_sparse_list[[6]], pch = 3)
 points(weights ~ theta1, type = "o", col = "blue",
-       data = quad_sparse_list[[2]], pch = 19)
+       data = quad_sparse_list[[4]], pch = 19)
 points(weights ~ theta1, type = "o", col = "green",
-       data = quad_sparse_list[[1]], pch = 2)
-legend("topright", legend = c("Exact grid", "Sparse: B = 40", "Sparse: B = 30", "Sparse: B = 20", "Sparse: B = 15"),
+       data = quad_sparse_list[[2]], pch = 2)
+legend("topright", legend = c("Exact grid", "Sparse: 50", "Sparse: 35", "Sparse: 25", "Sparse: 15"),
        col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2))
 ```
 
