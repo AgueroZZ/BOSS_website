@@ -26,8 +26,7 @@ The true change point is at $a = 6.5$.
 
 ```{r}
 set.seed(123)
-lower = 0
-upper = 10
+lower = 0; upper = 10
 x_grid <- seq(lower, upper, length.out = 1000)
 
 func_generator <- function(f1, f2) {
@@ -80,6 +79,7 @@ save(data, file = paste0(data_path, "/data.rda"))
 First, we try to implement the MCMC-based method to detect the change point.
 
 ```{r}
+lower = 0.1; upper = 9.9
 eval_once <- function(alpha){
   a_fit <- alpha
   data$x1 <- ifelse(data$x <= a_fit, data$x, a_fit)
@@ -157,7 +157,7 @@ burnin <- 500
 hist(mcmc_samps[-c(1:burnin)], breaks = 30)
 thinning <- 3
 mcmc_samps_selected <- mcmc_samps[-c(1:burnin)][seq(1, length(mcmc_samps[-c(1:burnin)]), by=thinning)]
-dens <- density(mcmc_samps_selected, from = 0, to = 10)
+dens <- density(mcmc_samps_selected, from = 0, to = 10, n = 1000)
 plot(dens, xlim = c(0, 10), main = "Kernel Density Estimation of MCMC samples", xlab = "Change point location (a)", ylab = "Density")
 ```
 
@@ -211,7 +211,7 @@ save(exact_grid_result, file = paste0(output_path, "/exact_grid_result.rda"))
 
 # Convert to the internal scale:
 exact_grid_result_internal <- data.frame(x = (exact_grid_result$x - lower)/(upper-lower),
-                                         exact_vals = exact_grid_result$exact_vals + log(upper - lower))
+                                         y = exact_grid_result$exact_vals + log(upper - lower))
 
 exact_grid_result_internal_smooth <- data.frame(x = exact_grid_result_internal$x)
 exact_grid_result_internal_smooth$exact_vals <- surrogate(xvalue = exact_grid_result_internal$x, data_to_smooth = exact_grid_result_internal)
@@ -242,7 +242,11 @@ grid()
 Finally, we implement the BOSS algorithm to this problem.
 
 ```{r}
-eval_num <- seq(from = 15, to = 40, by = 5); noise_var = 1e-6; initial_design = 5
+eval_num <- seq(from = 10, to = 50, by = 10); noise_var = 1e-6; initial_design = 5
+```
+
+
+```{r eval=FALSE}
 rel_runtime <- c()
 BO_result_list <- list(); BO_result_original_list <- list()
 
@@ -255,11 +259,10 @@ for (i in 1:length(eval_num)) {
     update_step = 5,
     max_iter = (eval_number - initial_design),
     opt.lengthscale.grid = 100,
-    opt.grid = nrow(exact_grid_result),
+    opt.grid = 2000,
     delta = 0.01,
     noise_var = noise_var,
-    lower = lower,
-    upper = upper,
+    lower = lower, upper = upper,
     # turning off AGHQ stopping criterion
     AGHQ_iter_check = 5, AGHQ_k = 10, AGHQ_eps = 0, AGHQ_check_warmup = 30, buffer = 1e-5,
     initial_design = initial_design
@@ -272,9 +275,10 @@ for (i in 1:length(eval_num)) {
   ff$fn <- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth))
   x_vals <- (seq(from = lower, to = upper, length.out = 1000) - lower)/(upper - lower)
   fn_vals <- sapply(x_vals, ff$fn)
-  obj <- function(x) {exp(ff$fn(x))}
-  lognormal_const <- log(integrate(obj, lower = 0, upper = 1)$value)
-  post_x <- data.frame(y = x_vals, pos = exp(fn_vals - lognormal_const))
+  dx <- diff(x_vals)
+  # Compute the trapezoidal areas and sum them up
+  integral_approx <- sum(0.5 * (exp(fn_vals[-1]) + exp(fn_vals[-length(x_vals)])) * dx)
+  post_x <- data.frame(y = x_vals, pos = exp(fn_vals)/integral_approx)
   BO_result_list[[i]] <- data.frame(x = (lower + x_vals*(upper - lower)), pos = post_x$pos /(upper - lower))
   end_time <- Sys.time()
   rel_runtime[i] <- as.numeric((end_time - begin_time), units = "mins")/1.961008
@@ -318,15 +322,330 @@ plot_list[[2]]
 ```
 
 
-#### B = `r eval_num[4]`
+#### B = `r eval_num[5]`
 
 ```{r}
-plot_list[[4]]
+plot_list[[5]]
 ```
+
+#### KS and KL
+
+We can also compute the KS and KL divergence between the posterior distribution from BOSS and the exact grid.
+
+```{r}
+KL_vec <- c()
+for (i in 1:length(eval_num)) {
+  KL_vec[i] <- Compute_KL(x = exact_grid_result_smooth$x, px = exact_grid_result_smooth$pos, qx = BO_result_list[[i]]$pos)
+}
+plot(log(KL_vec) ~ eval_num, type = "o", ylab = "KL divergence", xlab = "B")
+
+KS_vec <- c()
+for (i in 1:length(eval_num)) {
+  KS_vec[i] <- Compute_KS(x = exact_grid_result_smooth$x, px = exact_grid_result_smooth$pos, qx = BO_result_list[[i]]$pos)
+}
+plot(log(KS_vec) ~ eval_num, type = "o", ylab = "KS distance", xlab = "B")
+```
+
 
 
 ## AGHQ
 
+Now, let's compute the AGHQ rule from BOSS surrogate.
 
+```{r}
+set.seed(123)
+obtain_aghq <- function(f, k = 100, startingvalue = 0, optresult = NULL){
+  if(!is.null(optresult)){
+    return(aghq::aghq(ff = ff, k = k, startingvalue = startingvalue, optresults = optresult))
+  }
+  else{
+    ff <- list(fn = f, gr = function(x) numDeriv::grad(f, x), he = function(x) numDeriv::hessian(f, x))
+    return(aghq::aghq(ff = ff, k = k, startingvalue = startingvalue))
+  }
+}
+```
+
+First, we compute the AGHQ rule on the exact grid.
+
+```{r}
+### 1. AGHQ on exact grid
+lf_data_grid <- data.frame(x = exact_grid_result$x/10,
+                     lfx = exact_grid_result$exact_vals)
+
+## Convert to the real line:
+lg_data_grid <- data.frame(y = qnorm(lf_data_grid$x),
+                      lgy = lf_data_grid$lfx + dnorm(qnorm(lf_data_grid$x), log = T))
+
+ss_exact <- ss(x = lf_data_grid$x,
+               y = lf_data_grid$lfx,
+               df = length(unique(lf_data_grid$x)),
+               m = 2,
+               all.knots = TRUE)
+
+
+surrogate_ss <- function(xvalue, ss){
+  predict(ss, x = xvalue)$y
+}
+
+
+fn <- function(y) {
+  as.numeric(surrogate_ss(xvalue = pnorm(y), ss = ss_exact)) + dnorm(y, log = TRUE)
+} 
+
+# fn <- function(y) as.numeric(surrogate_ss(xvalue = y, ss = ss_exact))
+grid_opt_list = list(ff = list(fn = fn, gr = function(x) numDeriv::grad(fn, x), he = function(x) numDeriv::hessian(fn, x)), 
+                     mode = lg_data_grid$y[which.max(lg_data_grid$lgy)])
+grid_opt_list$hessian = -grid_opt_list$ff$he(grid_opt_list$mode)
+start_time <- Sys.time()
+aghq_result_grid <- obtain_aghq(f = fn, k = 10, optresult = grid_opt_list)
+end_time <- Sys.time()
+end_time - start_time
+quad_exact <- aghq_result_grid$normalized_posterior$nodesandweights
+```
+
+Now, we compute the AGHQ rule on the BOSS surrogate.
+
+```{r}
+quad_BO_list <- list()
+for (i in 1:length(BO_result_original_list)) {
+  data_to_smooth <- BO_result_original_list[[i]]
+  lf_data_BO <- data.frame(x = as.numeric(data_to_smooth$x_original) / 10,
+                           lfx = as.numeric(data_to_smooth$y))
+  ## Convert to the real line:
+  lg_data_BO <- data.frame(y = qnorm(lf_data_BO$x),
+                           lgy = lf_data_BO$lfx + dnorm(qnorm(lf_data_BO$x), log = TRUE))
+  
+  ss_BO <- ss(x = lf_data_BO$x,
+                    y = lf_data_BO$lfx,
+                    df = length(unique(lf_data_BO$x)),
+                    m = 2,
+                    all.knots = TRUE)
+  
+  fn_BO <- function(y){
+    as.numeric(surrogate_ss(xvalue = pnorm(y), ss = ss_BO)) + dnorm(y, log = TRUE)
+  } 
+  opt_list_BO = list(
+    ff = list(
+      fn = fn_BO,
+      gr = function(x)
+        numDeriv::grad(fn_BO, x),
+      he = function(x)
+        numDeriv::hessian(fn_BO, x)
+    ),
+    mode = lg_data_grid$y[which.max(fn_BO(lg_data_grid$y))]
+  )
+  
+  opt_list_BO$hessian = -opt_list_BO$ff$he(opt_list_BO$mode)
+  ## Compute the runtime:
+  start_time <- Sys.time()
+  aghq_result_BOSS <- obtain_aghq(f = fn_BO, k = 10, optresult = opt_list_BO)
+  end_time <- Sys.time()
+  end_time - start_time
+  quad_BO_list[[i]] <- aghq_result_BOSS$normalized_posterior$nodesandweights
+}
+```
+
+Let's visualize the AGHQ rule on the exact grid and BOSS surrogate.
+
+```{r}
+plot(weights ~ theta1, type = "o", col = "black", 
+     data = quad_exact, ylim = c(0, 0.2), 
+     xlim = c(0, 1),
+     xlab = "quadrature", ylab = "weights")
+points(weights ~ theta1, type = "o", col = "purple", 
+       data = quad_BO_list[[5]], pch = 4)
+points(weights ~ theta1, type = "o", col = "red", 
+       data = quad_BO_list[[4]], pch = 3)
+points(weights ~ theta1, type = "o", col = "blue", 
+       data = quad_BO_list[[2]], pch = 19)
+points(weights ~ theta1, type = "o", col = "green",
+       data = quad_BO_list[[1]], pch = 2)
+legend("topright", legend = c("Exact grid", "BOSS: B = 40", "BOSS: B = 30", "BOSS: B = 20", "BOSS: B = 15"),
+       col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2))
+       
+       
+```
+
+
+As a comparison, take a look at the AGHQ rule obtained from MCMC:
+
+```{r}
+compute_aghq_mcmc <- function(samps){
+  dens <- density(samps, from = 0, to = 10, n = 1000)
+  log_dens <- data.frame(x = dens$x, y = log(dens$y))
+  
+  # take out rows with NA, NaN, and +- Inf
+  log_dens <- na.omit(log_dens)
+  log_dens <- log_dens[is.finite(log_dens$x) & is.finite(log_dens$y), ]
+  log_dens$y <- log_dens$y - mean(log_dens$y)
+  
+  lf_data_mcmc <- data.frame(x = log_dens$x/10,
+                     lfx = log_dens$y)
+
+  ## Convert to the real line:
+  lg_data_mcmc <- data.frame(y = qnorm(lf_data_mcmc$x),
+                        lgy = lf_data_mcmc$lfx + dnorm(qnorm(lf_data_mcmc$x), log = T))
+  
+  lg_data_mcmc <- lg_data_mcmc[!is.na(lg_data_mcmc$y) & !is.na(lg_data_mcmc$lgy), ]
+  lg_data_mcmc <- lg_data_mcmc[is.finite(lg_data_mcmc$y) & is.finite(lg_data_mcmc$lgy), ]
+  
+  ss_mcmc <- ss(x = lg_data_mcmc$y,
+                y = lg_data_mcmc$lgy,
+                df = length(unique(lg_data_mcmc$y)),
+                m = 2,
+                all.knots = TRUE)
+  
+  fn_mcmc <- function(y) as.numeric(surrogate_ss(xvalue = y, ss = ss_mcmc))
+  
+  opt_list_mcmc = list(ff = list(fn = fn_mcmc, gr = function(x) numDeriv::grad(fn_mcmc, x), he = function(x) numDeriv::hessian(fn_mcmc, x)), 
+                             mode = lg_data_mcmc$y[which.max(lg_data_mcmc$lgy)])
+  
+  opt_list_mcmc$hessian = -opt_list_mcmc$ff$he(opt_list_mcmc$mode)
+  
+  aghq_result_mcmc <- obtain_aghq(f = fn_mcmc, k = 10, optresult = opt_list_mcmc)
+
+  quad_mcmc <- aghq_result_mcmc$normalized_posterior$nodesandweights
+  return(quad_mcmc)
+}
+quad_mcmc_list <- list()
+quad_mcmc_list[[1]] <- compute_aghq_mcmc(mcmc_samps_selected[1:10])
+quad_mcmc_list[[2]] <- compute_aghq_mcmc(mcmc_samps_selected[1:20])
+quad_mcmc_list[[3]] <- compute_aghq_mcmc(mcmc_samps_selected[1:30])
+quad_mcmc_list[[4]] <- compute_aghq_mcmc(mcmc_samps_selected[1:40])
+quad_mcmc_list[[5]] <- compute_aghq_mcmc(mcmc_samps_selected[1:50])
+```
+
+```{r}
+plot(weights ~ theta1, type = "o", col = "black", 
+     data = quad_exact, ylim = c(0, 1), 
+     xlim = c(0, 1),
+     xlab = "quadrature", ylab = "weights")
+points(weights ~ theta1, type = "o", col = "purple", 
+       data = quad_mcmc_list[[5]], pch = 4)
+points(weights ~ theta1, type = "o", col = "red", 
+       data = quad_mcmc_list[[4]], pch = 3)
+points(weights ~ theta1, type = "o", col = "blue", 
+       data = quad_mcmc_list[[2]], pch = 19)
+points(weights ~ theta1, type = "o", col = "green",
+       data = quad_mcmc_list[[1]], pch = 2)
+
+legend("topright", legend = c("Exact grid", "MCMC: n = 2000", "MCMC: n = 100", "MCMC: n = 30", "MCMC: n = 15"),
+       col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2))
+
+```
+
+
+
+As a comparison, take a look at the AGHQ rule obtained from sparser grids:
+
+```{r}
+result_sparser <- function(length.out.integer = 100) {
+  x_vals <- seq(lower, upper, length.out = length.out.integer)
+  
+  # Initialize the progress bar
+  total <- length(x_vals)
+  pb <- txtProgressBar(min = 0, max = total, style = 3)
+  # Initialize exact_vals if needed
+  exact_vals <- c()
+  # Loop with progress bar update
+  for (i in 1:total) {
+    xi <- x_vals[i]
+    # Your existing code
+    exact_vals <- c(exact_vals, eval_once(xi))
+    # Update the progress bar
+    setTxtProgressBar(pb, i)
+  }
+  # Close the progress bar
+  close(pb)
+  sparse_grid_result <- data.frame(x = x_vals, exact_vals = exact_vals)
+  sparse_grid_result$exact_vals <- sparse_grid_result$exact_vals - max(sparse_grid_result$exact_vals)
+  sparse_grid_result$fx <- exp(sparse_grid_result$exact_vals)
+  
+  # Calculate the differences between adjacent x values
+  dx <- diff(sparse_grid_result$x)
+  # Compute the trapezoidal areas and sum them up
+  integral_approx <- sum(0.5 * (sparse_grid_result$fx[-1] + sparse_grid_result$fx[-length(sparse_grid_result$fx)]) * dx)
+  sparse_grid_result$pos <- sparse_grid_result$fx / integral_approx
+  # Convert to the internal scale:
+  sparse_grid_result_internal <- data.frame(
+    x = (sparse_grid_result$x - lower) / (upper - lower),
+    y = sparse_grid_result$exact_vals + log(upper - lower)
+  )
+  
+  sparse_grid_result_internal_smooth <- data.frame(x = sparse_grid_result_internal$x)
+  sparse_grid_result_internal_smooth$exact_vals <- surrogate(xvalue = sparse_grid_result_internal$x, data_to_smooth = sparse_grid_result_internal)
+  # Convert back:
+  sparse_grid_result_smooth <- data.frame(
+    x = (sparse_grid_result_internal_smooth$x) * (upper - lower) + lower,
+    exact_vals = sparse_grid_result_internal_smooth$exact_vals - log(upper - lower)
+  )
+  sparse_grid_result_smooth$exact_vals <- sparse_grid_result_smooth$exact_vals - max(sparse_grid_result_smooth$exact_vals)
+  sparse_grid_result_smooth$fx <- exp(sparse_grid_result_smooth$exact_vals)
+  dx <- diff(sparse_grid_result_smooth$x)
+  integral_approx <- sum(0.5 * (
+    sparse_grid_result_smooth$fx[-1] + sparse_grid_result_smooth$fx[-length(sparse_grid_result_smooth$fx)]
+  ) * dx)
+  sparse_grid_result_smooth$pos <- sparse_grid_result_smooth$fx / integral_approx
+  lf_data_sparse <- data.frame(x = sparse_grid_result$x / 10, lfx = sparse_grid_result$exact_vals)
+  
+  ## Convert to the real line:
+  lg_data_sparse <- data.frame(y = qnorm(lf_data_sparse$x),
+                        lgy = lf_data_sparse$lfx + dnorm(qnorm(lf_data_sparse$x), log = T))
+  
+  ss_sparse <- ss(x = lf_data_sparse$x,
+                 y = lf_data_sparse$lfx,
+                 df = length(unique(lf_data_sparse$x)),
+                 m = 2,
+                 all.knots = TRUE)
+  
+  fn_sparse <- function(y){
+    as.numeric(surrogate_ss(xvalue = pnorm(y), ss = ss_sparse)) + dnorm(y, log = TRUE)
+  }
+
+  sparse_grid_opt_list = list(
+    ff = list(
+      fn = fn_sparse,
+      gr = function(x)
+        numDeriv::grad(fn_sparse, x),
+      he = function(x)
+        numDeriv::hessian(fn_sparse, x)
+    ),
+    mode = lg_data_grid$y[which.max(fn_sparse(lg_data_grid$y))]
+  )
+  sparse_grid_opt_list$hessian = -sparse_grid_opt_list$ff$he(sparse_grid_opt_list$mode)
+  start_time <- Sys.time()
+  aghq_result_grid <- obtain_aghq(f = fn_sparse, k = 10, optresult = sparse_grid_opt_list)
+  end_time <- Sys.time()
+  end_time - start_time
+  quad_sparse <- aghq_result_grid$normalized_posterior$nodesandweights
+  quad_sparse
+}
+```
+
+```{r eval=FALSE}
+quad_sparse_list <- list()
+for (i in 1:length(eval_num)) {
+  quad_sparse_list[[i]] <- result_sparser(length.out.integer = eval_num[i])
+}
+save(quad_sparse_list, file = paste0(output_path, "/quad_sparse_list.rda"))
+```
+
+```{r}
+load(paste0(output_path, "/quad_sparse_list.rda"))
+plot(weights ~ theta1, type = "o", col = "black", 
+     data = quad_exact, ylim = c(0, 0.2), 
+     xlim = c(0, 1),
+     xlab = "quadrature", ylab = "weights")
+points(weights ~ theta1, type = "o", col = "purple", 
+       data = quad_sparse_list[[5]], pch = 4)
+points(weights ~ theta1, type = "o", col = "red",
+       data = quad_sparse_list[[4]], pch = 3)
+points(weights ~ theta1, type = "o", col = "blue",
+       data = quad_sparse_list[[2]], pch = 19)
+points(weights ~ theta1, type = "o", col = "green",
+       data = quad_sparse_list[[1]], pch = 2)
+legend("topright", legend = c("Exact grid", "Sparse: B = 40", "Sparse: B = 30", "Sparse: B = 20", "Sparse: B = 15"),
+       col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2))
+```
 
 
