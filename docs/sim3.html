@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Dayi Li" />
+
+<meta name="date" content="2025-04-19" />
+
+<title>Simulation 3: Two-dimensional Non-linear Regression</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">BOSS Tutorial</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/AgueroZZ/BOSS_website">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Simulation 3: Two-dimensional Non-linear
+Regression</h1>
+<h4 class="author">Dayi Li</h4>
+<h4 class="date">2025-04-19</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-04-19
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>BOSS_website/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20250415code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20250415)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20250415code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20250415)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongdetected">
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> <strong>Cache:</strong> detected </a>
+</p>
+</div>
+<div id="strongCachestrongdetected" class="panel-collapse collapse">
+<div class="panel-body">
+The following chunks had caches available:
+<ul>
+<li>
+unnamed-chunk-3
+</li>
+<li>
+unnamed-chunk-5
+</li>
+<li>
+unnamed-chunk-7
+</li>
+<li>
+unnamed-chunk-8
+</li>
+</ul>
+<p>To ensure reproducibility of the results, delete the cache directory
+<code>sim3_cache</code> and re-run the analysis. To have workflowr
+automatically delete the cache directory prior to building the file, set
+<code>delete_cache = TRUE</code> when running <code>wflow_build()</code>
+or <code>wflow_publish()</code>.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree201169690b65444518315a1194b95b0be8fbd8ddtargetblank2011696a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/201169690b65444518315a1194b95b0be8fbd8dd" target="_blank">2011696</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree201169690b65444518315a1194b95b0be8fbd8ddtargetblank2011696a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/201169690b65444518315a1194b95b0be8fbd8dd" target="_blank">2011696</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/sim3_cache/
+    Ignored:    data/sim3/
+    Ignored:    output/sim3/
+
+Untracked files:
+    Untracked:  code/nlreg.stan
+
+Unstaged changes:
+    Modified:   BOSS_website.Rproj
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/sim3.Rmd</code>) and HTML
+(<code>docs/sim3.html</code>) files. If you’ve configured a remote Git
+repository (see <code>?wflow_git_remote</code>), click on the hyperlinks
+in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/201169690b65444518315a1194b95b0be8fbd8dd/analysis/sim3.Rmd" target="_blank">2011696</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-19
+</td>
+<td>
+wflow_publish("analysis/sim3.Rmd")
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<pre class="r"><code>library(tidyverse)
+library(tikzDevice)
+library(rstan)
+library(INLA)
+library(inlabru)
+library(modeest)
+
+function_path &lt;- &quot;./code&quot;
+output_path &lt;- &quot;./output/sim3&quot;
+data_path &lt;- &quot;./data/sim3&quot;
+source(paste0(function_path, &quot;/00_BOSS.R&quot;))</code></pre>
+Consider the following non-linear regression model:
+<p>We simulate <span class="math inline">\(n = 200\)</span> data points
+based on the above model with <span class="math inline">\(\rho_0 =
+10\)</span>, <span class="math inline">\(R = 2\)</span>, <span
+class="math inline">\(\beta = 2\)</span>, <span
+class="math inline">\(\gamma = -2.5\)</span>, and <span
+class="math inline">\(\sigma = 0.5\)</span>. The inferential goal is the
+nuisance parameters <span class="math inline">\(R\)</span> and <span
+class="math inline">\(\beta\)</span>.</p>
+<pre class="r"><code>r &lt;- seq(0, 20, length.out = 200)
+beta &lt;- 10
+a &lt;- 2
+b &lt;- 2
+c &lt;- -2.5
+
+set.seed(1234)
+Ir &lt;- beta*(1 + (r/a)^b)^c
+lr &lt;- log(Ir) + rnorm(length(r), 0, 0.5)
+
+data &lt;- data.frame(r, lr)
+
+ggplot(data, aes(r, lr)) + geom_point() + ylab(&#39;y&#39;)</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="inlabru" class="section level2">
+<h2>inlabru</h2>
+We first run <code>inlabru</code> to to fit the model. We set the
+following priors for the parameters:
+<pre><code>inlabru version: 2.11.1
+INLA version: 24.06.27
+Components:
+a: main = linear(1), group = exchangeable(1L), replicate = iid(1L)
+b: main = linear(1), group = exchangeable(1L), replicate = iid(1L)
+c: main = linear(1), group = exchangeable(1L), replicate = iid(1L)
+Intercept: main = linear(1), group = exchangeable(1L), replicate = iid(1L)
+Likelihoods:
+  Family: &#39;gaussian&#39;
+    Data class: &#39;data.frame&#39;
+    Predictor: lr ~ Intercept + c * log(1 + (r/a_fun(a))^b_fun(b))
+Time used:
+    Pre = 0.716, Running = 0.256, Post = 0.0213, Total = 0.994 
+Fixed effects:
+            mean    sd 0.025quant 0.5quant 0.975quant   mode kld
+a         -0.255 0.096     -0.443   -0.255     -0.066 -0.255   0
+b         -0.179 0.180     -0.533   -0.179      0.176 -0.179   0
+c         -2.812 0.553     -3.898   -2.813     -1.727 -2.813   0
+Intercept  2.220 0.216      1.797    2.220      2.643  2.220   0
+
+Model hyperparameters:
+                                        mean    sd 0.025quant 0.5quant
+Precision for the Gaussian observations 3.95 0.397       3.21     3.94
+                                        0.975quant mode
+Precision for the Gaussian observations       4.76 3.91
+
+Deviance Information Criterion (DIC) ...............: 300.84
+Deviance Information Criterion (DIC, saturated) ....: 207.37
+Effective number of parameters .....................: 4.96
+
+Watanabe-Akaike information criterion (WAIC) ...: 301.63
+Effective number of parameters .................: 5.47
+
+Marginal log-Likelihood:  -173.54 
+ is computed 
+Posterior summaries for the linear predictor and the fitted values are computed
+(Posterior marginals needs also &#39;control.compute=list(return.marginals.predictor=TRUE)&#39;)</code></pre>
+</div>
+<div id="boss" class="section level2">
+<h2>BOSS</h2>
+<p>Now let’s run BOSS. We first specify the (unnormalized) log-posterior
+for <span class="math inline">\((R,\beta)\)</span>. Note that for this
+specific problem, the unnormalized log-posterior has a closed-form
+expression:</p>
+<pre class="r"><code># specify the objective function for BOSS: unnormalized log posterior of (R, beta)
+eval_func &lt;- function(par, x = r, y = lr){
+  a &lt;- par[1]
+  b &lt;- par[2]
+  n &lt;- length(r)
+  
+  X &lt;- matrix(cbind(rep(1, n), log(1 + (r/a)^b)), ncol = 2)
+  Vb &lt;- solve(t(X) %*% X + diag(1/1000, 2))
+  P &lt;- diag(n) - X %*% Vb %*% t(X)
+  
+  mlik &lt;- log(det(Vb))/2 - log(1000) + lgamma((n+1)/2) - (n+1)/2*log(1e-5 + t(y) %*% P %*% y/2) - 
+    n/2*log(pi) -5*log(10)
+  
+  return(mlik)
+}</code></pre>
+<p>Next, we run the BOSS algorithm where the stopping criteria is based
+on the convergence of the posterior mode. Specifically, we check the
+modal convergence every <span class="math inline">\(5\)</span> BO
+iteration, and consider the convergence statistics of the average <span
+class="math inline">\(5\)</span> nearest neighbor distance around the
+current mode.</p>
+<pre><code>[1] &quot;Initial evaluation phase...&quot;
+[1] &quot;Using Latin Hypercube Sampling for initial design for D &gt; 1.&quot;
+[1] &quot;The new length.scale: 0.0125392075378212&quot;
+[1] &quot;The new signal_var: 1490.69579151025&quot;
+[1] &quot;Iteration: 1&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.39247762995756&quot; &quot;Next point: 2.53528069773033&quot;
+[1] &quot;Function value: -155.435229295696&quot;
+[1] &quot;Iteration: 2&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.8038475325644&quot;  &quot;Next point: 2.68330346171062&quot;
+[1] &quot;Function value: -176.520015381528&quot;
+[1] &quot;Iteration: 3&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 0.549059004499577&quot; &quot;Next point: 3.34522031943779&quot; 
+[1] &quot;Function value: -198.867873858364&quot;
+[1] &quot;Iteration: 4&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.34095398883801&quot; &quot;Next point: 3.12408960633911&quot;
+[1] &quot;Function value: -207.733139142784&quot;
+[1] &quot;Iteration: 5&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.207814698862999&quot;
+[1] &quot;The new signal_var: 1046.08277544569&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.15009375265262&quot;  &quot;Next point: 0.996414395629452&quot;
+[1] &quot;Function value: -107.708793536351&quot;
+[1] &quot;Iteration: 6&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.71046628215391&quot; &quot;Next point: 2.51697806578914&quot;
+[1] &quot;Function value: -104.326360329238&quot;
+[1] &quot;Iteration: 7&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.36852546944587&quot; &quot;Next point: 0.1&quot;             
+[1] &quot;Function value: -396.973541298251&quot;
+[1] &quot;Iteration: 8&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.30835956213877&quot; &quot;Next point: 1.30898294385526&quot;
+[1] &quot;Function value: -102.70179669635&quot;
+[1] &quot;Iteration: 9&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.49420255380714&quot;  &quot;Next point: 0.268285686213857&quot;
+[1] &quot;Function value: -276.388547441321&quot;
+[1] &quot;Iteration: 10&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.224903553551365&quot;
+[1] &quot;The new signal_var: 6295.50805467058&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 0.1&quot; &quot;Next point: 0.1&quot;
+[1] &quot;Function value: -405.65430254406&quot;
+[1] &quot;Iteration: 11&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 0.1&quot;              &quot;Next point: 2.25899188860582&quot;
+[1] &quot;Function value: -268.335694832807&quot;
+[1] &quot;Iteration: 12&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 5&quot; &quot;Next point: 4&quot;
+[1] &quot;Function value: -244.726383759173&quot;
+[1] &quot;Iteration: 13&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 5&quot;                &quot;Next point: 1.28725801439757&quot;
+[1] &quot;Function value: -132.314300517847&quot;
+[1] &quot;Iteration: 14&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.48980336640252&quot; &quot;Next point: 4&quot;               
+[1] &quot;Function value: -114.420300855258&quot;
+[1] &quot;Iteration: 15&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.208918285076918&quot;
+[1] &quot;The new signal_var: 8143.76319105878&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.83398473313779&quot; &quot;Next point: 3.28484746059395&quot;
+[1] &quot;Function value: -106.274654633996&quot;
+[1] &quot;Iteration: 16&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 0.1&quot; &quot;Next point: 4&quot;  
+[1] &quot;Function value: -271.530250317145&quot;
+[1] &quot;Iteration: 17&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.88295426616959&quot; &quot;Next point: 1.51247681276012&quot;
+[1] &quot;Function value: -128.686069084485&quot;
+[1] &quot;Iteration: 18&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.75343341910618&quot; &quot;Next point: 4&quot;               
+[1] &quot;Function value: -196.057382251179&quot;
+[1] &quot;Iteration: 19&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 0.1&quot;              &quot;Next point: 1.19396687831867&quot;
+[1] &quot;Function value: -261.826866746668&quot;
+[1] &quot;Iteration: 20&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.207371432810264&quot;
+[1] &quot;The new signal_var: 7356.37154505985&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.47742252037393&quot; &quot;Next point: 2.83052560216642&quot;
+[1] &quot;Function value: -120.083076060318&quot;
+[1] &quot;Time to check modal difference!&quot;
+[1] &quot;Modal rel-difference: 18.6313868001438&quot;
+[1] &quot;Hessian rel-difference in second moment: Inf&quot;
+[1] &quot;Iteration: 21&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.22858690087297&quot; &quot;Next point: 4&quot;               
+[1] &quot;Function value: -118.54453991616&quot;
+[1] &quot;Iteration: 22&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 5&quot;                &quot;Next point: 1.88177503666484&quot;
+[1] &quot;Function value: -181.175894354487&quot;
+[1] &quot;Iteration: 23&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.02894473930322&quot; &quot;Next point: 1.49299299865655&quot;
+[1] &quot;Function value: -109.510719723527&quot;
+[1] &quot;Iteration: 24&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.00673690804772&quot; &quot;Next point: 1.9004720383616&quot; 
+[1] &quot;Function value: -100.9154002351&quot;
+[1] &quot;Iteration: 25&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.211094658250803&quot;
+[1] &quot;The new signal_var: 6896.12903814478&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 5&quot;                 &quot;Next point: 0.722783361803266&quot;
+[1] &quot;Function value: -122.632726399684&quot;
+[1] &quot;Time to check modal difference!&quot;
+[1] &quot;Modal rel-difference: 10.606299297602&quot;
+[1] &quot;Hessian rel-difference in second moment: 0.235037077663795&quot;
+[1] &quot;Iteration: 26&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.52447832246582&quot; &quot;Next point: 1.06977724103305&quot;
+[1] &quot;Function value: -129.586642938453&quot;
+[1] &quot;Iteration: 27&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.1794259251906&quot;  &quot;Next point: 2.89246424228203&quot;
+[1] &quot;Function value: -129.890076314455&quot;
+[1] &quot;Iteration: 28&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 5&quot;                &quot;Next point: 2.76507175759142&quot;
+[1] &quot;Function value: -220.855268187938&quot;
+[1] &quot;Iteration: 29&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.2820818511709&quot;   &quot;Next point: 0.966798998553444&quot;
+[1] &quot;Function value: -107.900563656775&quot;
+[1] &quot;Iteration: 30&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.197803601064826&quot;
+[1] &quot;The new signal_var: 6314.82272327829&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.27730941101984&quot; &quot;Next point: 3.55884720621139&quot;
+[1] &quot;Function value: -124.744833127496&quot;
+[1] &quot;Time to check modal difference!&quot;
+[1] &quot;Modal rel-difference: 8.336501296134&quot;
+[1] &quot;Hessian rel-difference in second moment: 0.196142720821809&quot;
+[1] &quot;Iteration: 31&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.89601662674166&quot; &quot;Next point: 3.72504379277639&quot;
+[1] &quot;Function value: -108.389481842152&quot;
+[1] &quot;Iteration: 32&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.31929188110382&quot; &quot;Next point: 2.13377703987779&quot;
+[1] &quot;Function value: -118.994812447546&quot;
+[1] &quot;Iteration: 33&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.68478937490418&quot; &quot;Next point: 1.08715377632225&quot;
+[1] &quot;Function value: -106.403166673593&quot;
+[1] &quot;Iteration: 34&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.72787835143582&quot; &quot;Next point: 1.57006941391746&quot;
+[1] &quot;Function value: -106.246531564902&quot;
+[1] &quot;Iteration: 35&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.206223295085481&quot;
+[1] &quot;The new signal_var: 5966.60112951376&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.4651995474428&quot;  &quot;Next point: 1.20986077947489&quot;
+[1] &quot;Function value: -118.524893357631&quot;
+[1] &quot;Time to check modal difference!&quot;
+[1] &quot;Modal rel-difference: 6.87934296310509&quot;
+[1] &quot;Hessian rel-difference in second moment: 0.0524670519040056&quot;
+[1] &quot;Iteration: 36&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.33124534904226&quot;  &quot;Next point: 0.966486461728774&quot;
+[1] &quot;Function value: -117.135493951319&quot;
+[1] &quot;Iteration: 37&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.86322708709954&quot; &quot;Next point: 1.19321201448268&quot;
+[1] &quot;Function value: -103.524382274893&quot;
+[1] &quot;Iteration: 38&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08269051036145&quot; &quot;Next point: 2.34230541030725&quot;
+[1] &quot;Function value: -103.759025478286&quot;
+[1] &quot;Iteration: 39&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.39721734353278&quot; &quot;Next point: 1.74644124756321&quot;
+[1] &quot;Function value: -103.32083196326&quot;
+[1] &quot;Iteration: 40&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.197625240659466&quot;
+[1] &quot;The new signal_var: 5647.27870613666&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.94168595126276&quot; &quot;Next point: 2.8256261097899&quot; 
+[1] &quot;Function value: -104.902400165752&quot;
+[1] &quot;Time to check modal difference!&quot;
+[1] &quot;Modal rel-difference: 5.06550431878812&quot;
+[1] &quot;Hessian rel-difference in second moment: 0.0820968226973386&quot;
+[1] &quot;Iteration: 41&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.60085351748808&quot; &quot;Next point: 3.10921137193474&quot;
+[1] &quot;Function value: -108.350695937393&quot;
+[1] &quot;Iteration: 42&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.46577915706282&quot; &quot;Next point: 3.40228397935202&quot;
+[1] &quot;Function value: -175.295537591055&quot;
+[1] &quot;Iteration: 43&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.80448578334332&quot;  &quot;Next point: 0.945793312533219&quot;
+[1] &quot;Function value: -109.025395775071&quot;
+[1] &quot;Iteration: 44&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.78091258513324&quot; &quot;Next point: 2.05667769938974&quot;
+[1] &quot;Function value: -102.501760732702&quot;
+[1] &quot;Iteration: 45&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.203351068001825&quot;
+[1] &quot;The new signal_var: 5306.19280452682&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.14725118987313&quot; &quot;Next point: 1.62258591259679&quot;
+[1] &quot;Function value: -100.772483122748&quot;
+[1] &quot;Time to check modal difference!&quot;
+[1] &quot;Modal rel-difference: 3.7445126388009&quot;
+[1] &quot;Hessian rel-difference in second moment: 0.0336570040147993&quot;
+[1] &quot;Iteration: 46&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.80996980795622&quot; &quot;Next point: 4&quot;               
+[1] &quot;Function value: -108.675300386845&quot;
+[1] &quot;Iteration: 47&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.04656552355355&quot; &quot;Next point: 1.7469170140111&quot; 
+[1] &quot;Function value: -100.738664336894&quot;
+[1] &quot;Iteration: 48&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.10323212157741&quot; &quot;Next point: 1.72382676887338&quot;
+[1] &quot;Function value: -100.726488683073&quot;
+[1] &quot;Iteration: 49&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08895278767657&quot; &quot;Next point: 1.67832179727633&quot;
+[1] &quot;Function value: -100.733361742925&quot;
+[1] &quot;Iteration: 50&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.205738136133142&quot;
+[1] &quot;The new signal_var: 5071.46893785769&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.09091125346518&quot; &quot;Next point: 1.71160044883931&quot;
+[1] &quot;Function value: -100.714732952287&quot;
+[1] &quot;Time to check modal difference!&quot;
+[1] &quot;Modal rel-difference: 0.855822352404627&quot;
+[1] &quot;Hessian rel-difference in second moment: 0.00698728537360029&quot;
+[1] &quot;Iteration: 51&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.0906142448018&quot;  &quot;Next point: 1.71171861964949&quot;
+[1] &quot;Function value: -100.714718354458&quot;
+[1] &quot;Iteration: 52&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.090479033876&quot;   &quot;Next point: 1.71174679641881&quot;
+[1] &quot;Function value: -100.714712474601&quot;
+[1] &quot;Iteration: 53&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.09031337717031&quot; &quot;Next point: 1.71186204179447&quot;
+[1] &quot;Function value: -100.714706823286&quot;
+[1] &quot;Iteration: 54&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.09023645066086&quot; &quot;Next point: 1.71187902701174&quot;
+[1] &quot;Function value: -100.71470421998&quot;
+[1] &quot;Iteration: 55&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.203530384075413&quot;
+[1] &quot;The new signal_var: 4848.3838172548&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 5&quot;                 &quot;Next point: 0.947409356531545&quot;
+[1] &quot;Function value: -109.5614389765&quot;
+[1] &quot;Time to check modal difference!&quot;
+[1] &quot;Modal rel-difference: 0.0365436900528706&quot;
+[1] &quot;Hessian rel-difference in second moment: 0.000554510847286941&quot;
+[1] &quot;Iteration: 56&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.0901984028146&quot;  &quot;Next point: 1.71186750265419&quot;
+[1] &quot;Function value: -100.714702936014&quot;
+[1] &quot;Iteration: 57&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.09015186986032&quot; &quot;Next point: 1.7118625695627&quot; 
+[1] &quot;Function value: -100.714701534366&quot;
+[1] &quot;Iteration: 58&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.0900827092144&quot; &quot;Next point: 1.7119503329025&quot;
+[1] &quot;Function value: -100.714699852479&quot;
+[1] &quot;Iteration: 59&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.09004487281399&quot; &quot;Next point: 1.71196819738118&quot;
+[1] &quot;Function value: -100.714698894933&quot;
+[1] &quot;Iteration: 60&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.202730673019302&quot;
+[1] &quot;The new signal_var: 4618.78817798718&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.09008958727693&quot; &quot;Next point: 1.71188588871192&quot;
+[1] &quot;Function value: -100.714699890451&quot;
+[1] &quot;Time to check modal difference!&quot;
+[1] &quot;Modal rel-difference: 0.00127626501053311&quot;
+[1] &quot;Hessian rel-difference in second moment: 2.32759716121696e-05&quot;
+[1] &quot;Posterior surrogate converged based on modal criteria!&quot;</code></pre>
+<p>We then run BOSS using AGHQ as convergence statistics. Again, we
+check for convergence every <span class="math inline">\(5\)</span>
+iterations. The convergence criteria is relative difference in AGHQ
+statstics being less than <span class="math inline">\(0.05\)</span>.</p>
+<pre><code>[1] &quot;Initial evaluation phase...&quot;
+[1] &quot;Using Latin Hypercube Sampling for initial design for D &gt; 1.&quot;
+[1] &quot;The new length.scale: 0.01&quot;
+[1] &quot;The new signal_var: 1491.51089195998&quot;
+[1] &quot;Iteration: 1&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.36788724163691&quot; &quot;Next point: 2.52442875164072&quot;
+[1] &quot;Function value: -154.10262736454&quot;
+[1] &quot;Iteration: 2&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 0.899374804314845&quot; &quot;Next point: 2.52532386731604&quot; 
+[1] &quot;Function value: -154.093241323996&quot;
+[1] &quot;Iteration: 3&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.17436119321284&quot;  &quot;Next point: 0.939393288116017&quot;
+[1] &quot;Function value: -108.206634007251&quot;
+[1] &quot;Iteration: 4&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.64365055186682&quot; &quot;Next point: 3.72777301374244&quot;
+[1] &quot;Function value: -136.54175465231&quot;
+[1] &quot;Iteration: 5&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.153306325677533&quot;
+[1] &quot;The new signal_var: 1139.75125687272&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.84797043884089&quot; &quot;Next point: 0.10039&quot;         
+[1] &quot;Function value: -396.360588927968&quot;
+[1] &quot;Iteration: 6&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.16988967634189&quot; &quot;Next point: 3.85052065164225&quot;
+[1] &quot;Function value: -133.501288693767&quot;
+[1] &quot;Iteration: 7&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.33723585303201&quot; &quot;Next point: 1.24655140848289&quot;
+[1] &quot;Function value: -106.842429329463&quot;
+[1] &quot;Iteration: 8&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.25572202910418&quot; &quot;Next point: 1.50601168021124&quot;
+[1] &quot;Function value: -136.642962678151&quot;
+[1] &quot;Iteration: 9&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.99951&quot; &quot;Next point: 3.99961&quot;
+[1] &quot;Function value: -244.705618605336&quot;
+[1] &quot;Iteration: 10&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.153658263188958&quot;
+[1] &quot;The new signal_var: 5746.02513323413&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.87689329705555&quot;  &quot;Next point: 0.131930307477416&quot;
+[1] &quot;Function value: -368.541623558057&quot;
+[1] &quot;Iteration: 11&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.23000585587537&quot; &quot;Next point: 1.71057681264356&quot;
+[1] &quot;Function value: -101.208170803435&quot;
+[1] &quot;Iteration: 12&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 0.10049&quot;          &quot;Next point: 3.43087782498012&quot;
+[1] &quot;Function value: -270.770258051378&quot;
+[1] &quot;Iteration: 13&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.956385701943&quot;   &quot;Next point: 2.92703318148592&quot;
+[1] &quot;Function value: -105.591058610638&quot;
+[1] &quot;Iteration: 14&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 0.10049&quot; &quot;Next point: 0.10039&quot;
+[1] &quot;Function value: -405.328591854816&quot;
+[1] &quot;Iteration: 15&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.180577755317966&quot;
+[1] &quot;The new signal_var: 9951.0700347438&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.98100074628061&quot;  &quot;Next point: 0.945400406625028&quot;
+[1] &quot;Function value: -125.506950160981&quot;
+[1] &quot;Iteration: 16&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 0.10049&quot;          &quot;Next point: 1.73440262353716&quot;
+[1] &quot;Function value: -265.789554328639&quot;
+[1] &quot;Iteration: 17&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.76234068526845&quot; &quot;Next point: 3.99961&quot;         
+[1] &quot;Function value: -196.465134780487&quot;
+[1] &quot;Iteration: 18&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.76310770221691&quot; &quot;Next point: 2.26937869125943&quot;
+[1] &quot;Function value: -102.977494605348&quot;
+[1] &quot;Iteration: 19&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.99951&quot;          &quot;Next point: 3.08249258418982&quot;
+[1] &quot;Function value: -229.184909424024&quot;
+[1] &quot;Iteration: 20&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.198530208408444&quot;
+[1] &quot;The new signal_var: 8620.2433453076&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 0.10049&quot; &quot;Next point: 3.99961&quot;
+[1] &quot;Function value: -271.418348675716&quot;
+[1] &quot;Time to check AGHQ difference!&quot;
+[1] &quot;AGHQ rel-difference in first moment: Inf&quot;
+[1] &quot;AGHQ rel-difference in second moment: Inf&quot;
+[1] &quot;AGHQ rel-difference in range: Inf&quot;
+[1] &quot;Iteration: 21&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.99951&quot;          &quot;Next point: 1.23668938938927&quot;
+[1] &quot;Function value: -127.70029855752&quot;
+[1] &quot;Iteration: 22&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.99951&quot;          &quot;Next point: 2.01071779474845&quot;
+[1] &quot;Function value: -189.100734305873&quot;
+[1] &quot;Iteration: 23&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.67719342389818&quot; &quot;Next point: 0.10039&quot;         
+[1] &quot;Function value: -398.768880580251&quot;
+[1] &quot;Iteration: 24&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 0.401273270129821&quot; &quot;Next point: 0.994851925818134&quot;
+[1] &quot;Function value: -208.29300499339&quot;
+[1] &quot;Iteration: 25&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.193752399960311&quot;
+[1] &quot;The new signal_var: 8942.57411879633&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.24181139918099&quot; &quot;Next point: 3.20939749237754&quot;
+[1] &quot;Function value: -126.201328197186&quot;
+[1] &quot;Time to check AGHQ difference!&quot;
+[1] &quot;AGHQ rel-difference in first moment: 0.034015196520544&quot;
+[1] &quot;AGHQ rel-difference in second moment: 0.211694300042735&quot;
+[1] &quot;AGHQ rel-difference in range: 0.096480401772991&quot;
+[1] &quot;Iteration: 26&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.47849138359572&quot; &quot;Next point: 2.56611783889685&quot;
+[1] &quot;Function value: -116.874660008452&quot;
+[1] &quot;Iteration: 27&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.35236947926919&quot; &quot;Next point: 1.063776385202&quot;  
+[1] &quot;Function value: -136.880215866144&quot;
+[1] &quot;Iteration: 28&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.12685192692566&quot; &quot;Next point: 3.37486722553263&quot;
+[1] &quot;Function value: -204.054490427246&quot;
+[1] &quot;Iteration: 29&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.37442109770312&quot;  &quot;Next point: 0.767472700745922&quot;
+[1] &quot;Function value: -126.00995287392&quot;
+[1] &quot;Iteration: 30&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.182131938587331&quot;
+[1] &quot;The new signal_var: 8158.31625373167&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.66680235334015&quot; &quot;Next point: 1.14586484146277&quot;
+[1] &quot;Function value: -104.514408829287&quot;
+[1] &quot;Time to check AGHQ difference!&quot;
+[1] &quot;AGHQ rel-difference in first moment: 0.133634861935483&quot;
+[1] &quot;AGHQ rel-difference in second moment: 0.0685591407036774&quot;
+[1] &quot;AGHQ rel-difference in range: 0.168981010465047&quot;
+[1] &quot;Iteration: 31&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.84838094951402&quot; &quot;Next point: 3.60975329062009&quot;
+[1] &quot;Function value: -107.559968446437&quot;
+[1] &quot;Iteration: 32&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.84999417756193&quot; &quot;Next point: 0.10039&quot;         
+[1] &quot;Function value: -396.879407703669&quot;
+[1] &quot;Iteration: 33&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.82065009986094&quot; &quot;Next point: 1.46482984266919&quot;
+[1] &quot;Function value: -105.788583158653&quot;
+[1] &quot;Iteration: 34&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.79608535447827&quot; &quot;Next point: 3.99961&quot;         
+[1] &quot;Function value: -108.647070144177&quot;
+[1] &quot;Iteration: 35&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.19081861892336&quot;
+[1] &quot;The new signal_var: 8935.54458717079&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.31894420091323&quot; &quot;Next point: 2.08698011332237&quot;
+[1] &quot;Function value: -119.0706064872&quot;
+[1] &quot;Time to check AGHQ difference!&quot;
+[1] &quot;AGHQ rel-difference in first moment: 0.273766102739537&quot;
+[1] &quot;AGHQ rel-difference in second moment: 0.410700686548536&quot;
+[1] &quot;AGHQ rel-difference in range: 0.313185989452447&quot;
+[1] &quot;Iteration: 36&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.99951&quot;           &quot;Next point: 0.816742674904655&quot;
+[1] &quot;Function value: -112.813833290136&quot;
+[1] &quot;Iteration: 37&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.02840226087854&quot; &quot;Next point: 3.99961&quot;         
+[1] &quot;Function value: -159.400681046729&quot;
+[1] &quot;Iteration: 38&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 0.10049&quot;          &quot;Next point: 2.59820572293399&quot;
+[1] &quot;Function value: -269.226356324172&quot;
+[1] &quot;Iteration: 39&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.63320261214955&quot; &quot;Next point: 1.8628616400187&quot; 
+[1] &quot;Function value: -140.886117535146&quot;
+[1] &quot;Iteration: 40&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.188509900268282&quot;
+[1] &quot;The new signal_var: 8348.12054975627&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.55017615377562&quot; &quot;Next point: 2.69009420148062&quot;
+[1] &quot;Function value: -108.694911845645&quot;
+[1] &quot;Time to check AGHQ difference!&quot;
+[1] &quot;AGHQ rel-difference in first moment: 0.0158058955892352&quot;
+[1] &quot;AGHQ rel-difference in second moment: 0.0840472188164307&quot;
+[1] &quot;AGHQ rel-difference in range: 0.0199740439061026&quot;
+[1] &quot;Iteration: 41&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.53412627255598&quot; &quot;Next point: 3.10504302657025&quot;
+[1] &quot;Function value: -125.532548886976&quot;
+[1] &quot;Iteration: 42&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.66180376231102&quot; &quot;Next point: 1.0101124529838&quot; 
+[1] &quot;Function value: -109.642839504439&quot;
+[1] &quot;Iteration: 43&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.24250270848787&quot; &quot;Next point: 1.31287928194822&quot;
+[1] &quot;Function value: -103.0464683244&quot;
+[1] &quot;Iteration: 44&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.82267005915753&quot; &quot;Next point: 1.79492164893319&quot;
+[1] &quot;Function value: -113.433344515613&quot;
+[1] &quot;Iteration: 45&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.194943290594159&quot;
+[1] &quot;The new signal_var: 7970.71067301064&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.93405693656846&quot; &quot;Next point: 1.15337784511907&quot;
+[1] &quot;Function value: -109.666489000288&quot;
+[1] &quot;Time to check AGHQ difference!&quot;
+[1] &quot;AGHQ rel-difference in first moment: 0.201629214228545&quot;
+[1] &quot;AGHQ rel-difference in second moment: 0.627356195977988&quot;
+[1] &quot;AGHQ rel-difference in range: 0.919309137010468&quot;
+[1] &quot;Iteration: 46&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.25622324823438&quot; &quot;Next point: 2.09255258336871&quot;
+[1] &quot;Function value: -104.633147057339&quot;
+[1] &quot;Iteration: 47&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.84386933449412&quot; &quot;Next point: 1.88893579506439&quot;
+[1] &quot;Function value: -101.819483683482&quot;
+[1] &quot;Iteration: 48&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.660363725821&quot;   &quot;Next point: 1.38199030500778&quot;
+[1] &quot;Function value: -102.687097295759&quot;
+[1] &quot;Iteration: 49&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.93432899851485&quot; &quot;Next point: 2.56028338642914&quot;
+[1] &quot;Function value: -103.473481271178&quot;
+[1] &quot;Iteration: 50&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.188902913606183&quot;
+[1] &quot;The new signal_var: 7667.71969198605&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.54883345115633&quot; &quot;Next point: 1.00628227957786&quot;
+[1] &quot;Function value: -106.612853400076&quot;
+[1] &quot;Time to check AGHQ difference!&quot;
+[1] &quot;AGHQ rel-difference in first moment: 0.624414234025311&quot;
+[1] &quot;AGHQ rel-difference in second moment: 0.865941214033516&quot;
+[1] &quot;AGHQ rel-difference in range: 2.57531416402589&quot;
+[1] &quot;Iteration: 51&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.65341609373487&quot; &quot;Next point: 3.31387170432528&quot;
+[1] &quot;Function value: -107.798086838751&quot;
+[1] &quot;Iteration: 52&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 1.45880686995731&quot; &quot;Next point: 3.99961&quot;         
+[1] &quot;Function value: -115.716084725852&quot;
+[1] &quot;Iteration: 53&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.01965807876835&quot; &quot;Next point: 1.93720826916132&quot;
+[1] &quot;Function value: -101.020771776922&quot;
+[1] &quot;Iteration: 54&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.07727606184602&quot; &quot;Next point: 1.64166568316299&quot;
+[1] &quot;Function value: -100.826110585672&quot;
+[1] &quot;Iteration: 55&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.192460021446482&quot;
+[1] &quot;The new signal_var: 7329.65835506151&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.05574349412511&quot; &quot;Next point: 1.76298911168769&quot;
+[1] &quot;Function value: -100.731965345108&quot;
+[1] &quot;Time to check AGHQ difference!&quot;
+[1] &quot;AGHQ rel-difference in first moment: 0.14348127384152&quot;
+[1] &quot;AGHQ rel-difference in second moment: 0.535117268070077&quot;
+[1] &quot;AGHQ rel-difference in range: 0.505130242813836&quot;
+[1] &quot;Iteration: 56&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.09950664394677&quot; &quot;Next point: 1.70143395247346&quot;
+[1] &quot;Function value: -100.7159745638&quot;
+[1] &quot;Iteration: 57&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08874769213455&quot; &quot;Next point: 1.71266608032567&quot;
+[1] &quot;Function value: -100.714692289515&quot;
+[1] &quot;Iteration: 58&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08826286318168&quot; &quot;Next point: 1.71336800888567&quot;
+[1] &quot;Function value: -100.714695934487&quot;
+[1] &quot;Iteration: 59&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08800829313877&quot; &quot;Next point: 1.71372006588728&quot;
+[1] &quot;Function value: -100.714700737904&quot;
+[1] &quot;Iteration: 60&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.193540988710602&quot;
+[1] &quot;The new signal_var: 7047.6100162569&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.0885262639402&quot;  &quot;Next point: 1.71323561326753&quot;
+[1] &quot;Function value: -100.714690905073&quot;
+[1] &quot;Time to check AGHQ difference!&quot;
+[1] &quot;AGHQ rel-difference in first moment: 0.15649123389114&quot;
+[1] &quot;AGHQ rel-difference in second moment: 0.296425215944875&quot;
+[1] &quot;AGHQ rel-difference in range: 0.798053519069554&quot;
+[1] &quot;Iteration: 61&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08793161428284&quot; &quot;Next point: 1.71382817640228&quot;
+[1] &quot;Function value: -100.714702530674&quot;
+[1] &quot;Iteration: 62&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08767635542202&quot; &quot;Next point: 1.71437287426977&quot;
+[1] &quot;Function value: -100.714709846605&quot;
+[1] &quot;Iteration: 63&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08778387157118&quot; &quot;Next point: 1.71420860784399&quot;
+[1] &quot;Function value: -100.714706326235&quot;
+[1] &quot;Iteration: 64&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08898033963739&quot; &quot;Next point: 1.71353629327241&quot;
+[1] &quot;Function value: -100.714692395357&quot;
+[1] &quot;Iteration: 65&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.191912946317129&quot;
+[1] &quot;The new signal_var: 6766.83209355115&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08723113746063&quot; &quot;Next point: 1.71415465070014&quot;
+[1] &quot;Function value: -100.714731019461&quot;
+[1] &quot;Time to check AGHQ difference!&quot;
+[1] &quot;AGHQ rel-difference in first moment: 0.0532596662649209&quot;
+[1] &quot;AGHQ rel-difference in second moment: 0.0147251306070371&quot;
+[1] &quot;AGHQ rel-difference in range: 0.118328629942979&quot;
+[1] &quot;Iteration: 66&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 4.99951&quot;           &quot;Next point: 0.970964082457995&quot;
+[1] &quot;Function value: -110.027750759884&quot;
+[1] &quot;Iteration: 67&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08873494238375&quot; &quot;Next point: 1.71450118073306&quot;
+[1] &quot;Function value: -100.714713824974&quot;
+[1] &quot;Iteration: 68&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08890406336359&quot; &quot;Next point: 1.71276970441865&quot;
+[1] &quot;Function value: -100.714688439608&quot;
+[1] &quot;Iteration: 69&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 2.08371911050609&quot; &quot;Next point: 1.7153917188881&quot; 
+[1] &quot;Function value: -100.715145614819&quot;
+[1] &quot;Iteration: 70&quot;
+[1] &quot;Time to update the parameters!&quot;
+[1] &quot;The new length.scale: 0.190138111640216&quot;
+[1] &quot;The new signal_var: 6482.78072929501&quot;
+[1] &quot;Maximize Acquisition Function&quot;
+[1] &quot;Next point: 3.06837209769682&quot; &quot;Next point: 1.12285688803058&quot;
+[1] &quot;Function value: -104.478234514814&quot;
+[1] &quot;Time to check AGHQ difference!&quot;
+[1] &quot;AGHQ rel-difference in first moment: 0.0285529650258671&quot;
+[1] &quot;AGHQ rel-difference in second moment: 0.0482617328407285&quot;
+[1] &quot;AGHQ rel-difference in range: 0.0404881523834777&quot;
+[1] &quot;Posterior surrogate converged based on AGHQ criteria!&quot;</code></pre>
+</div>
+<div id="mcmc" class="section level2">
+<h2>MCMC</h2>
+<p>Lastly, we implement the MCMC-based method using <code>stan</code> to
+obtain the oracle.</p>
+<pre><code>Trying to compile a simple C file</code></pre>
+<pre><code>Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
+using C compiler: ‘Apple clang version 15.0.0 (clang-1500.3.9.4)’
+using SDK: ‘’
+clang -arch arm64 -I&quot;/Library/Frameworks/R.framework/Resources/include&quot; -DNDEBUG   -I&quot;/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/Rcpp/include/&quot;  -I&quot;/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/&quot;  -I&quot;/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/unsupported&quot;  -I&quot;/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/BH/include&quot; -I&quot;/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/StanHeaders/include/src/&quot;  -I&quot;/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/StanHeaders/include/&quot;  -I&quot;/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppParallel/include/&quot;  -I&quot;/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/rstan/include&quot; -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DUSE_STANC3 -DSTRICT_R_HEADERS  -DBOOST_PHOENIX_NO_VARIADIC_EXPRESSION  -D_HAS_AUTO_PTR_ETC=0  -include &#39;/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/StanHeaders/include/stan/math/prim/fun/Eigen.hpp&#39;  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
+In file included from &lt;built-in&gt;:1:
+In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/StanHeaders/include/stan/math/prim/fun/Eigen.hpp:22:
+In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/Dense:1:
+In file included from /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/Core:19:
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library/RcppEigen/include/Eigen/src/Core/util/Macros.h:679:10: fatal error: &#39;cmath&#39; file not found
+#include &lt;cmath&gt;
+         ^~~~~~~
+1 error generated.
+make: *** [foo.o] Error 1
+
+SAMPLING FOR MODEL &#39;anon_model&#39; NOW (CHAIN 3).
+
+SAMPLING FOR MODEL &#39;anon_model&#39; NOW (CHAIN 4).
+
+SAMPLING FOR MODEL &#39;anon_model&#39; NOW (CHAIN 2).
+
+SAMPLING FOR MODEL &#39;anon_model&#39; NOW (CHAIN 1).
+Chain 3: 
+Chain 3: Gradient evaluation took 0.000135 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 1.35 seconds.
+Chain 3: Adjust your expectations accordingly!
+Chain 3: 
+Chain 3: 
+Chain 4: 
+Chain 4: Gradient evaluation took 0.000104 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 1.04 seconds.
+Chain 4: Adjust your expectations accordingly!
+Chain 4: 
+Chain 4: 
+Chain 1: 
+Chain 1: Gradient evaluation took 6.6e-05 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.66 seconds.
+Chain 1: Adjust your expectations accordingly!
+Chain 1: 
+Chain 1: 
+Chain 2: 
+Chain 2: Gradient evaluation took 8.9e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.89 seconds.
+Chain 2: Adjust your expectations accordingly!
+Chain 2: 
+Chain 2: 
+Chain 3: Iteration:     1 / 20000 [  0%]  (Warmup)
+Chain 4: Iteration:     1 / 20000 [  0%]  (Warmup)
+Chain 1: Iteration:     1 / 20000 [  0%]  (Warmup)
+Chain 2: Iteration:     1 / 20000 [  0%]  (Warmup)
+Chain 1: Iteration:  1001 / 20000 [  5%]  (Sampling)
+Chain 4: Iteration:  1001 / 20000 [  5%]  (Sampling)
+Chain 2: Iteration:  1001 / 20000 [  5%]  (Sampling)
+Chain 3: Iteration:  1001 / 20000 [  5%]  (Sampling)
+Chain 3: Iteration:  3000 / 20000 [ 15%]  (Sampling)
+Chain 1: Iteration:  3000 / 20000 [ 15%]  (Sampling)
+Chain 2: Iteration:  3000 / 20000 [ 15%]  (Sampling)
+Chain 4: Iteration:  3000 / 20000 [ 15%]  (Sampling)
+Chain 3: Iteration:  5000 / 20000 [ 25%]  (Sampling)
+Chain 2: Iteration:  5000 / 20000 [ 25%]  (Sampling)
+Chain 1: Iteration:  5000 / 20000 [ 25%]  (Sampling)
+Chain 4: Iteration:  5000 / 20000 [ 25%]  (Sampling)
+Chain 3: Iteration:  7000 / 20000 [ 35%]  (Sampling)
+Chain 2: Iteration:  7000 / 20000 [ 35%]  (Sampling)
+Chain 1: Iteration:  7000 / 20000 [ 35%]  (Sampling)
+Chain 4: Iteration:  7000 / 20000 [ 35%]  (Sampling)
+Chain 3: Iteration:  9000 / 20000 [ 45%]  (Sampling)
+Chain 2: Iteration:  9000 / 20000 [ 45%]  (Sampling)
+Chain 1: Iteration:  9000 / 20000 [ 45%]  (Sampling)
+Chain 4: Iteration:  9000 / 20000 [ 45%]  (Sampling)
+Chain 3: Iteration: 11000 / 20000 [ 55%]  (Sampling)
+Chain 2: Iteration: 11000 / 20000 [ 55%]  (Sampling)
+Chain 1: Iteration: 11000 / 20000 [ 55%]  (Sampling)
+Chain 4: Iteration: 11000 / 20000 [ 55%]  (Sampling)
+Chain 3: Iteration: 13000 / 20000 [ 65%]  (Sampling)
+Chain 2: Iteration: 13000 / 20000 [ 65%]  (Sampling)
+Chain 1: Iteration: 13000 / 20000 [ 65%]  (Sampling)
+Chain 4: Iteration: 13000 / 20000 [ 65%]  (Sampling)
+Chain 3: Iteration: 15000 / 20000 [ 75%]  (Sampling)
+Chain 2: Iteration: 15000 / 20000 [ 75%]  (Sampling)
+Chain 1: Iteration: 15000 / 20000 [ 75%]  (Sampling)
+Chain 4: Iteration: 15000 / 20000 [ 75%]  (Sampling)
+Chain 3: Iteration: 17000 / 20000 [ 85%]  (Sampling)
+Chain 2: Iteration: 17000 / 20000 [ 85%]  (Sampling)
+Chain 1: Iteration: 17000 / 20000 [ 85%]  (Sampling)
+Chain 4: Iteration: 17000 / 20000 [ 85%]  (Sampling)
+Chain 3: Iteration: 19000 / 20000 [ 95%]  (Sampling)
+Chain 2: Iteration: 19000 / 20000 [ 95%]  (Sampling)
+Chain 1: Iteration: 19000 / 20000 [ 95%]  (Sampling)
+Chain 3: Iteration: 20000 / 20000 [100%]  (Sampling)
+Chain 3: 
+Chain 3:  Elapsed Time: 2.744 seconds (Warm-up)
+Chain 3:                56.923 seconds (Sampling)
+Chain 3:                59.667 seconds (Total)
+Chain 3: 
+Chain 2: Iteration: 20000 / 20000 [100%]  (Sampling)
+Chain 2: 
+Chain 2:  Elapsed Time: 2.635 seconds (Warm-up)
+Chain 2:                57.93 seconds (Sampling)
+Chain 2:                60.565 seconds (Total)
+Chain 2: 
+Chain 4: Iteration: 19000 / 20000 [ 95%]  (Sampling)
+Chain 1: Iteration: 20000 / 20000 [100%]  (Sampling)
+Chain 1: 
+Chain 1:  Elapsed Time: 2.521 seconds (Warm-up)
+Chain 1:                58.831 seconds (Sampling)
+Chain 1:                61.352 seconds (Total)
+Chain 1: 
+Chain 4: Iteration: 20000 / 20000 [100%]  (Sampling)
+Chain 4: 
+Chain 4:  Elapsed Time: 2.599 seconds (Warm-up)
+Chain 4:                60.806 seconds (Sampling)
+Chain 4:                63.405 seconds (Total)
+Chain 4: </code></pre>
+<pre><code>Warning: There were 42 divergent transitions after warmup. See
+https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
+to find out why this is a problem and how to eliminate them.</code></pre>
+<pre><code>Warning: Examine the pairs() plot to diagnose sampling problems</code></pre>
+<pre><code>   user  system elapsed 
+263.387   5.942  97.522 </code></pre>
+</div>
+<div id="results-comparison" class="section level2">
+<h2>Results Comparison</h2>
+<p>We now compare the results of the posterior distributions from
+<code>inlabru</code>, modal-based BOSS, and AGHQ-based BOSS, and
+MCMC.</p>
+<div id="inlabru-posterior-distribution" class="section level3">
+<h3><code>inlabru</code> posterior distribution:</h3>
+<pre class="r"><code># get joint posterior of (R, beta) from inlabru
+joint_samp &lt;- inla.posterior.sample(10000, fit, selection = list(a = 1, b = 1), seed = 12345)</code></pre>
+<pre><code>Warning in inla.posterior.sample(n, rfake, intern = intern, use.improved.mean =
+use.improved.mean, : Since &#39;seed!=0&#39;, parallel model is disabled and serial
+model is selected, num.threads=&#39;1:1&#39;</code></pre>
+<pre class="r"><code>joint_samp &lt;- do.call(&#39;rbind&#39;, lapply(joint_samp, function(x) matrix(x$latent, ncol = 2)))
+
+inla.joint.samps &lt;- data.frame(a = a_fun(joint_samp[,1]), b = b_fun(joint_samp[,2]))
+
+# plot joint posterior of (R, beta) from inlabru
+ggplot(inla.joint.samps, aes(a, b)) + stat_density_2d(
+  geom = &quot;raster&quot;,
+  aes(fill = after_stat(density)), n = 500,
+  contour = FALSE) +
+  geom_point(data = data.frame(a = a_fun(fit$summary.fixed$mode[1]), b = b_fun(fit$summary.fixed$mode[2])), color = &#39;red&#39;, shape = 1, size =0.5) + 
+  geom_point(data = data.frame(a = 2, b = 2), color = &#39;orange&#39;, size =0.5) +
+  coord_fixed() + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$\\beta$&#39;) + xlim(c(0.1, 5)) + ylim(c(0.1, 4))</code></pre>
+<pre><code>Warning: Removed 1996 rows containing missing values or values outside the scale range
+(`geom_raster()`).</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="boss-modal-posterior-distribution" class="section level3">
+<h3>BOSS-modal posterior distribution:</h3>
+<pre class="r"><code># get the design points data from BOSS
+data_to_smooth &lt;- list()
+unique_data &lt;- unique(data.frame(x = res_opt_modal$result$x, y = res_opt_modal$result$y))
+data_to_smooth$x &lt;- as.matrix(dplyr::select(unique_data, -y))
+data_to_smooth$y &lt;- (unique_data$y - mean(unique_data$y))
+
+square_exp_cov &lt;- square_exp_cov_generator_nd(length_scale = res_opt_modal$length_scale, signal_var = res_opt_modal$signal_var)
+
+surrogate &lt;- function(xvalue, data_to_smooth, cov){
+  predict_gp(data_to_smooth, x_pred = xvalue, choice_cov = cov, noise_var = 1e-6)$mean
+}
+
+ff &lt;- list()
+ff$fn &lt;- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, cov = square_exp_cov))
+
+x.1 &lt;- (seq(from = 0.1, to = 5, length.out = 300) - 0.1)/4.9
+x.2 &lt;- (seq(from = 0.1, to = 4, length.out = 300) - 0.1)/3.9
+x_vals &lt;- expand.grid(x.1, x.2)
+names(x_vals) &lt;- c(&#39;x.1&#39;,&#39;x.2&#39;)
+x_original &lt;- t(t(x_vals)*(c(5, 4) - c(0.1, 0.1)) + c(0.1, 0.1)) 
+
+fn_vals &lt;- apply(x_vals, 1, function(x) ff$fn(x = matrix(x, ncol = 2))) + mean(unique_data$y)
+# normalize
+lognormal_const &lt;- log(sum(exp(fn_vals))*0.0098*0.0078*25/9)
+post_x_modal &lt;- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
+
+# plot joint posterior of (R, beta) from BOSS
+ggplot(post_x_modal, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) + 
+  geom_point(data = data.frame(x.1 = post_x_modal$x.1[which.max(post_x_modal$pos)], x.2 = post_x_modal$x.2[which.max(post_x_modal$pos)]), color = &#39;red&#39;, shape = 1, size =0.5) +
+  geom_point(data = data.frame(x.1 = 2, x.2 = 2), color = &#39;orange&#39;, size =0.5) + coord_fixed() + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$\\beta$&#39;)</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="boss-aghq-posterior-distribuiton" class="section level3">
+<h3>BOSS-AGHQ posterior distribuiton:</h3>
+<pre class="r"><code># get the design points data from BOSS
+data_to_smooth &lt;- list()
+unique_data &lt;- unique(data.frame(x = res_opt_aghq$result$x, y = res_opt_aghq$result$y))
+data_to_smooth$x &lt;- as.matrix(dplyr::select(unique_data, -y))
+data_to_smooth$y &lt;- (unique_data$y - mean(unique_data$y))
+
+square_exp_cov &lt;- square_exp_cov_generator_nd(length_scale = res_opt_aghq$length_scale, signal_var = res_opt_aghq$signal_var)
+
+surrogate &lt;- function(xvalue, data_to_smooth, cov){
+  predict_gp(data_to_smooth, x_pred = xvalue, choice_cov = cov, noise_var = 1e-6)$mean
+}
+
+ff &lt;- list()
+ff$fn &lt;- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, cov = square_exp_cov))
+
+x.1 &lt;- (seq(from = 0.1, to = 5, length.out = 300) - 0.1)/4.9
+x.2 &lt;- (seq(from = 0.1, to = 4, length.out = 300) - 0.1)/3.9
+x_vals &lt;- expand.grid(x.1, x.2)
+names(x_vals) &lt;- c(&#39;x.1&#39;,&#39;x.2&#39;)
+x_original &lt;- t(t(x_vals)*(c(5, 4) - c(0.1, 0.1)) + c(0.1, 0.1)) 
+
+fn_vals &lt;- apply(x_vals, 1, function(x) ff$fn(x = matrix(x, ncol = 2))) + mean(unique_data$y)
+# normalize
+lognormal_const &lt;- log(sum(exp(fn_vals))*0.0098*0.0078*25/9)
+post_x_aghq &lt;- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
+
+# plot joint posterior of (R, beta) from BOSS
+ggplot(post_x_aghq, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) + 
+  geom_point(data = data.frame(x.1 = post_x_aghq$x.1[which.max(post_x_aghq$pos)], x.2 = post_x_aghq$x.2[which.max(post_x_aghq$pos)]), color = &#39;red&#39;, shape = 1, size =0.5) +
+  geom_point(data = data.frame(x.1 = 2, x.2 = 2), color = &#39;orange&#39;, size =0.5) + coord_fixed() + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$\\beta$&#39;)</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="mcmc-posterior-distribution" class="section level3">
+<h3>MCMC posterior distribution:</h3>
+<pre class="r"><code>ggplot(MCMC_samp, aes(a, b)) + stat_density_2d(
+  geom = &quot;raster&quot;,
+  aes(fill = after_stat(density)), n = 300,
+  contour = FALSE) + 
+  geom_point(data = data.frame(a = post_x_aghq$x.1[which.max(post_x_aghq$pos)], b = post_x_aghq$x.2[which.max(post_x_aghq$pos)]), color = &#39;red&#39;, shape = 1, size =0.5) +
+  geom_point(data = data.frame(a = 2, b = 2), color = &#39;orange&#39;, size =0.5) + coord_fixed() + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$\\beta$&#39;) + xlim(c(0.1, 5)) + ylim(c(0.1, 4))</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>From the above results, it is clear that BOSS is much better at
+depicting the joint posterior distribution than
+<code>inlabru</code>.</p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.4.1 (2024-06-14)
+Platform: aarch64-apple-darwin20
+Running under: macOS 15.0
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/Toronto
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] modeest_2.4.0       inlabru_2.11.1      fmesher_0.1.7      
+ [4] INLA_24.06.27       sp_2.1-4            Matrix_1.7-0       
+ [7] rstan_2.32.6        StanHeaders_2.32.10 tikzDevice_0.12.6  
+[10] lubridate_1.9.3     forcats_1.0.0       stringr_1.5.1      
+[13] dplyr_1.1.4         purrr_1.0.2         readr_2.1.5        
+[16] tidyr_1.3.1         tibble_3.2.1        ggplot2_3.5.1      
+[19] tidyverse_2.0.0     workflowr_1.7.1    
+
+loaded via a namespace (and not attached):
+  [1] mnormt_2.1.1        DBI_1.2.3           gridExtra_2.3      
+  [4] inline_0.3.19       rlang_1.1.4         magrittr_2.0.3     
+  [7] clue_0.3-65         git2r_0.33.0        matrixStats_1.4.1  
+ [10] e1071_1.7-16        compiler_4.4.1      getPass_0.2-4      
+ [13] loo_2.8.0           callr_3.7.6         vctrs_0.6.5        
+ [16] lhs_1.2.0           rmutil_1.1.10       pkgconfig_2.0.3    
+ [19] fastmap_1.2.0       labeling_0.4.3      utf8_1.2.4         
+ [22] promises_1.3.0      rmarkdown_2.28      pracma_2.4.4       
+ [25] tzdb_0.4.0          nloptr_2.1.1        ps_1.8.0           
+ [28] MatrixModels_0.5-3  xfun_0.47           cachem_1.1.0       
+ [31] jsonlite_1.8.9      highr_0.11          later_1.3.2        
+ [34] parallel_4.4.1      cluster_2.1.6       R6_2.5.1           
+ [37] bslib_0.8.0         stringi_1.8.4       mvQuad_1.0-8       
+ [40] rpart_4.1.23        numDeriv_2016.8-1.1 jquerylib_0.1.4    
+ [43] Rcpp_1.0.13         knitr_1.48          filehash_2.4-6     
+ [46] httpuv_1.6.15       splines_4.4.1       timechange_0.3.0   
+ [49] tidyselect_1.2.1    rstudioapi_0.16.0   yaml_2.3.10        
+ [52] timeDate_4041.110   codetools_0.2-20    processx_3.8.4     
+ [55] pkgbuild_1.4.4      lattice_0.22-6      plyr_1.8.9         
+ [58] withr_3.0.1         evaluate_1.0.0      stable_1.1.6       
+ [61] sf_1.0-19           units_0.8-5         proxy_0.4-27       
+ [64] RcppParallel_5.1.10 pillar_1.9.0        whisker_0.4.1      
+ [67] KernSmooth_2.23-24  stats4_4.4.1        sn_2.1.1           
+ [70] generics_0.1.3      rprojroot_2.0.4     hms_1.1.3          
+ [73] munsell_0.5.1       scales_1.3.0        timeSeries_4041.111
+ [76] class_7.3-22        glue_1.7.0          statip_0.2.3       
+ [79] tools_4.4.1         data.table_1.16.0   spatial_7.3-17     
+ [82] fBasics_4041.97     fs_1.6.4            grid_4.4.1         
+ [85] QuickJSR_1.6.0      colorspace_2.1-1    cli_3.6.3          
+ [88] optimx_2025-4.9     fansi_1.0.6         viridisLite_0.4.2  
+ [91] gtable_0.3.5        stabledist_0.7-2    sass_0.4.9         
+ [94] digest_0.6.37       classInt_0.4-10     aghq_0.4.1         
+ [97] farver_2.1.2        htmltools_0.5.8.1   lifecycle_1.0.4    
+[100] httr_1.4.7          statmod_1.5.0       MASS_7.3-61        </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
