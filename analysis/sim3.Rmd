@@ -115,7 +115,9 @@ res_opt_modal <- BOSS(eval_func, criterion = 'modal', update_step = 5, max_iter 
 save(res_opt_modal, file = paste0(output_path, "/BOSS_modal_sim3.rda"))
 ```
 
-We then run BOSS using AGHQ as convergence statistics. Again, we check for convergence every $5$ iterations. The convergence criteria is relative difference in AGHQ statstics being less than $0.05$.
+The above BOSS algorithm with `modal` convergence criterion converged in $65$ iterations.
+
+We then run BOSS using AGHQ as convergence statistics. Again, we check for convergence every $5$ iterations. The convergence criteria is relative difference in AGHQ statistics being less than $0.05$.
 
 ```{r, eval = F}
 set.seed(123)
@@ -128,6 +130,8 @@ res_opt_aghq <- BOSS(eval_func, criterion = 'aghq', update_step = 5, max_iter = 
 
 save(res_opt_aghq, file = paste0(output_path, "/BOSS_aghq_sim3.rda"))
 ```
+
+The above BOSS algorithm with `aghq` criterion converged with $75$ iterations.
 
 ## MCMC
 
