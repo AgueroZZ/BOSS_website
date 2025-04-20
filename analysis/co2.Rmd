@@ -1,0 +1,274 @@
+---
+title: "Example 1: Decomposition of CO2 Variation"
+author: "Ziang Zhang"
+date: "2025-04-18"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Read in the data
+
+```{r}
+library(BayesGP)
+library(tidyverse)
+library(npreg)
+function_path <- "./code"
+output_path <- "./output/co2"
+data_path <- "./data/co2"
+source(paste0(function_path, "/00_BOSS.R"))
+```
+
+
+```{r}
+### Read in the full data:
+co2s = read.table(paste0(data_path, "/daily_flask_co2_mlo.csv"), header = FALSE, sep = ",",
+                  skip = 69, stringsAsFactors = FALSE, col.names = c("day",
+                                                                     "time", "junk1", "junk2", "Nflasks", "quality",
+                                                                     "co2"))
+co2s$date = strptime(paste(co2s$day, co2s$time), format = "%Y-%m-%d %H:%M",
+                     tz = "UTC")
+co2s$day = as.Date(co2s$date)
+timeOrigin = as.Date("1960/03/30")
+co2s$timeYears = round(as.numeric(co2s$day - timeOrigin)/365.25,
+                         3)
+co2s$dayInt = as.integer(co2s$day)
+allDays = seq(from = min(co2s$day), to = max(co2s$day),
+              by = "7 day")
+observed_dataset <- co2s %>% filter(!is.na(co2s$co2)) %>% dplyr::select(c("co2", "timeYears"))
+observed_dataset$quality <- ifelse(co2s$quality > 0, 1, 0)
+observed_dataset <- observed_dataset %>% filter(quality == 0)
+### Create the covariate for trend and the 1-year seasonality 
+observed_dataset$t1 <- observed_dataset$timeYears
+observed_dataset$t2 <- observed_dataset$timeYears
+observed_dataset$t3 <- observed_dataset$timeYears
+observed_dataset$t4 <- observed_dataset$timeYears
+```
+
+
+
+## Implement the BOSS algorithm
+
+```{r}
+lower <- 2; upper <- 6; noise_var <- 1e-6
+eval_once <- function(a){
+  mod_once <- model_fit(formula = co2 ~ f(x = t1, model = "IWP", order = 2, sd.prior = list(param = 30, h = 10), k = 30, initial_location = median(observed_dataset$t1)) +
+                          f(x = t2, model = "sGP", sd.prior = list(param = 1, h = 10), a = (2*pi), m = 2, k = 30) + 
+                          f(x = t3, model = "sGP", sd.prior = list(param = 1, h = 10), a = (2*pi/a), m = 1, k = 30),
+                        data = observed_dataset,
+                        control.family = list(sd.prior = list(param = 1)),
+                        family = "Gaussian", aghq_k = 3)
+  mod_once$mod$normalized_posterior$lognormconst
+}
+
+surrogate <- function(xvalue, data_to_smooth, choice_cov) {
+  predict_gp(
+    data = data_to_smooth,
+    x_pred = matrix(xvalue, ncol = 1),
+    choice_cov = choice_cov,
+    noise_var = noise_var
+  )$mean
+}
+
+integrate_aghq <- function(f, k = 100, startingvalue = 0){
+  ff <- list(fn = f, gr = function(x) numDeriv::grad(f, x), he = function(x) numDeriv::hessian(f, x))
+  aghq::aghq(ff = ff, k = k, startingvalue = startingvalue)$normalized_posterior$lognormconst
+}
+```
+
+
+```{r eval=FALSE}
+begin_time <- Sys.time()
+BO_result <- BOSS(eval_once, update_step = 5, max_iter = 30, 
+        lower = lower, upper = upper, noise_var = noise_var, initial_design = 5,
+        # turning off AGHQ check
+        AGHQ_iter_check = 5, AGHQ_eps = 0, AGHQ_check_warmup = 10,
+        opt.lengthscale.grid = 100, opt.grid = 100,
+        delta = 0.01)
+end_time <- Sys.time()
+end_time - begin_time
+save(BO_result, file = paste0(output_path, "/BO_result.rda"))
+```
+
+```{r}
+load(paste0(output_path, "/BO_result.rda"))
+data_to_smooth <- list()
+data_to_smooth$x <- as.numeric(BO_result$result$x)[order(as.numeric(BO_result$result$x))]
+data_to_smooth$x_original <- as.numeric(BO_result$result$x_original)[order(as.numeric(BO_result$result$x))]
+data_to_smooth$y <- as.numeric(BO_result$result$y)[order(as.numeric(BO_result$result$x))]
+data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
+```
+
+
+```{r}
+x <- seq(2.01, 5.99, by = 0.01)
+y <- qnorm((x - lower)/(upper - lower))
+ff <- list()
+ff$fn <- function(y) as.numeric(surrogate(pnorm(y), data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = BO_result$length_scale, signal_var = BO_result$signal_var)) + dnorm(y, log = TRUE))
+fn_vals <- sapply(y, ff$fn)
+plot(exp(fn_vals) ~ y, type = "l")
+
+lognormal_const <- integrate_aghq(f = ff$fn, k = 10)
+post_y <- data.frame(y = y, pos = exp(fn_vals - lognormal_const))
+post_x <- data.frame(x = pnorm(post_y$y) * (upper - lower) + lower, post = (post_y$pos / dnorm(post_y$y))/(upper - lower) )
+plot(post_x$post ~ post_x$x, type = "l", ylab = "Post", 
+     xlab = '$\\alpha$' , cex.lab = 1.5, cex.axis = 1.5)
+for(x_val in data_to_smooth$x_original) {
+  segments(x_val, -0.02, x_val, -0.05, col = "red")
+}
+```
+
+Compute the HPD:
+
+```{r}
+post_x$x <- round(post_x$x, digits = 2)
+my_cdf <- cumsum(post_x$post * c(diff(post_x$x), 0))
+my_cdf[which(post_x$x == 3.47)] - my_cdf[which(post_x$x == 3.11)]
+plot(post_x$post ~ post_x$x, type = "l", ylab = "Post", 
+     xlab = expression(alpha), cex.lab = 2.0, cex.axis = 2.0)
+abline(v = 3.47, col = "purple")
+abline(v = 3.11, col = "purple")
+
+my_cdf[which(post_x$x == 3.82)] - my_cdf[which(post_x$x == 2.82)]
+plot(post_x$post ~ post_x$x, type = "l", ylab = "Post", 
+     xlab = expression(alpha), cex.lab = 2.0, cex.axis = 2.0)
+abline(v = 3.82, col = "purple")
+abline(v = 2.82, col = "purple")
+```
+
+
+Compute AGHQ:
+
+```{r}
+aghq_boss <- function(f, k = 100, data_to_smooth){
+  ff <- list(fn = f, gr = function(x) numDeriv::grad(f, x), he = function(x) numDeriv::hessian(f, x))
+  opt_result <- list(ff = ff, mode = qnorm(data_to_smooth$x[which.max(data_to_smooth$y)]))
+  opt_result$hessian = -matrix(ff$he(opt_result$mode))
+  aghq::aghq(ff = ff, k = k, optresults = opt_result, startingvalue = opt_result$mode)
+}
+aghq_boss_obj <- aghq_boss(f = ff$fn, k = 10, data_to_smooth)
+
+nodes <- aghq_boss_obj[[1]]$grid$nodes
+nodes_converted <- as.numeric(pnorm(nodes)*(upper - lower) + lower)
+L <- as.numeric(sqrt(aghq_boss_obj$normalized_posterior$grid$features$C))
+weights <- as.numeric(aghq_boss_obj[[1]]$nodesandweights$weights)
+lambda <- weights * exp(aghq_boss_obj[[1]]$nodesandweights$logpost_normalized)
+```
+
+
+Fit new models at these nodes:
+
+```{r eval=FALSE}
+fit_once <- function(a){
+  mod_once <- model_fit(formula = co2 ~ f(x = t1, model = "IWP", order = 2, sd.prior = list(param = 30, h = 10), k = 30, initial_location = median(observed_dataset$t1)) +
+                          f(x = t2, model = "sGP", sd.prior = list(param = 1, h = 10), a = (2*pi), m = 2, k = 30) + 
+                          f(x = t3, model = "sGP", sd.prior = list(param = 1, h = 10), a = (2*pi/a), m = 1, k = 30),
+                        data = observed_dataset,
+                        control.family = list(sd.prior = list(param = 1)),
+                        family = "Gaussian", aghq_k = 3)
+  mod_once
+}
+set.seed(123)
+for (i in 1:length(nodes_converted)){
+  mod <- fit_once(nodes_converted[i]) 
+  save(mod, file = paste0(output_path, "/model", "_", i,".rda"))
+}
+```
+
+
+Inferring the latent field:
+
+```{r eval=FALSE}
+num_samples <- round(3000 * lambda, 0)
+t1_samples <- data.frame(t = seq(0,62, by = 0.01))
+t2_samples <- data.frame(t = seq(0,62, by = 0.01))
+t3_samples <- data.frame(t = seq(0,62, by = 0.01))
+
+for (i in 1:length(num_samples)) {
+  load(paste0(output_path, "/model", "_", i,".rda"))
+  pred <- predict(mod, variable = "t1", only.samples = T, newdata = data.frame(t1 = seq(0,62, by = 0.01)))[,-1][,1:num_samples[i]]
+  t1_samples <- cbind(t1_samples, pred)
+  pred <- predict(mod, variable = "t2", only.samples = T, newdata = data.frame(t2 = seq(0,62, by = 0.01)))[,-1][,1:num_samples[i]]
+  t2_samples <- cbind(t2_samples, pred)
+  pred <- predict(mod, variable = "t3", only.samples = T, newdata = data.frame(t3 = seq(0,62, by = 0.01)))[,-1][,1:num_samples[i]]
+  t3_samples <- cbind(t3_samples, pred)
+}
+save(t1_samples, file = paste0(output_path, "/t1_samples.rda"))
+save(t2_samples, file = paste0(output_path, "/t2_samples.rda"))
+save(t3_samples, file = paste0(output_path, "/t3_samples.rda"))
+```
+
+
+Take a look at the results:
+
+```{r}
+load(paste0(output_path, "/t1_samples.rda"))
+load(paste0(output_path, "/t2_samples.rda"))
+load(paste0(output_path, "/t3_samples.rda"))
+
+t_all_samples <- t1_samples + t2_samples + t3_samples
+t_all_samples[,1] <- t1_samples[,1]
+t_all_summary <- extract_mean_interval_given_samps(t_all_samples)
+t_all_summary$time <- (t_all_summary$x * 365.25) + timeOrigin
+
+plot(t_all_summary$q0.5 ~ t_all_summary$time, type = "l", 
+     lty = "solid", ylab = "CO2", xlab = "year", cex.lab = 1.5, cex.axis = 1.5)
+lines(t_all_summary$q0.975 ~ t_all_summary$time, col = "red", lty = "dashed")
+lines(t_all_summary$q0.025 ~ t_all_summary$time, col = "red", lty = "dashed")
+```
+
+```{r}
+ts_samples <- t2_samples + t3_samples
+ts_samples[,1] <- t2_samples[,1]
+ts_summary <- extract_mean_interval_given_samps(ts_samples)
+ts_summary$time <- (ts_summary$x * 365.25) + timeOrigin
+
+plot(ts_summary$q0.5 ~ ts_summary$time, type = "l", lty = "solid", ylab = "CO2", xlab = "year",
+     xlim = as.Date(c("1985-01-01","2000-01-01")), ylim = c(725, 740), cex.lab = 1.5, cex.axis = 1.5)
+lines(ts_summary$q0.975 ~ ts_summary$time, col = "red", lty = "dashed")
+lines(ts_summary$q0.025 ~ ts_summary$time, col = "red", lty = "dashed")
+```
+
+
+
+## Implement grid-based algorithm
+
+```{r eval=FALSE}
+library(parallel)
+x_vals  <- seq(2.01, 6, by = 0.01)
+n_cores <- 12
+# this returns a list of length length(x_vals)
+res_list  <- mclapply(x_vals, eval_once, mc.cores = n_cores)
+exact_vals <- unlist(res_list)
+
+# Close the progress bar
+exact_grid_result <- data.frame(x = x_vals, exact_vals = exact_vals)
+exact_grid_result$exact_vals <- exact_grid_result$exact_vals - max(exact_grid_result$exact_vals)
+exact_grid_result$fx <- exp(exact_grid_result$exact_vals)
+
+# Calculate the differences between adjacent x values
+dx <- diff(exact_grid_result$x)
+# Compute the trapezoidal areas and sum them up
+integral_approx <- sum(0.5 * (exact_grid_result$fx[-1] + exact_grid_result$fx[-length(exact_grid_result$fx)]) * dx)
+exact_grid_result$pos <- exact_grid_result$fx / integral_approx
+save(exact_grid_result, file = paste0(output_path, "/exact_grid_result.rda"))
+```
+
+Plot the results:
+
+```{r}
+load(paste0(output_path, "/exact_grid_result.rda"))
+plot(exact_grid_result$x, exact_grid_result$pos, type = "l", col = "red", xlab = "", ylab = "density", main = "Posterior", lty = 1, cex.lab = 1.5, cex.axis = 1.5)
+lines(post_x$x, post_x$post, col = "blue", lty = 2, lwd = 2)
+legend("topright", legend = c("BOSS", "Exact"), col = c("blue", "red"), lty = c(2, 1), cex = 1.5)
+for(x_val in data_to_smooth$x_original) {
+  segments(x_val, -0.02, x_val, -0.05, col = "red")
+}
+```
+
+
+As shown in the figure, the BOSS algorithm is able provide a good approximation of the posterior distribution, while requiring significantly fewer evaluations of the likelihood function.
+
+
+
+
