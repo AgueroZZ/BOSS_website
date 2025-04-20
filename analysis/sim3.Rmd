@@ -57,7 +57,7 @@ We first run `inlabru` to to fit the model. We set the following priors for the 
 \beta \sim \mathrm{Unif}(0.1, 4),  \ \gamma \sim \mathcal{N}(0, & 1000), \ \sigma^2 \sim \mathrm{Inv-Gamma}(1, 10^{-5}).
 \end{aligned*}
 
-```{r, echo = F}
+```{r}
 a_fun <- function(u){
   qunif(pnorm(u), 0.1, 5)
 }
@@ -73,8 +73,6 @@ cmp <- ~ a(1, model="linear", mean.linear=0, prec.linear=1) +
 form <- lr ~ Intercept + c*log(1 + (r/a_fun(a))^b_fun(b))
 
 fit <- bru(cmp, formula = form, data = data, family = 'gaussian')
-
-summary(fit)
 ```
 
 ## BOSS
@@ -102,55 +100,52 @@ eval_func <- function(par, x = r, y = lr){
 
 Next, we run the BOSS algorithm where the stopping criteria is based on the convergence of the posterior mode. Specifically, we check the modal convergence every $5$ BO iteration, and consider the convergence statistics of the average $5$ nearest neighbor distance around the current mode.
 
-```{r, echo = F}
+```{r, eval = F}
 set.seed(123)
-res_opt_modal <- BOSS_modal(eval_func, update_step = 5, max_iter = 100, D = 2,
+res_opt_modal <- BOSS(eval_func, criterion = 'modal', update_step = 5, max_iter = 100, D = 2,
                         lower = rep(0.1, 2), upper = c(5, 4),
                         noise_var = 1e-6,
                         modal_iter_check = 5,  modal_check_warmup = 20, modal_k.nn = 5,
                         modal_eps = 0.01,
                         initial_design = 5, delta = 0.01^2,
-                        optim.n = 5, optim.max.iter = 100,
-                        opt.lengthscale.grid = NULL,  # Grid-based option for lengthscale optimization.
-                        opt.grid = NULL,              # Grid-based option for AF optimization.
-                        verbose = 3)
+                        optim.n = 5, optim.max.iter = 100)
+
+save(res_opt_modal, file = paste0(output_path, "/BOSS_modal_sim3.rda"))
 ```
 
 We then run BOSS using AGHQ as convergence statistics. Again, we check for convergence every $5$ iterations. The convergence criteria is relative difference in AGHQ statstics being less than $0.05$.
 
-```{r, echo = F}
+```{r, eval = F}
 set.seed(123)
-res_opt_aghq <- BOSS_aghq(eval_func, update_step = 5, max_iter = 100, D = 2,
+res_opt_aghq <- BOSS(eval_func, criterion = 'aghq', update_step = 5, max_iter = 100, D = 2,
                       lower = rep(0.1, 2), upper = c(5, 4),
                       noise_var = 1e-6,
                       AGHQ_k = 3, AGHQ_iter_check = 5,  AGHQ_check_warmup = 20, AGHQ_eps = 0.05, buffer = 1e-4,
                       initial_design = 5, delta = 0.01^2,
-                      optim.n = 5, optim.max.iter = 100,
-                      opt.lengthscale.grid = NULL,  # Grid-based option for lengthscale optimization.
-                      opt.grid = NULL,              # Grid-based option for AF optimization.
-                      verbose = 3)
+                      optim.n = 5, optim.max.iter = 100)
+
+save(res_opt_aghq, file = paste0(output_path, "/BOSS_aghq_sim3.rda"))
 ```
 
 ## MCMC
 
 Lastly, we implement the MCMC-based method using `stan` to obtain the oracle. 
 
-```{r, echo = F}
+```{r, eval = F}
 set.seed(1234)
-system.time(
-  MCMC_fit <- stan(
+MCMC_fit <- stan(
     file = "code/nlreg.stan",  # Stan program
     data = list(x = r, y = lr, N = length(r)),    # named list of data
     chains = 4,             # number of Markov chains
     warmup = 1000,          # number of warmup iterations per chain
     iter = 20000,            # total number of iterations per chain
     cores = 4,              # number of cores (could use one per chain)
-    algorithm = 'NUTS'
-  ))
+    algorithm = 'NUTS')
 
 # thin the samples fo plotting
 MCMC_samp <- as.data.frame(MCMC_fit)
-MCMC_samp_thin <- MCMC_samp[seq(1, 76000, by = 8),]
+#MCMC_samp_thin <- MCMC_samp[seq(1, 76000, by = 8),]
+save(MCMC_samp, file = paste0(output_path, "/MCMC_sim3.rda"))
 ```
 
 
@@ -160,7 +155,7 @@ We now compare the results of the posterior distributions from `inlabru`, modal-
 
 ### `inlabru` posterior distribution:
 
-```{r}
+```{r, warning = F}
 # get joint posterior of (R, beta) from inlabru
 joint_samp <- inla.posterior.sample(10000, fit, selection = list(a = 1, b = 1), seed = 12345)
 joint_samp <- do.call('rbind', lapply(joint_samp, function(x) matrix(x$latent, ncol = 2)))
@@ -181,6 +176,8 @@ ggplot(inla.joint.samps, aes(a, b)) + stat_density_2d(
 ### BOSS-modal posterior distribution:
 
 ```{r}
+load(paste0(output_path, "/BOSS_modal_sim3.rda"))
+
 # get the design points data from BOSS
 data_to_smooth <- list()
 unique_data <- unique(data.frame(x = res_opt_modal$result$x, y = res_opt_modal$result$y))
@@ -216,6 +213,8 @@ ggplot(post_x_modal, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) +
 ### BOSS-AGHQ posterior distribuiton:
 
 ```{r}
+load(paste0(output_path, "/BOSS_aghq_sim3.rda"))
+
 # get the design points data from BOSS
 data_to_smooth <- list()
 unique_data <- unique(data.frame(x = res_opt_aghq$result$x, y = res_opt_aghq$result$y))
@@ -251,6 +250,8 @@ ggplot(post_x_aghq, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) +
 ### MCMC posterior distribution:
 
 ```{r, warning=F}
+load(paste0(output_path, "/MCMC_sim3.rda"))
+
 ggplot(MCMC_samp, aes(a, b)) + stat_density_2d(
   geom = "raster",
   aes(fill = after_stat(density)), n = 300,
@@ -260,4 +261,4 @@ ggplot(MCMC_samp, aes(a, b)) + stat_density_2d(
 ```
 
 
-From the above results, it is clear that BOSS is much better at depicting the joint posterior distribution than `inlabru`.
+From the above results, it is clear that BOSS is much better at depicting the joint posterior distribution than `inlabru`. The joint distribution from `inlabru` is simply the product of the marginal distribution, which completely ignores the more complex structures in the joint posterior.
