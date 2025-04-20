@@ -26,10 +26,11 @@ source(paste0(function_path, "/00_BOSS.R"))
 ```
 
 Consider the following non-linear regression model:
-\begin{aligned*}
-y_i \mid \log(\rho_i) $\overset{ind}{\sim}\mathcal{N}(\log\rho(r_i), \sigma^2), \\
-\log\rho(r_i) = \log\rho_0 - \gamma\log\left\{1 + (r_i/R)^\beta\right\}.
-\end{aligned*}
+
+\begin{align*}
+y_i \mid \log(\rho_i) &\overset{ind}{\sim}\mathcal{N}(\log\rho(r_i), \sigma^2), \\
+\log\rho(r_i) &= \log\rho_0 - \gamma\log\left\{1 + (r_i/R)^\beta\right\}.
+\end{align*}
 
 We simulate $n = 200$ data points based on the above model with $\rho_0 = 10$, $R = 2$, $\beta = 2$, $\gamma = -2.5$, and $\sigma = 0.5$. The inferential goal is the nuisance parameters $R$ and $\beta$.
 
@@ -52,10 +53,11 @@ ggplot(data, aes(r, lr)) + geom_point() + ylab('y')
 ## inlabru
 
 We first run `inlabru` to to fit the model. We set the following priors for the parameters:
-\begin{aligned*}
+
+\begin{align*}
 \rho_0 \sim \mathcal{N}(0, 1000), \ & R \sim \mathrm{Unif}(0.1, 5), \\
 \beta \sim \mathrm{Unif}(0.1, 4),  \ \gamma \sim \mathcal{N}(0, & 1000), \ \sigma^2 \sim \mathrm{Inv-Gamma}(1, 10^{-5}).
-\end{aligned*}
+\end{align*}
 
 ```{r}
 a_fun <- function(u){
