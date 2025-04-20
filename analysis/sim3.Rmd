@@ -79,7 +79,11 @@ fit <- bru(cmp, formula = form, data = data, family = 'gaussian')
 
 ## BOSS
 
-Now let's run BOSS. We first specify the (unnormalized) log-posterior for $(R,\beta)$. Note that for this specific problem, the unnormalized log-posterior has a closed-form expression:
+Now let's run BOSS. 
+
+### BOSS-modal
+
+We first specify the (unnormalized) log-posterior for $(R,\beta)$. Note that for this specific problem, the unnormalized log-posterior has a closed-form expression:
 
 ```{r}
 # specify the objective function for BOSS: unnormalized log posterior of (R, beta)
@@ -99,6 +103,8 @@ eval_func <- function(par, x = r, y = lr){
 }
 
 ```
+
+### BOSS-aghq
 
 Next, we run the BOSS algorithm where the stopping criteria is based on the convergence of the posterior mode. Specifically, we check the modal convergence every $5$ BO iteration, and consider the convergence statistics of the average $5$ nearest neighbor distance around the current mode.
 
@@ -154,37 +160,22 @@ MCMC_samp <- as.data.frame(MCMC_fit)
 save(MCMC_samp, file = paste0(output_path, "/MCMC_sim3.rda"))
 ```
 
-
 ## Results Comparison
 
-We now compare the results of the posterior distributions from `inlabru`, modal-based BOSS, and AGHQ-based BOSS, and MCMC.
+### Marginal Posterior Distributions
 
-### `inlabru` posterior distribution:
-
-```{r, warning = F}
-# get joint posterior of (R, beta) from inlabru
-joint_samp <- inla.posterior.sample(10000, fit, selection = list(a = 1, b = 1), seed = 12345)
-joint_samp <- do.call('rbind', lapply(joint_samp, function(x) matrix(x$latent, ncol = 2)))
-
-inla.joint.samps <- data.frame(a = a_fun(joint_samp[,1]), b = b_fun(joint_samp[,2]))
-
-# plot joint posterior of (R, beta) from inlabru
-ggplot(inla.joint.samps, aes(a, b)) + stat_density_2d(
-  geom = "raster",
-  aes(fill = after_stat(density)), n = 500,
-  contour = FALSE) +
-  geom_point(data = data.frame(a = a_fun(fit$summary.fixed$mode[1]), b = b_fun(fit$summary.fixed$mode[2])), color = 'red', shape = 1, size =0.5) + 
-  geom_point(data = data.frame(a = 2, b = 2), color = 'orange', size =0.5) +
-  coord_fixed() + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$\\beta$') + xlim(c(0.1, 5)) + ylim(c(0.1, 4))
-```
-
-
-### BOSS-modal posterior distribution:
+We first compare the marginal posterior distributions of $R$ and $\beta$ from `inlabru`, modal-based BOSS, and AGHQ-based BOSS, and MCMC.
 
 ```{r}
+# inlabru marginal samples
+set.seed(1234)
+inla.samples.a <- a_fun(inla.rmarginal(49500, fit$marginals.fixed$a))
+inla.samples.b <- b_fun(inla.rmarginal(49500, fit$marginals.fixed$b))
+
+# BOSS-modal marginal samples
+
 load(paste0(output_path, "/BOSS_modal_sim3.rda"))
 
-# get the design points data from BOSS
 data_to_smooth <- list()
 unique_data <- unique(data.frame(x = res_opt_modal$result$x, y = res_opt_modal$result$y))
 data_to_smooth$x <- as.matrix(dplyr::select(unique_data, -y))
@@ -210,18 +201,18 @@ fn_vals <- apply(x_vals, 1, function(x) ff$fn(x = matrix(x, ncol = 2))) + mean(u
 lognormal_const <- log(sum(exp(fn_vals))*0.0098*0.0078*25/9)
 post_x_modal <- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
 
-# plot joint posterior of (R, beta) from BOSS
-ggplot(post_x_modal, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) + 
-  geom_point(data = data.frame(x.1 = post_x_modal$x.1[which.max(post_x_modal$pos)], x.2 = post_x_modal$x.2[which.max(post_x_modal$pos)]), color = 'red', shape = 1, size =0.5) +
-  geom_point(data = data.frame(x.1 = 2, x.2 = 2), color = 'orange', size =0.5) + coord_fixed() + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$\\beta$')
-```
+dx <- unique(post_x_modal$x.1)[2] - unique(post_x_modal$x.1)[1]
+dy <- unique(post_x_modal$x.2)[2] - unique(post_x_modal$x.2)[1]
+set.seed(123456)
+sample_idx <- rmultinom(1:250000, size = 49500, prob = post_x_modal$pos)
+sample_x_modal <- data.frame(post_x_modal, n = sample_idx)
 
-### BOSS-AGHQ posterior distribuiton:
+samples_BOSS_modal <- data.frame(do.call(rbind, apply(sample_x_modal, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
 
-```{r}
+# BOSS-aghq marginal samples
+
 load(paste0(output_path, "/BOSS_aghq_sim3.rda"))
 
-# get the design points data from BOSS
 data_to_smooth <- list()
 unique_data <- unique(data.frame(x = res_opt_aghq$result$x, y = res_opt_aghq$result$y))
 data_to_smooth$x <- as.matrix(dplyr::select(unique_data, -y))
@@ -247,17 +238,90 @@ fn_vals <- apply(x_vals, 1, function(x) ff$fn(x = matrix(x, ncol = 2))) + mean(u
 lognormal_const <- log(sum(exp(fn_vals))*0.0098*0.0078*25/9)
 post_x_aghq <- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
 
+dx <- unique(post_x_aghq$x.1)[2] - unique(post_x_aghq$x.1)[1]
+dy <- unique(post_x_aghq$x.2)[2] - unique(post_x_aghq$x.2)[1]
+set.seed(123456)
+sample_idx <- rmultinom(1:250000, size = 49500, prob = post_x_aghq$pos)
+sample_x_aghq <- data.frame(post_x_aghq, n = sample_idx)
+
+samples_BOSS_aghq <- data.frame(do.call(rbind, apply(sample_x_aghq, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
+
+# MCMC marginal samples
+load(paste0(output_path, "/MCMC_sim3.rda"))
+
+# Combine all samples together
+
+R_marginal <- data.frame(R = c(inla.samples.a, samples_BOSS_modal[,1], 
+                               samples_BOSS_aghq[,1], MCMC_samp$a), 
+                         method = rep(c('inlabru', 'BOSS-modal', 'BOSS-aghq', 'MCMC'),  
+                                      c(length(inla.samples.a), 
+                                        length(samples_BOSS_modal[,1]), 
+                                        length(samples_BOSS_aghq[,1]), 
+                                        length(MCMC_samp$a))))
+
+beta_marginal <- data.frame(beta = c(inla.samples.b, samples_BOSS_modal[,2],
+                                     samples_BOSS_aghq[,2], MCMC_samp$b), 
+                            method = rep(c('inlabru', 'BOSS-modal', 'BOSS-aghq', 'MCMC'),  
+                                         c(length(inla.samples.b),
+                                           length(samples_BOSS_modal[,2]), 
+                                           length(samples_BOSS_aghq[,2]), 
+                                           length(MCMC_samp$b))))
+```
+
+Plot the marginal posterior densities
+
+```{r}
+ggplot(R_marginal, aes(R)) + geom_density(aes(color = method)) + theme_minimal() + xlab('$R$')
+```
+
+```{r}
+ggplot(beta_marginal, aes(beta)) + geom_density(aes(color = method)) + theme_minimal() + xlab('$\\beta$')
+```
+
+### Joint Posterior Distribution
+
+We now compare the results of the posterior distributions from `inlabru`, modal-based BOSS, and AGHQ-based BOSS, and MCMC.
+
+#### `inlabru` joint posterior distribution:
+
+```{r, warning = F}
+# get joint posterior of (R, beta) from inlabru
+joint_samp <- inla.posterior.sample(10000, fit, selection = list(a = 1, b = 1), seed = 12345)
+joint_samp <- do.call('rbind', lapply(joint_samp, function(x) matrix(x$latent, ncol = 2)))
+
+inla.joint.samps <- data.frame(a = a_fun(joint_samp[,1]), b = b_fun(joint_samp[,2]))
+
+# plot joint posterior of (R, beta) from inlabru
+ggplot(inla.joint.samps, aes(a, b)) + stat_density_2d(
+  geom = "raster",
+  aes(fill = after_stat(density)), n = 500,
+  contour = FALSE) +
+  geom_point(data = data.frame(a = a_fun(fit$summary.fixed$mode[1]), b = b_fun(fit$summary.fixed$mode[2])), color = 'red', shape = 1, size =0.5) + 
+  geom_point(data = data.frame(a = 2, b = 2), color = 'orange', size =0.5) +
+  coord_fixed() + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$\\beta$') + xlim(c(0.1, 5)) + ylim(c(0.1, 4))
+```
+
+#### BOSS-modal joint posterior distribution:
+
+```{r}
+# plot joint posterior of (R, beta) from BOSS
+ggplot(post_x_modal, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) + 
+  geom_point(data = data.frame(x.1 = post_x_modal$x.1[which.max(post_x_modal$pos)], x.2 = post_x_modal$x.2[which.max(post_x_modal$pos)]), color = 'red', shape = 1, size =0.5) +
+  geom_point(data = data.frame(x.1 = 2, x.2 = 2), color = 'orange', size =0.5) + coord_fixed() + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$\\beta$')
+```
+
+#### BOSS-AGHQ joint posterior distribuiton:
+
+```{r}
 # plot joint posterior of (R, beta) from BOSS
 ggplot(post_x_aghq, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) + 
   geom_point(data = data.frame(x.1 = post_x_aghq$x.1[which.max(post_x_aghq$pos)], x.2 = post_x_aghq$x.2[which.max(post_x_aghq$pos)]), color = 'red', shape = 1, size =0.5) +
   geom_point(data = data.frame(x.1 = 2, x.2 = 2), color = 'orange', size =0.5) + coord_fixed() + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$\\beta$')
 ```
 
-### MCMC posterior distribution:
+#### MCMC joint posterior distribution:
 
 ```{r, warning=F}
-load(paste0(output_path, "/MCMC_sim3.rda"))
-
 ggplot(MCMC_samp, aes(a, b)) + stat_density_2d(
   geom = "raster",
   aes(fill = after_stat(density)), n = 300,
@@ -265,6 +329,5 @@ ggplot(MCMC_samp, aes(a, b)) + stat_density_2d(
   geom_point(data = data.frame(a = post_x_aghq$x.1[which.max(post_x_aghq$pos)], b = post_x_aghq$x.2[which.max(post_x_aghq$pos)]), color = 'red', shape = 1, size =0.5) +
   geom_point(data = data.frame(a = 2, b = 2), color = 'orange', size =0.5) + coord_fixed() + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$\\beta$') + xlim(c(0.1, 5)) + ylim(c(0.1, 4))
 ```
-
 
 From the above results, it is clear that BOSS is much better at depicting the joint posterior distribution than `inlabru`. The joint distribution from `inlabru` is simply the product of the marginal distribution, which completely ignores the more complex structures in the joint posterior.
