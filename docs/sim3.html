@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree13358d2dfa51ec77b9aaf1c245192f596d2156c0targetblank13358d2a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree1026e5b103435343fa3295102c29c4a58e31303etargetblank1026e5ba">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/13358d2dfa51ec77b9aaf1c245192f596d2156c0" target="_blank">13358d2</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/1026e5b103435343fa3295102c29c4a58e31303e" target="_blank">1026e5b</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree13358d2dfa51ec77b9aaf1c245192f596d2156c0targetblank13358d2a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree1026e5b103435343fa3295102c29c4a58e31303etargetblank1026e5ba"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/13358d2dfa51ec77b9aaf1c245192f596d2156c0" target="_blank">13358d2</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/1026e5b103435343fa3295102c29c4a58e31303e" target="_blank">1026e5b</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -566,6 +566,7 @@ were generated:
 Ignored files:
     Ignored:    .DS_Store
     Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
     Ignored:    data/sim3/
 
 </code></pre>
@@ -610,6 +611,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/1026e5b103435343fa3295102c29c4a58e31303e/analysis/sim3.Rmd" target="_blank">1026e5b</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+wflow_publish("analysis/sim3.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/3528574ff40af53e22c2f7403c48df7fca3da3cd/docs/sim3.html" target="_blank">3528574</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 html
@@ -715,7 +750,13 @@ function_path &lt;- &quot;./code&quot;
 output_path &lt;- &quot;./output/sim3&quot;
 data_path &lt;- &quot;./data/sim3&quot;
 source(paste0(function_path, &quot;/00_BOSS.R&quot;))</code></pre>
-Consider the following non-linear regression model:
+<p>Consider the following non-linear regression model:</p>
+<p><span class="math display">\[\begin{align*}
+y_i \mid \log(\rho_i) &amp;\overset{ind}{\sim}\mathcal{N}(\log\rho(r_i),
+\sigma^2), \\
+\log\rho(r_i) &amp;= \log\rho_0 - \gamma\log\left\{1 +
+(r_i/R)^\beta\right\}.
+\end{align*}\]</span></p>
 <p>We simulate <span class="math inline">\(n = 200\)</span> data points
 based on the above model with <span class="math inline">\(\rho_0 =
 10\)</span>, <span class="math inline">\(R = 2\)</span>, <span
@@ -778,8 +819,14 @@ david.li
 </div>
 <div id="inlabru" class="section level2">
 <h2>inlabru</h2>
-We first run <code>inlabru</code> to to fit the model. We set the
-following priors for the parameters:
+<p>We first run <code>inlabru</code> to to fit the model. We set the
+following priors for the parameters:</p>
+<p><span class="math display">\[\begin{align*}
+\rho_0 \sim \mathcal{N}(0, 1000), \ &amp; R \sim \mathrm{Unif}(0.1, 5),
+\\
+\beta \sim \mathrm{Unif}(0.1, 4),  \ \gamma \sim \mathcal{N}(0, &amp;
+1000), \ \sigma^2 \sim \mathrm{Inv-Gamma}(1, 10^{-5}).
+\end{align*}\]</span></p>
 <pre class="r"><code>a_fun &lt;- function(u){
   qunif(pnorm(u), 0.1, 5)
 }
