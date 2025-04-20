@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree1026e5b103435343fa3295102c29c4a58e31303etargetblank1026e5ba">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreed9facf49d963aadeb6b0e8bc94d791197b59b73ctargetblankd9facf4a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/1026e5b103435343fa3295102c29c4a58e31303e" target="_blank">1026e5b</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/d9facf49d963aadeb6b0e8bc94d791197b59b73c" target="_blank">d9facf4</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree1026e5b103435343fa3295102c29c4a58e31303etargetblank1026e5ba"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreed9facf49d963aadeb6b0e8bc94d791197b59b73ctargetblankd9facf4a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/1026e5b103435343fa3295102c29c4a58e31303e" target="_blank">1026e5b</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/d9facf49d963aadeb6b0e8bc94d791197b59b73c" target="_blank">d9facf4</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -611,6 +611,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d9facf49d963aadeb6b0e8bc94d791197b59b73c/analysis/sim3.Rmd" target="_blank">d9facf4</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+wflow_publish("analysis/sim3.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/657dd74454ecd5e3870862cbe4edd292b6c53026/docs/sim3.html" target="_blank">657dd74</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -880,10 +914,14 @@ res_opt_modal &lt;- BOSS(eval_func, criterion = &#39;modal&#39;, update_step = 5
                         optim.n = 5, optim.max.iter = 100)
 
 save(res_opt_modal, file = paste0(output_path, &quot;/BOSS_modal_sim3.rda&quot;))</code></pre>
+<p>The above BOSS algorithm with <code>modal</code> convergence
+criterion converged in <span class="math inline">\(65\)</span>
+iterations.</p>
 <p>We then run BOSS using AGHQ as convergence statistics. Again, we
 check for convergence every <span class="math inline">\(5\)</span>
 iterations. The convergence criteria is relative difference in AGHQ
-statstics being less than <span class="math inline">\(0.05\)</span>.</p>
+statistics being less than <span
+class="math inline">\(0.05\)</span>.</p>
 <pre class="r"><code>set.seed(123)
 res_opt_aghq &lt;- BOSS(eval_func, criterion = &#39;aghq&#39;, update_step = 5, max_iter = 100, D = 2,
                       lower = rep(0.1, 2), upper = c(5, 4),
@@ -893,6 +931,8 @@ res_opt_aghq &lt;- BOSS(eval_func, criterion = &#39;aghq&#39;, update_step = 5, 
                       optim.n = 5, optim.max.iter = 100)
 
 save(res_opt_aghq, file = paste0(output_path, &quot;/BOSS_aghq_sim3.rda&quot;))</code></pre>
+<p>The above BOSS algorithm with <code>aghq</code> criterion converged
+with <span class="math inline">\(75\)</span> iterations.</p>
 </div>
 <div id="mcmc" class="section level2">
 <h2>MCMC</h2>
