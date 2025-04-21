@@ -448,7 +448,7 @@ BO_result_original_list <- readRDS(file = paste0(data_path, "/BO_result_original
 to_plot_data <- BO_result_list[[1]]
 to_plot_data$logpos <- log(to_plot_data$pos)
 to_plot_data_obs <- BO_result_original_list[[1]]
-y_min <- -15; y_max <- 0
+y_min <- -20; y_max <- 5
 mar.default <- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0), mfrow = c(2, 1))
 plot(to_plot_data$logpos ~ to_plot_data$x, 
@@ -478,7 +478,7 @@ for(x_val in to_plot_data_obs$x_original) {
 to_plot_data <- BO_result_list[[2]]
 to_plot_data$logpos <- log(to_plot_data$pos)
 to_plot_data_obs <- BO_result_original_list[[2]]
-y_min <- -15; y_max <- 0
+y_min <- -20; y_max <- 5
 
 mar.default <- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0), mfrow = c(2, 1))
@@ -509,7 +509,7 @@ for(x_val in to_plot_data_obs$x_original) {
 to_plot_data <- BO_result_list[[6]]
 to_plot_data$logpos <- log(to_plot_data$pos)
 to_plot_data_obs <- BO_result_original_list[[6]]
-y_min <- -15; y_max <- 0
+y_min <- -20; y_max <- 5
 
 mar.default <- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0), mfrow = c(2, 1))
@@ -540,7 +540,7 @@ for(x_val in to_plot_data_obs$x_original) {
 to_plot_data <- BO_result_list[[20]]
 to_plot_data$logpos <- log(to_plot_data$pos)
 to_plot_data_obs <- BO_result_original_list[[20]]
-y_min <- -15; y_max <- 0
+y_min <- -20; y_max <- 5
 
 mar.default <- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0), mfrow = c(2, 1))
@@ -573,8 +573,8 @@ for (i in 1:length(eval_num)) {
   to_plot_data <- BO_result_list[[i]]
   to_plot_data$logpos <- log(to_plot_data$pos)
   to_plot_data_obs <- BO_result_original_list[[i]]
-  y_min <- -15
-  y_max <- 0
+  y_min <- -20
+  y_max <- 5
   png(filename = paste0(output_path, "/easy/", "BOSS_approxi_B_", eval_number, "_med.png"), width = 800, height = 800)
   mar.default <- c(5,4,4,2)
   par(mar = mar.default + c(0, 1, 0, 0))
@@ -721,7 +721,7 @@ for (i in 1:length(eval_num)) {
   ff$fn <- function(y) as.numeric(surrogate(pnorm(y), data_to_smooth = data_to_smooth) + dnorm(y, log = TRUE))
   fn_vals <- sapply(y, ff$fn)
 
-  lognormal_const <- integrate_aghq(f = ff$fn)
+  lognormal_const <- log(integrate(f = function(y) exp(ff$fn(y)), lower = -Inf, upper = Inf)$value)
   post_y <- data.frame(y = y, pos = exp(fn_vals - lognormal_const))
   post_x <- data.frame(x = pnorm(post_y$y) * (upper - lower) + lower, post = (post_y$pos / dnorm(post_y$y))/(upper - lower) )
   
