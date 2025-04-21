@@ -12,7 +12,11 @@ For an overview of BOSS, see [this paper](https://arxiv.org/abs/2403.12250).
 
 **Examples:**
 
-These examples aim to provide the readers a reproducible way
+Here is a basic reproducible example of the BOSS algorithm, which illustrates the performance of the BOSS algorithm when the true posterior has different shapes.
+
++ [Starter: Explore Complex Posterior Functions](simA1.html)
+
+These more advanced examples aim to provide the readers some further understanding of the BOSS algorithm and its applications, by replicating the results from the paper.
 
 + [Simulation 1: Inference of the Unknown Periodicity](sim1.html)
 
