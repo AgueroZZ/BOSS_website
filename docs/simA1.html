@@ -530,15 +530,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreea5937852820df1fdb3f189cdb588f373fc3894b1targetblanka593785a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2bcc0e0c66ba44f6569dde70247482c05c8559f3targetblank2bcc0e0a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/a5937852820df1fdb3f189cdb588f373fc3894b1" target="_blank">a593785</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/2bcc0e0c66ba44f6569dde70247482c05c8559f3" target="_blank">2bcc0e0</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreea5937852820df1fdb3f189cdb588f373fc3894b1targetblanka593785a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2bcc0e0c66ba44f6569dde70247482c05c8559f3targetblank2bcc0e0a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -548,7 +548,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/a5937852820df1fdb3f189cdb588f373fc3894b1" target="_blank">a593785</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/2bcc0e0c66ba44f6569dde70247482c05c8559f3" target="_blank">2bcc0e0</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -588,7 +588,6 @@ Untracked files:
 
 Unstaged changes:
     Modified:   BOSS_website.Rproj
-    Modified:   analysis/index.Rmd
     Modified:   analysis/mortality.Rmd
     Modified:   code/00_BOSS.R
     Modified:   output/sim2/BO_data_to_smooth.rda
@@ -637,6 +636,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/2bcc0e0c66ba44f6569dde70247482c05c8559f3/analysis/simA1.Rmd" target="_blank">2bcc0e0</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+<td>
+workflowr::wflow_publish("analysis/simA1.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/simA1.html" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -744,6 +777,43 @@ true_log_post_mapped &lt;- function(y) {eval_once_mapped(y) - true_log_norm_cons
 plot((true_log_post_mapped(y)) ~ y, type = &quot;l&quot;, cex.lab = 1.5, cex.axis = 1.5, 
      xlab = &quot;y&quot;, ylab = &quot;log density&quot;, lwd = 2, col = &quot;blue&quot;)</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-1">
+Past versions of unnamed-chunk-2-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-2-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>true_log_post &lt;- function(x) {true_log_post_mapped(qnorm((x - lower)/(upper - lower))) - dnorm(qnorm((x - lower)/(upper - lower)), log = T) - log(upper - lower)}
 integrate(function(x) exp(true_log_post(x)), lower = 0, upper = 10)</code></pre>
 <pre><code>1.000275 with absolute error &lt; 9.7e-05</code></pre>
@@ -816,6 +886,43 @@ for(x_val in to_plot_data_obs$x_original) {
     segments(x_val, y_min, x_val, y_min - y_offset, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-7-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
+Past versions of unnamed-chunk-7-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-7-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="b-10" class="section level4">
 <h4>B = 10</h4>
@@ -846,6 +953,43 @@ for(x_val in to_plot_data_obs$x_original) {
     segments(x_val, y_min, x_val, y_min - y_offset, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-8-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-8-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="b-30" class="section level4">
 <h4>B = 30</h4>
@@ -876,6 +1020,43 @@ for(x_val in to_plot_data_obs$x_original) {
     segments(x_val, y_min, x_val, y_min - y_offset, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-9-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-9-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="b-100" class="section level4">
 <h4>B = 100</h4>
@@ -906,6 +1087,43 @@ for(x_val in to_plot_data_obs$x_original) {
     segments(x_val, y_min, x_val, y_min - y_offset, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-10-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
+Past versions of unnamed-chunk-10-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-10-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-10-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="kl-and-ks" class="section level3">
@@ -934,6 +1152,43 @@ true_log_post_mapped &lt;- function(y) {eval_once_mapped(y) - true_log_norm_cons
 plot((true_log_post_mapped(y)) ~ y, type = &quot;l&quot;, cex.lab = 1.5, cex.axis = 1.5, 
      xlab = &quot;y&quot;, ylab = &quot;log density&quot;, lwd = 2, col = &quot;blue&quot;)</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-14-1">
+Past versions of unnamed-chunk-14-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-14-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-14-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>true_log_post &lt;- function(x) {true_log_post_mapped(qnorm((x - lower)/(upper - lower))) - dnorm(qnorm((x - lower)/(upper - lower)), log = T) - log(upper - lower)}
 integrate(function(x) exp(true_log_post(x)), lower = 0, upper = 10)</code></pre>
 <pre><code>1.001231 with absolute error &lt; 2.3e-05</code></pre>
@@ -984,7 +1239,7 @@ BO_result_original_list &lt;- readRDS(file = paste0(data_path, &quot;/BO_result_
 <pre class="r"><code>to_plot_data &lt;- BO_result_list[[1]]
 to_plot_data$logpos &lt;- log(to_plot_data$pos)
 to_plot_data_obs &lt;- BO_result_original_list[[1]]
-y_min &lt;- -15; y_max &lt;- 0
+y_min &lt;- -20; y_max &lt;- 5
 mar.default &lt;- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0), mfrow = c(2, 1))
 plot(to_plot_data$logpos ~ to_plot_data$x, 
@@ -1007,13 +1262,50 @@ for(x_val in to_plot_data_obs$x_original) {
     segments(x_val, y_min, x_val, y_min - y_offset, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-19-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-1">
+Past versions of unnamed-chunk-19-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-19-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-19-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="b-10-1" class="section level4">
 <h4>B = 10</h4>
 <pre class="r"><code>to_plot_data &lt;- BO_result_list[[2]]
 to_plot_data$logpos &lt;- log(to_plot_data$pos)
 to_plot_data_obs &lt;- BO_result_original_list[[2]]
-y_min &lt;- -15; y_max &lt;- 0
+y_min &lt;- -20; y_max &lt;- 5
 
 mar.default &lt;- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0), mfrow = c(2, 1))
@@ -1037,13 +1329,50 @@ for(x_val in to_plot_data_obs$x_original) {
     segments(x_val, y_min, x_val, y_min - y_offset, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-20-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-20-1">
+Past versions of unnamed-chunk-20-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-20-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-20-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="b-30-1" class="section level4">
 <h4>B = 30</h4>
 <pre class="r"><code>to_plot_data &lt;- BO_result_list[[6]]
 to_plot_data$logpos &lt;- log(to_plot_data$pos)
 to_plot_data_obs &lt;- BO_result_original_list[[6]]
-y_min &lt;- -15; y_max &lt;- 0
+y_min &lt;- -20; y_max &lt;- 5
 
 mar.default &lt;- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0), mfrow = c(2, 1))
@@ -1067,13 +1396,50 @@ for(x_val in to_plot_data_obs$x_original) {
     segments(x_val, y_min, x_val, y_min - y_offset, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-21-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-21-1">
+Past versions of unnamed-chunk-21-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-21-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-21-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="b-100-1" class="section level4">
 <h4>B = 100</h4>
 <pre class="r"><code>to_plot_data &lt;- BO_result_list[[20]]
 to_plot_data$logpos &lt;- log(to_plot_data$pos)
 to_plot_data_obs &lt;- BO_result_original_list[[20]]
-y_min &lt;- -15; y_max &lt;- 0
+y_min &lt;- -20; y_max &lt;- 5
 
 mar.default &lt;- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0), mfrow = c(2, 1))
@@ -1097,6 +1463,43 @@ for(x_val in to_plot_data_obs$x_original) {
     segments(x_val, y_min, x_val, y_min - y_offset, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-22-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-22-1">
+Past versions of unnamed-chunk-22-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-22-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-22-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="kl-and-ks-1" class="section level3">
@@ -1109,6 +1512,43 @@ mar.default &lt;- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0))
 plot((KL_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KL&quot;, xlab = &quot;eval number: B&quot;, cex.lab = 1.5, cex.axis = 1.5)</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-24-1">
+Past versions of unnamed-chunk-24-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-24-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-24-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>KS_vec &lt;- c()
 for (i in 1:length(eval_num)) {
   KS_vec[i] &lt;- Compute_KS(x = x, px = exp(true_log_post(x)), qx = BO_result_list[[i]]$pos)
@@ -1117,6 +1557,43 @@ mar.default &lt;- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0))
 plot((KS_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KS&quot;, xlab = &quot;eval number: B&quot;, ylim = c(0,1), cex.lab = 1.5, cex.axis = 1.5)</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-24-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-24-2">
+Past versions of unnamed-chunk-24-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-24-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-24-2.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="hard-example" class="section level2">
@@ -1141,6 +1618,43 @@ true_log_post_mapped &lt;- function(y) {eval_once_mapped(y) - true_log_norm_cons
 plot((true_log_post_mapped(y)) ~ y, type = &quot;l&quot;, cex.lab = 1.5, cex.axis = 1.5, 
      xlab = &quot;y&quot;, ylab = &quot;log density&quot;, lwd = 2, col = &quot;blue&quot;)</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-26-1">
+Past versions of unnamed-chunk-26-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-26-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-26-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>true_log_post &lt;- function(x) {true_log_post_mapped(qnorm((x - lower)/(upper - lower))) - dnorm(qnorm((x - lower)/(upper - lower)), log = T) - log(upper - lower)}
 integrate(function(x) exp(true_log_post(x)), lower = 0, upper = 10)</code></pre>
 <pre><code>1 with absolute error &lt; 9.1e-05</code></pre>
@@ -1173,7 +1687,7 @@ for (i in 1:length(eval_num)) {
   ff$fn &lt;- function(y) as.numeric(surrogate(pnorm(y), data_to_smooth = data_to_smooth) + dnorm(y, log = TRUE))
   fn_vals &lt;- sapply(y, ff$fn)
 
-  lognormal_const &lt;- integrate_aghq(f = ff$fn)
+  lognormal_const &lt;- log(integrate(f = function(y) exp(ff$fn(y)), lower = -Inf, upper = Inf)$value)
   post_y &lt;- data.frame(y = y, pos = exp(fn_vals - lognormal_const))
   post_x &lt;- data.frame(x = pnorm(post_y$y) * (upper - lower) + lower, post = (post_y$pos / dnorm(post_y$y))/(upper - lower) )
   
@@ -1214,6 +1728,43 @@ for(x_val in to_plot_data_obs$x_original) {
     segments(x_val, y_min, x_val, y_min - y_offset, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-31-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-31-1">
+Past versions of unnamed-chunk-31-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-31-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-31-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="b-10-2" class="section level4">
 <h4>B = 10</h4>
@@ -1243,6 +1794,43 @@ for(x_val in to_plot_data_obs$x_original) {
     segments(x_val, y_min, x_val, y_min - y_offset, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-32-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-32-1">
+Past versions of unnamed-chunk-32-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-32-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-32-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="b-30-2" class="section level4">
 <h4>B = 30</h4>
@@ -1272,6 +1860,43 @@ for(x_val in to_plot_data_obs$x_original) {
     segments(x_val, y_min, x_val, y_min - y_offset, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-33-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-33-1">
+Past versions of unnamed-chunk-33-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-33-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-33-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="b-100-2" class="section level4">
 <h4>B = 100</h4>
@@ -1301,6 +1926,43 @@ for(x_val in to_plot_data_obs$x_original) {
     segments(x_val, y_min, x_val, y_min - y_offset, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-34-1.png" width="576" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-34-1">
+Past versions of unnamed-chunk-34-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-34-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-34-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="compute-kl-and-ks" class="section level3">
@@ -1314,6 +1976,43 @@ mar.default &lt;- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0))
 plot((KL_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KL&quot;, xlab = &quot;eval number: B&quot;, cex.lab = 1.5, cex.axis = 1.5)</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-36-1">
+Past versions of unnamed-chunk-36-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-36-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-36-1.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>KS_vec &lt;- c()
 for (i in 1:length(eval_num)) {
   KS_vec[i] &lt;- Compute_KS(x = x, px = exp(true_log_post(x)), qx = BO_result_list[[i]]$pos)
@@ -1322,6 +2021,43 @@ mar.default &lt;- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0))
 plot((KS_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KS&quot;, xlab = &quot;eval number: B&quot;, ylim = c(0,1), cex.lab = 1.5, cex.axis = 1.5)</code></pre>
 <p><img src="figure/simA1.Rmd/unnamed-chunk-36-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-36-2">
+Past versions of unnamed-chunk-36-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-36-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d35a475a0a216143c50b4fcbea69944d72f4738f/docs/figure/simA1.Rmd/unnamed-chunk-36-2.png" target="_blank">d35a475</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
