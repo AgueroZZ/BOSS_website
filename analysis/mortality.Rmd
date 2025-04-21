@@ -1,0 +1,373 @@
+---
+title: "Example 2: Change Points in All-Cause Mortality"
+author: "Ziang Zhang"
+date: "2025-04-18"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+# West Europe: Neitherlands
+
+## Data
+
+```{r}
+library(tidyverse)
+library(BayesGP)
+library(npreg)
+
+set.seed(123)
+noise_var = 1e-6
+function_path <- "./code"
+output_path <- "./output/mortality"
+data_path <- "./data/mortality"
+source(paste0(function_path, "/00_BOSS.R"))
+
+cFile <- paste0(data_path, "/world_mortality.csv")
+world_death = read.table(cFile, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+
+### West EU: NL
+NL_death <- world_death %>% filter(country_name == "Netherlands")
+NL_death$date <- make_date(year = NL_death$year) + weeks(NL_death$time)
+NL_death$x <- as.numeric(NL_death$date)/365.25; 
+ref_val <- min(NL_death$x)
+NL_death$x <- NL_death$x - ref_val
+plot(NL_death$deaths ~ NL_death$date)
+```
+
+## BOSS
+
+```{r}
+fit_once <- function(alpha, data){
+  a_fit <- alpha
+  data$x1 <- ifelse(data$x <= a_fit, (a_fit - data$x), 0); 
+  data$x2 <- ifelse(data$x > a_fit, (data$x - a_fit), 0);
+  data$xx1 <- data$x1
+  data$xx2 <- data$x2
+  
+  data$cov1 <- cos(2*pi*data$x)
+  data$cov2 <- sin(2*pi*data$x)
+  
+  data$cov3 <- cos(4*pi*data$x)
+  data$cov4 <- sin(4*pi*data$x)
+  
+  data$cov5 <- cos(8*pi*data$x)
+  data$cov6 <- sin(8*pi*data$x)
+  
+  data$cov7 <- cos(16*pi*data$x)
+  data$cov8 <- sin(16*pi*data$x)
+  
+  data$index <- 1:nrow(data)
+  
+  mod <- model_fit(formula = deaths ~ cov1 + cov2 + cov3 + cov4 + cov5 + cov6 + cov7 + cov8 +
+                     f(x1, model = "sGP", period = 1, sd.prior = list(param = list(u = 0.01, alpha = 0.5), h = 5), boundary.prior = list(prec = c(Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf)), k = 20, region = c(0,8), m = 4) +
+                     f(x2, model = "sGP", period = 1, sd.prior = list(param = list(u = 1, alpha = 0.5), h = 5), boundary.prior = list(prec = c(Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf)), k = 20, region = c(0,8), m = 4) +
+                     f(xx1, model = "IWP", order = 2, initial_location = "min",
+                       sd.prior = list(param = 0.01, h = 5), k = 20, boundary.prior = list(prec = c(Inf))) +
+                     f(xx2, model = "IWP", order = 2, initial_location = "min",
+                       sd.prior = list(param = 1, h = 5), k = 20, boundary.prior = list(prec = c(Inf))),
+                   data = data, method = "aghq", family = "Poisson", aghq_k = 4
+  )
+  mod
+}
+
+eval_once <- function(alpha, data = NL_death){
+  mod <- fit_once(alpha = alpha, data = data)
+  (mod$mod$normalized_posterior$lognormconst)
+} 
+
+surrogate <- function(xvalue, data_to_smooth){
+  data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
+  predict(ss(x = as.numeric(data_to_smooth$x), y = data_to_smooth$y, df = length(unique(as.numeric(data_to_smooth$x))), m = 2, all.knots = TRUE), x = xvalue)$y
+}
+
+lower = 0.5; upper = 7.2
+objective_func <- eval_once
+```
+
+```{r eval=FALSE}
+eval_number <- 50
+
+result_ad <- BOSS(eval_once,
+  update_step = 5, max_iter = eval_number, delta = 0.01,
+  lower = lower, upper = upper, 
+  noise_var = noise_var,
+  initial_design = 5,
+  modal_iter_check = 5,  modal_check_warmup = 20, modal_k.nn = 5, modal_eps = 0, criterion = "modal",
+  opt.lengthscale.grid = 100, opt.grid = 1000
+)
+
+data_to_smooth <- result_ad$result
+data_to_smooth$x <- as.numeric(result_ad$result$x)[order(as.numeric(result_ad$result$x))]
+data_to_smooth$x_original <- as.numeric(result_ad$result$x_original)[order(as.numeric(result_ad$result$x))]
+data_to_smooth$y <- as.numeric(result_ad$result$y)[order(as.numeric(result_ad$result$x))]
+data_to_smooth$y <- data_to_smooth$y - max(data_to_smooth$y)
+
+ff <- list()
+ff$fn <- function(y){
+    as.numeric(
+    surrogate(
+      y,
+      data_to_smooth = data_to_smooth
+    )
+  )
+}
+
+x_vals <- (seq(
+  from = lower,
+  to = upper,
+  length.out = 1000
+) - lower) / (upper - lower)
+fn_vals <- sapply(x_vals, ff$fn)
+post_x <- data.frame(x = x_vals, fx = exp(fn_vals))
+
+dx <- diff(x_vals)
+integral_approx <- sum(0.5 * (post_x$fx[-1] + post_x$fx[-length(post_x$fx)]) * dx)
+post_x$pos <- post_x$fx / integral_approx
+
+
+BO_result_NL <- data.frame(x = (lower + x_vals * (upper - lower)),
+                        pos = post_x$pos / (upper - lower))
+BO_result_NL$year <- as.Date((BO_result_NL$x + ref_val)*365.25)
+save(BO_result_NL, file = paste0(output_path, "/BO_result_NL.rda"))
+```
+
+```{r}
+load(paste0(output_path, "/BO_result_NL.rda"))
+ggplot() +
+    geom_line(data = BO_result_NL, aes(x = year, y = pos), color = "red", size = 1) +
+    xlab("") +
+    ylab("Density") +
+    scale_x_date(
+      limits = as.Date(c("2019-12-01", "2021-01-01")),
+      date_labels = "%b %y", 
+      date_breaks = "3 month"
+    ) +
+    theme_minimal() +
+    theme(text = element_text(size = 15), axis.text = element_text(size = 15)) 
+```
+
+Which day is most likely?
+
+```{r}
+as.Date((BO_result_NL$x[which.max(BO_result_NL$pos)] + ref_val)*365.25)
+```
+
+Take a look at the fit:
+
+```{r}
+my_alpha_NL <- (BO_result_NL$x[which.max(BO_result_NL$pos)])
+```
+
+```{r eval=FALSE}
+mod_NL <- fit_once(alpha = my_alpha_NL, data = NL_death)
+save(mod_NL, file = paste0(output_path, "/mod_NL.rda"))
+```
+
+```{r}
+load(paste0(output_path, "/mod_NL.rda"))
+f1 <- predict(mod_NL, variable = "x1", only.samples = T, boundary.condition = "no", newdata = mod_NL$instances[[1]]@data, include.intercept = F)
+f1$x <- my_alpha_NL - f1$x
+f2 <- predict(mod_NL, variable = "x2", only.samples = T, boundary.condition = "no", newdata = mod_NL$instances[[1]]@data, include.intercept = F)
+f2$x <- f2$x + my_alpha_NL
+f1 <- distinct(f1, x, .keep_all = TRUE); f2 <- distinct(f2, x, .keep_all = TRUE)
+f <- rbind(f1, f2) %>% arrange(x); f <- distinct(f, x, .keep_all = TRUE)
+g1 <- predict(mod_NL, variable = "xx1", only.samples = T, boundary.condition = "no", newdata = mod_NL$instances[[1]]@data, include.intercept = F)
+g1$x <- my_alpha_NL - g1$x
+g2 <- predict(mod_NL, variable = "xx2", only.samples = T, boundary.condition = "no", newdata = mod_NL$instances[[1]]@data, include.intercept = F)
+g2$x <- g2$x + my_alpha_NL
+g1 <- distinct(g1, x, .keep_all = TRUE); g2 <- distinct(g2, x, .keep_all = TRUE)
+g <- rbind(g1, g2) %>% arrange(x); g <- distinct(g, x, .keep_all = TRUE)
+
+fixed_pred <- cbind(cos(2*pi*f$x), sin(2*pi*f$x), cos(4*pi*f$x), sin(4*pi*f$x), cos(8*pi*f$x), sin(8*pi*f$x), cos(16*pi*f$x), sin(16*pi*f$x), 1) %*% t(sample_fixed_effect(mod_NL, variables = c("cov1", "cov2", "cov3", "cov4", "cov5", "cov6", "cov7", "cov8", "intercept")))
+f_all <- f[,-1] + fixed_pred + g[,-1]
+f_summ <- data.frame(mean = apply(f_all, 1, mean), upper = apply(f_all, 1, quantile, 0.975), upper = apply(f_all, 1, quantile, 0.025))
+
+par(cex.axis = 1.5,   # Increase font size of axis text
+    cex.lab = 1.5,    # Increase font size of axis labels
+    cex.main = 1.6)   # Increase font size of main titles
+matplot(y = exp(f_summ), x = as.Date((f$x+ ref_val)*365.25), type = "l", col = c("black","red", "red"), lty = c("solid", "dashed", "dashed"),
+        ylab = "Weekly Deaths", xlab = "")
+abline(v = as.Date((my_alpha_NL+ ref_val)*365.25), lty = "dashed", col = "purple")
+points(NL_death$deaths ~ as.Date((NL_death$x+ ref_val)*365.25), cex = 0.2, col = "black")
+```
+
+
+
+
+
+## Exact grid
+
+As the oracle method, we implement the exact grid approach with a equally spaced grid of 1000 points. 
+
+```{r eval=FALSE}
+n_cores <- 12
+# this returns a list of length length(x_vals)
+res_list  <- mclapply(x_vals, eval_once, mc.cores = n_cores)
+exact_vals <- unlist(res_list)
+# Close the progress bar
+exact_grid_result_NL <- data.frame(x = x_vals, exact_vals = exact_vals)
+exact_grid_result_NL$exact_vals <- exact_grid_result_NL$exact_vals - max(exact_grid_result_NL$exact_vals)
+exact_grid_result_NL$fx <- exp(exact_grid_result_NL$exact_vals)
+# Calculate the differences between adjacent x values
+dx <- diff(exact_grid_result_NL$x)
+# Compute the trapezoidal areas and sum them up
+integral_approx <- sum(0.5 * (exact_grid_result_NL$fx[-1] + exact_grid_result_NL$fx[-length(exact_grid_result_NL$fx)]) * dx)
+exact_grid_result_NL$pos <- exact_grid_result_NL$fx / integral_approx
+save(exact_grid_result_NL, file = paste0(output_path, "/exact_grid_result_NL.rda"))
+```
+
+
+# East Europe: Bulgaria
+
+## Data
+
+```{r}
+BG_death <- world_death %>% filter(country_name == "Bulgaria")
+BG_death$date <- make_date(year = BG_death$year) + weeks(BG_death$time)
+BG_death$x <- as.numeric(BG_death$date)/365.25; 
+ref_val <- min(BG_death$x)
+BG_death$x <- BG_death$x - ref_val
+plot(BG_death$deaths ~ BG_death$date)
+```
+
+## BOSS
+
+```{r}
+eval_once <- function(alpha, data = BG_death){
+  mod <- fit_once(alpha = alpha, data = data)
+  (mod$mod$normalized_posterior$lognormconst)
+} 
+objective_func <- eval_once
+```
+
+```{r eval=FALSE}
+result_ad <- BOSS(eval_once,
+  update_step = 5, max_iter = eval_number, delta = 0.01,
+  lower = lower, upper = upper, 
+  noise_var = noise_var,
+  initial_design = 5,
+  modal_iter_check = 5,  modal_check_warmup = 20, modal_k.nn = 5, modal_eps = 0, criterion = "modal",
+  opt.lengthscale.grid = 100, opt.grid = 1000
+)
+
+data_to_smooth <- result_ad$result
+data_to_smooth$x <- as.numeric(result_ad$result$x)[order(as.numeric(result_ad$result$x))]
+data_to_smooth$x_original <- as.numeric(result_ad$result$x_original)[order(as.numeric(result_ad$result$x))]
+data_to_smooth$y <- as.numeric(result_ad$result$y)[order(as.numeric(result_ad$result$x))]
+data_to_smooth$y <- data_to_smooth$y - max(data_to_smooth$y)
+
+ff <- list()
+ff$fn <- function(y){
+    as.numeric(
+    surrogate(
+      y,
+      data_to_smooth = data_to_smooth
+    )
+  )
+}
+
+
+x_vals <- (seq(
+  from = lower,
+  to = upper,
+  length.out = 1000
+) - lower) / (upper - lower)
+fn_vals <- sapply(x_vals, ff$fn)
+post_x <- data.frame(x = x_vals, fx = exp(fn_vals))
+
+dx <- diff(x_vals)
+integral_approx <- sum(0.5 * (post_x$fx[-1] + post_x$fx[-length(post_x$fx)]) * dx)
+post_x$pos <- post_x$fx / integral_approx
+
+BO_result_BG <- data.frame(x = (lower + x_vals * (upper - lower)),
+                        pos = post_x$pos / (upper - lower))
+BO_result_BG$year <- as.Date((BO_result_BG$x + ref_val)*365.25)
+save(BO_result_BG, file = paste0(output_path, "/BO_result_BG.rda"))
+```
+
+```{r}
+load(paste0(output_path, "/BO_result_BG.rda"))
+ggplot() +
+    geom_line(data = BO_result_BG, aes(x = year, y = pos), color = "red", size = 1) +
+    xlab("") +
+    ylab("Density") +
+    scale_x_date(
+      limits = as.Date(c("2019-12-01", "2021-01-01")),
+      date_labels = "%b %y", 
+      date_breaks = "3 month"
+    ) +
+    theme_minimal() +
+    theme(text = element_text(size = 15), axis.text = element_text(size = 15)) 
+```
+
+Which day is most likely?
+
+```{r}
+as.Date((BO_result_BG$x[which.max(BO_result_BG$pos)] + ref_val)*365.25)
+```
+
+Take a look at the fit:
+
+```{r}
+my_alpha_BG <- (BO_result_BG$x[which.max(BO_result_BG$pos)])
+```
+
+
+```{r eval=FALSE}
+mod_BG <- fit_once(alpha = my_alpha_BG, data = BG_death)
+save(mod_BG, file = paste0(output_path, "/mod_BG.rda"))
+```
+
+```{r}
+load(paste0(output_path, "/mod_BG.rda"))
+f1 <- predict(mod_BG, variable = "x1", only.samples = T, boundary.condition = "no", newdata = mod_BG$instances[[1]]@data, include.intercept = F)
+f1$x <- my_alpha_BG - f1$x
+f2 <- predict(mod_BG, variable = "x2", only.samples = T, boundary.condition = "no", newdata = mod_BG$instances[[1]]@data, include.intercept = F)
+f2$x <- f2$x + my_alpha_BG
+f1 <- distinct(f1, x, .keep_all = TRUE); f2 <- distinct(f2, x, .keep_all = TRUE)
+f <- rbind(f1, f2) %>% arrange(x); f <- distinct(f, x, .keep_all = TRUE)
+g1 <- predict(mod_BG, variable = "xx1", only.samples = T, boundary.condition = "no", newdata = mod_BG$instances[[1]]@data, include.intercept = F)
+g1$x <- my_alpha_BG - g1$x
+g2 <- predict(mod_BG, variable = "xx2", only.samples = T, boundary.condition = "no", newdata = mod_BG$instances[[1]]@data, include.intercept = F)
+g2$x <- g2$x + my_alpha_BG
+g1 <- distinct(g1, x, .keep_all = TRUE); g2 <- distinct(g2, x, .keep_all = TRUE)
+g <- rbind(g1, g2) %>% arrange(x); g <- distinct(g, x, .keep_all = TRUE)
+
+fixed_pred <- cbind(cos(2*pi*f$x), sin(2*pi*f$x), cos(4*pi*f$x), sin(4*pi*f$x), cos(8*pi*f$x), sin(8*pi*f$x), cos(16*pi*f$x), sin(16*pi*f$x), 1) %*% t(sample_fixed_effect(mod_BG, variables = c("cov1", "cov2", "cov3", "cov4", "cov5", "cov6", "cov7", "cov8", "intercept")))
+f_all <- f[,-1] + fixed_pred + g[,-1]
+f_summ <- data.frame(mean = apply(f_all, 1, mean), upper = apply(f_all, 1, quantile, 0.975), upper = apply(f_all, 1, quantile, 0.025))
+
+par(cex.axis = 1.5,   # Increase font size of axis text
+    cex.lab = 1.5,    # Increase font size of axis labels
+    cex.main = 1.6)   # Increase font size of main titles
+matplot(y = exp(f_summ), x = as.Date((f$x+ ref_val)*365.25), type = "l", col = c("black","red", "red"), lty = c("solid", "dashed", "dashed"),
+        ylab = "Weekly Deaths", xlab = "")
+abline(v = as.Date((my_alpha_BG+ ref_val)*365.25), lty = "dashed", col = "purple")
+points(BG_death$deaths ~ as.Date((BG_death$x+ ref_val)*365.25), cex = 0.2, col = "black")
+```
+
+
+## Exact grid
+
+```{r eval=FALSE}
+n_cores <- 12
+# this returns a list of length length(x_vals)
+res_list  <- mclapply(x_vals, eval_once, mc.cores = n_cores)
+exact_vals <- unlist(res_list)
+# Close the progress bar
+exact_grid_result_BG <- data.frame(x = x_vals, exact_vals = exact_vals)
+exact_grid_result_BG$exact_vals <- exact_grid_result_BG$exact_vals - max(exact_grid_result_BG$exact_vals)
+exact_grid_result_BG$fx <- exp(exact_grid_result_BG$exact_vals)
+# Calculate the differences between adjacent x values
+dx <- diff(exact_grid_result_BG$x)
+# Compute the trapezoidal areas and sum them up
+integral_approx <- sum(0.5 * (exact_grid_result_BG$fx[-1] + exact_grid_result_BG$fx[-length(exact_grid_result_BG$fx)]) * dx)
+exact_grid_result_BG$pos <- exact_grid_result_BG$fx / integral_approx
+save(exact_grid_result_BG, file = paste0(output_path, "/exact_grid_result_BG.rda"))
+```
+
+
+
+
+
