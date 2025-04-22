@@ -518,15 +518,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree8550bd70d7d7fc3ddfccb8fbdc0deb3befc8995atargetblank8550bd7a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree074cea3c5cd3c2679ce089d7e361e3a489809ba9targetblank074cea3a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/8550bd70d7d7fc3ddfccb8fbdc0deb3befc8995a" target="_blank">8550bd7</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/074cea3c5cd3c2679ce089d7e361e3a489809ba9" target="_blank">074cea3</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree8550bd70d7d7fc3ddfccb8fbdc0deb3befc8995atargetblank8550bd7a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree074cea3c5cd3c2679ce089d7e361e3a489809ba9targetblank074cea3a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -536,7 +536,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/8550bd70d7d7fc3ddfccb8fbdc0deb3befc8995a" target="_blank">8550bd7</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/074cea3c5cd3c2679ce089d7e361e3a489809ba9" target="_blank">074cea3</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -563,7 +563,6 @@ Ignored files:
     Ignored:    output/sim2/.DS_Store
 
 Untracked files:
-    Untracked:  code/co2_grid.R
     Untracked:  code/mortality_BG_grid.R
     Untracked:  code/mortality_NL_grid.R
     Untracked:  data/co2/
@@ -575,10 +574,6 @@ Untracked files:
     Untracked:  output/simA1/
 
 Unstaged changes:
-    Modified:   BOSS_website.Rproj
-    Modified:   analysis/mortality.Rmd
-    Modified:   analysis/simA1.Rmd
-    Modified:   code/00_BOSS.R
     Modified:   output/sim2/BO_data_to_smooth.rda
     Modified:   output/sim2/BO_result_list.rda
     Modified:   output/sim2/rel_runtime.rda
@@ -626,6 +621,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/074cea3c5cd3c2679ce089d7e361e3a489809ba9/analysis/diagnostic.rmd" target="_blank">074cea3</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-22
+</td>
+<td>
+workflowr::wflow_publish("analysis/diagnostic.rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/6bb1cbf03b15d58ca7602a7e28b2686114b1d44c/docs/diagnostic.html" target="_blank">6bb1cbf</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-22
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -687,11 +716,51 @@ y &lt;- qnorm((x - lower)/(upper - lower))
 true_log_norm_constant &lt;- log(integrate(f = function(y) exp(eval_once_mapped(y)), lower = -Inf, upper = Inf)$value)
 true_log_post_mapped &lt;- function(y) {eval_once_mapped(y) - true_log_norm_constant}</code></pre>
 <pre class="r"><code>plot((true_log_post_mapped(y)) ~ y, type = &quot;l&quot;, cex.lab = 1.5, cex.axis = 1.5, 
-     xlab = &quot;y&quot;, ylab = &quot;log density&quot;, lwd = 2, col = &quot;blue&quot;)</code></pre>
+     xlab = &quot;y&quot;, ylab = &quot;Log density&quot;, lwd = 2, col = &quot;blue&quot;)</code></pre>
 <p><img src="figure/diagnostic.rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-1">
+Past versions of unnamed-chunk-2-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/6bb1cbf03b15d58ca7602a7e28b2686114b1d44c/docs/figure/diagnostic.rmd/unnamed-chunk-2-1.png" target="_blank">6bb1cbf</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>true_log_post &lt;- function(x) {true_log_post_mapped(qnorm((x - lower)/(upper - lower))) - dnorm(qnorm((x - lower)/(upper - lower)), log = T) - log(upper - lower)}
 integrate(function(x) exp(true_log_post(x)), lower = 0, upper = 10)</code></pre>
 <pre><code>1 with absolute error &lt; 9.1e-05</code></pre>
+<pre class="r"><code>plot(exp(true_log_post(x)) ~ x, type = &quot;l&quot;, cex.lab = 1.5, cex.axis = 1.5, 
+     xlab = &quot;x&quot;, ylab = &quot;Posterior density&quot;, lwd = 2, col = &quot;blue&quot;)</code></pre>
+<p><img src="figure/diagnostic.rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="kl-divergence" class="section level2">
 <h2>KL Divergence</h2>
@@ -722,6 +791,43 @@ plot(result_ad$KL_result$KL ~ result_ad$KL_result$i,
      log = &quot;y&quot;,
      pch = 19, col = &quot;blue&quot;)</code></pre>
 <p><img src="figure/diagnostic.rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-3-1">
+Past versions of unnamed-chunk-3-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-3-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/6bb1cbf03b15d58ca7602a7e28b2686114b1d44c/docs/figure/diagnostic.rmd/unnamed-chunk-3-1.png" target="_blank">6bb1cbf</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>Based on the KL divergence, it seems like the algorithm has converged
 around 30 iterations.</p>
 </div>
@@ -751,6 +857,43 @@ plot(result_ad$KS_result$KS ~ result_ad$KS_result$i,
      log = &quot;y&quot;,
      pch = 19, col = &quot;blue&quot;)</code></pre>
 <p><img src="figure/diagnostic.rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-4-1">
+Past versions of unnamed-chunk-4-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-4-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/6bb1cbf03b15d58ca7602a7e28b2686114b1d44c/docs/figure/diagnostic.rmd/unnamed-chunk-4-1.png" target="_blank">6bb1cbf</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>Based on the KS statistic, the conclusion is similar to that of the
 KL divergence. The KS statistics is very close to 0 after 30 iterations,
 indicating that the algorithm has likely converged.</p>
@@ -789,6 +932,43 @@ plot(result_ad$modal_result$modal ~ result_ad$modal_result$i,
      log = &quot;y&quot;,
      pch = 19, col = &quot;blue&quot;)</code></pre>
 <p><img src="figure/diagnostic.rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
+Past versions of unnamed-chunk-5-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/6bb1cbf03b15d58ca7602a7e28b2686114b1d44c/docs/figure/diagnostic.rmd/unnamed-chunk-5-1.png" target="_blank">6bb1cbf</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>Again, the modal statistic converges to 0 after 30 iterations,
 indicating that the algorithm has likely converged.</p>
 <br>
