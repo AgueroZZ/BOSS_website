@@ -1,0 +1,158 @@
+---
+title: "Convergence Diagnostic"
+author: "Ziang Zhang"
+date: "2025-04-22"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Introduction
+
+In this tutorial, we examine several diagnostic tools that can be used to assess the convergence of BOSS.
+
+For now, let's assume the following true (log) posterior:
+
+```{r}
+library(npreg)
+library(ggplot2)
+library(aghq)
+
+set.seed(123)
+noise_var = 1e-6
+function_path <- "./code"
+output_path <- "./output/simA1"
+data_path <- "./data/simA1"
+source(paste0(function_path, "/00_BOSS.R"))
+
+lower = 0; upper = 10
+
+log_prior <- function(x){
+  1
+}
+log_likelihood <- function(x){
+  log(x + 1) * (sin(x * 4) + cos(x * 2))
+}
+eval_once <- function(x){
+  log_prior(x) + log_likelihood(x)
+}
+eval_once_mapped <- function(y){
+  eval_once(pnorm(y) * (upper - lower) + lower) + dnorm(y, log = T) + log(upper - lower)
+}
+x <- seq(0.01,9.99, by = 0.01)
+y <- qnorm((x - lower)/(upper - lower))
+true_log_norm_constant <- log(integrate(f = function(y) exp(eval_once_mapped(y)), lower = -Inf, upper = Inf)$value)
+true_log_post_mapped <- function(y) {eval_once_mapped(y) - true_log_norm_constant}
+```
+
+
+```{r}
+plot((true_log_post_mapped(y)) ~ y, type = "l", cex.lab = 1.5, cex.axis = 1.5, 
+     xlab = "y", ylab = "log density", lwd = 2, col = "blue")
+true_log_post <- function(x) {true_log_post_mapped(qnorm((x - lower)/(upper - lower))) - dnorm(qnorm((x - lower)/(upper - lower)), log = T) - log(upper - lower)}
+integrate(function(x) exp(true_log_post(x)), lower = 0, upper = 10)
+```
+
+
+## KL Divergence
+
+Let $f_t$ and $f_{t-j}$ be the corresponding surrogate density at time $t$ and $t-j$, respectively.
+We can compute the KL divergence between $f_t$ and $f_{t-j}$ as follows:
+$$k_t = KL(f_t,f_{t-j}) = \int \log \frac{f_t(x)}{f_{t-j}(x)}f_{t}(x)dx.$$
+
+For one-dimensional problems, this can be done efficiently through numerical integration.
+For higher-dimensional problems, sampling-based methods can be used to approximate the KL divergence.
+
+
+```{r}
+result_ad <- BOSS(
+  func = eval_once, initial_design = 5,
+  update_step = 5, max_iter = 30,
+  opt.lengthscale.grid = 100, opt.grid = 1000,
+  delta = 0.01, noise_var = noise_var,
+  lower = lower, upper = upper,
+  verbose = 0,
+  KL_iter_check = 1, KL_check_warmup = 5, KL_eps = 0, criterion = "KL"
+)
+
+plot(result_ad$KL_result$KL ~ result_ad$KL_result$i,
+     xlab = "Iteration", ylab = "KL statistic",
+     main = "KL statistic over iterations", 
+     log = "y",
+     pch = 19, col = "blue")
+```
+
+
+Based on the KL divergence, it seems like the algorithm has converged around 30 iterations.
+
+
+## KS Statistics
+
+
+The Kolmogorov-Smirnov (KS) statistic measures the maximum difference between the cumulative distribution functions (CDFs) $F_t$ and $F_{t-j}$ of the surrogate densities $f_t$ and $f_{t-j}$, respectively.
+Specifically, for one dimensional problems, the KS statistic is defined as:
+$$k_t = \max_x |F_t(x) - F_{t-j}(x)|.$$
+
+
+```{r}
+result_ad <- BOSS(
+  func = eval_once, initial_design = 5,
+  update_step = 5, max_iter = 30,
+  opt.lengthscale.grid = 100, opt.grid = 1000,
+  delta = 0.01, noise_var = noise_var,
+  lower = lower, upper = upper,
+  verbose = 0,
+  KS_iter_check = 1, KS_check_warmup = 5, KS_eps = 0, criterion = "KS"
+)
+
+plot(result_ad$KS_result$KS ~ result_ad$KS_result$i,
+     xlab = "Iteration", ylab = "KS statistic",
+     main = "KS statistic over iterations", 
+     log = "y",
+     pch = 19, col = "blue")
+```
+
+
+Based on the KS statistic, the conclusion is similar to that of the KL divergence. The KS statistics is very close to 0 after 30 iterations, indicating that the algorithm has likely converged.
+
+
+
+## Modal Convergence
+
+
+For higher-dimensional problems, computing KL divergence is computationally more intensive due to the need for numerical integration or sampling-based methods. 
+
+Due to Bernstein-Von-Mises theorem, when the sample size is large, the majority of the posterior mass is concentrated around the mode.
+Thus, as an empirical heuristic, we can check the convergence of the modal behavior of the surrogate density.
+Although this method is less rigorous than KL divergence or KS statistic, it is computationally efficient and can be used as a quick sanity check for convergence.
+
+For example, we could compute the relative change in the $k$ nearest neighbor average distance between the current mode and its neighboring design points, as well as the relative change of the hessian (trace) at the mode. 
+Then, we can define the convergence criterion $k_t$ as the maximum of the two relative changes.
+
+
+```{r}
+result_ad <- BOSS(
+  func = eval_once, initial_design = 5,
+  update_step = 5, max_iter = 30,
+  opt.lengthscale.grid = 100, opt.grid = 1000,
+  delta = 0.01, noise_var = noise_var,
+  lower = lower, upper = upper,
+  verbose = 0,
+  modal_iter_check = 1, modal_check_warmup = 10, modal_k.nn = 5, modal_eps = 0, criterion = "modal"
+)
+
+plot(result_ad$modal_result$modal ~ result_ad$modal_result$i,
+     xlab = "Iteration", ylab = "Modal statistic",
+     main = "Modal statistic over iterations", 
+     log = "y",
+     pch = 19, col = "blue")
+```
+
+
+Again, the modal statistic converges to 0 after 30 iterations, indicating that the algorithm has likely converged.
+
+
+
+
+
+
