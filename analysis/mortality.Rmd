@@ -202,10 +202,8 @@ As the oracle method, we implement the exact grid approach with a equally spaced
 
 ```{r eval=FALSE}
 n_cores <- 12
-# this returns a list of length length(x_vals)
 res_list  <- mclapply(x_vals, eval_once, mc.cores = n_cores)
 exact_vals <- unlist(res_list)
-# Close the progress bar
 exact_grid_result_NL <- data.frame(x = x_vals, exact_vals = exact_vals)
 exact_grid_result_NL$exact_vals <- exact_grid_result_NL$exact_vals - max(exact_grid_result_NL$exact_vals)
 exact_grid_result_NL$fx <- exp(exact_grid_result_NL$exact_vals)
@@ -352,10 +350,8 @@ points(BG_death$deaths ~ as.Date((BG_death$x+ ref_val)*365.25), cex = 0.2, col =
 
 ```{r eval=FALSE}
 n_cores <- 12
-# this returns a list of length length(x_vals)
 res_list  <- mclapply(x_vals, eval_once, mc.cores = n_cores)
 exact_vals <- unlist(res_list)
-# Close the progress bar
 exact_grid_result_BG <- data.frame(x = x_vals, exact_vals = exact_vals)
 exact_grid_result_BG$exact_vals <- exact_grid_result_BG$exact_vals - max(exact_grid_result_BG$exact_vals)
 exact_grid_result_BG$fx <- exp(exact_grid_result_BG$exact_vals)

@@ -33,7 +33,6 @@ output_path <- "./output/simA1"
 data_path <- "./data/simA1"
 source(paste0(function_path, "/00_BOSS.R"))
 
-num_initial <- 3
 surrogate <- function(xvalue, data_to_smooth){
   predict(ss(x = as.numeric(data_to_smooth$x), y = data_to_smooth$y, df = length(unique(as.numeric(data_to_smooth$x))), m = 2, all.knots = TRUE), x = xvalue)$y
 }
