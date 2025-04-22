@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Dayi Li" />
+
+<meta name="date" content="2025-04-21" />
+
+<title>Detecting Ultra-Diffuse Galaxies</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">BOSS Tutorial</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/AgueroZZ/BOSS_website">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Detecting Ultra-Diffuse Galaxies</h1>
+<h4 class="author">Dayi Li</h4>
+<h4 class="date">2025-04-21</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-04-21
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>BOSS_website/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20250415code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20250415)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20250415code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20250415)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2a070ced7893bc58aa79c39ba255186dd78a696etargetblank2a070cea">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/2a070ced7893bc58aa79c39ba255186dd78a696e" target="_blank">2a070ce</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2a070ced7893bc58aa79c39ba255186dd78a696etargetblank2a070cea"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/2a070ced7893bc58aa79c39ba255186dd78a696e" target="_blank">2a070ce</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    data/.DS_Store
+    Ignored:    data/sim3/
+
+Untracked files:
+    Untracked:  data/UDG/
+    Untracked:  output/UDG/
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/UDG.Rmd</code>) and HTML
+(<code>docs/UDG.html</code>) files. If you’ve configured a remote Git
+repository (see <code>?wflow_git_remote</code>), click on the hyperlinks
+in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/2a070ced7893bc58aa79c39ba255186dd78a696e/analysis/UDG.Rmd" target="_blank">2a070ce</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-21
+</td>
+<td>
+wflow_publish("analysis/UDG.Rmd")
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>For this example, we look at the real-world application of using
+log-Gaussian Cox process (LGCP) to detect a class of extremely faint
+Ultra-Diffuse Galaxies (UDGs). The main idea is to detect the clustering
+signals of their constituent star clusters. The data being modeled is
+thus the point pattern of these star clusters.</p>
+<p>The model we consider is as follow:</p>
+<pre class="r"><code>library(tidyverse)
+library(spatial)
+library(raster)
+library(zoo)
+library(spatstat)
+library(excursions)
+library(INLA)
+library(inlabru)
+library(spatialEco)
+library(RColorBrewer)
+library(R.utils)
+library(doParallel)
+library(foreach)
+library(tikzDevice)
+library(aghq)
+library(coda)
+
+function_path &lt;- &quot;./code&quot;
+output_path &lt;- &quot;./output/UDG&quot;
+data_path &lt;- &quot;./data/UDG&quot;
+source(paste0(function_path, &quot;/00_BOSS.R&quot;))</code></pre>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>We first load the point pattern data we will model, and construct the
+necessary covariates for modeling.</p>
+<pre class="r"><code># read in data
+v_acs &lt;- read_csv(paste0(data_path,&#39;/v10acs_GC.csv&#39;))
+
+# specify study regions
+X &lt;- c(1, 4095, 4210, 220)/4300*76
+Y &lt;- c(1, 100.5, 4300, 4042)/4300*76
+region &lt;- Polygon(cbind(X,Y))
+region &lt;- SpatialPolygons(list(Polygons(list(region),&#39;region&#39;)))
+region &lt;- SpatialPolygonsDataFrame(region, data.frame(id = region@polygons[[1]]@ID, row.names = region@polygons[[1]]@ID))
+plot(region)
+points(v_acs[,3:4]/4300*76)</code></pre>
+<p><img src="figure/UDG.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># Construct Spatial covariate that captures GC intensity in a bright normal galaxy
+
+grid &lt;- makegrid(region, n = 20000)
+grid &lt;- SpatialPoints(grid, proj4string = CRS(proj4string(region)))
+grid &lt;- crop(grid, region)
+
+gal1 &lt;- as.data.frame(grid)
+
+names(gal1) &lt;- c(&#39;x&#39;, &#39;y&#39;)
+
+gal1$z &lt;- (gal1$x - 3278/4300*76)^2/1.4^2 + (gal1$y - 4073/4300*76)^2
+
+coordinates(gal1) &lt;- ~x+y
+
+gridded(gal1) &lt;- T
+
+# construct non-linear functional for covariate
+f.gal1 &lt;- function(x, y) {
+  spp &lt;- SpatialPoints(data.frame(x = x, y = y), proj4string = fm_sp_get_crs(gal1))
+  proj4string(spp) &lt;- fm_sp_get_crs(gal1)
+  
+  v &lt;- over(spp, gal1)
+  if (any(is.na(v$z))) {
+    v$z &lt;- inlabru:::bru_fill_missing(gal1, spp, v$z)
+  }
+  return(v$z)
+}</code></pre>
+</div>
+<div id="modal-fitting-for-posterior-of-r-and-n" class="section level2">
+<h2>Modal Fitting for Posterior of <span
+class="math inline">\(R\)</span> and <span
+class="math inline">\(n\)</span></h2>
+</div>
+<div id="inlabru" class="section level2">
+<h2><code>inlabru</code></h2>
+<pre class="r"><code>spv &lt;- SpatialPoints(v_acs[,3:4]/4300*76)
+
+# construct mesh for INLA-SPDE
+v_mesh &lt;- inla.mesh.2d(loc = spv, boundary = region,
+                       max.edge = c(80, 800)/4300*76, cutoff = 40/4300*76, max.n.strict = 1300L)
+
+v_spde &lt;- inla.spde2.pcmatern(mesh = v_mesh, alpha = 2,
+                              prior.range = c(400/4300*76, 0.5),
+                              prior.sigma = c(1.5, 0.5))
+
+# prior
+alpha_fun_1 &lt;- function(u){
+  qlnorm(pnorm(u), meanlog = 0, sdlog = 0.3)
+}
+
+R_fun_1 &lt;- function(u){
+  qlnorm(pnorm(u), meanlog = 6.36 - log(4300) + log(76), sdlog = 0.25)
+}
+
+# model components
+cmp &lt;- coordinates ~ gal1(f.gal1(x,y), model = &quot;offset&quot;) +
+  beta1(1, model = &#39;linear&#39;) +
+  R_internal_1(1, model = &#39;linear&#39;, mean.linear = 0, prec.linear = 1) +
+  alpha_internal_1(1, model=&quot;linear&quot;, mean.linear=0, prec.linear=1) +
+  field(coordinates, model = v_spde) + Intercept(1)
+
+# model formula
+form &lt;- coordinates ~ Intercept + beta1*exp(-(gal1/R_fun_1(R_internal_1)^2)^alpha_fun_1(alpha_internal_1)) + field
+
+spv &lt;- SpatialPointsDataFrame(spv, data = data.frame(id = 1:nrow(as.data.frame(spv))))
+
+# fit model via inlabru
+
+fit &lt;- lgcp(components = cmp, data = spv,
+              samplers = region, domain = list(coordinates = v_mesh), 
+              formula = form, options = list(control.inla=list(int.strategy=&quot;grid&quot;)))
+
+save(fit, file = paste0(output_path, &quot;/UDG_inlabru.rda&quot;))</code></pre>
+</div>
+<div id="boss" class="section level2">
+<h2>BOSS</h2>
+<pre class="r"><code># specify objective function: unnormalized pi(R,n|y)
+eval_func &lt;- function(par){
+  R1 &lt;- par[1]
+  a1 &lt;- par[2]
+  
+  cmp &lt;- coordinates ~ gal1(f.gal1(x,y), model = &quot;offset&quot;)  + 
+    beta1(1, model = &#39;linear&#39;) + 
+    field(coordinates, model = v_spde) + Intercept(1)
+  
+  form &lt;- coordinates ~ Intercept + beta1*exp(-(gal1/R1^2)^(a1)) + field
+  
+  
+  fit_inner &lt;- lgcp(components = cmp, data = spv,
+                    samplers = region, domain = list(coordinates = v_mesh), 
+                    formula = form, options = list(control.inla=list(int.strategy=&quot;grid&quot;)))
+  
+  unname(fit_inner$mlik[1,]) + dlnorm(R1, 6.36 - log(4300) + log(76), 0.25, log = T) +
+    dlnorm(a1, 0, 0.3, log = T)
+}</code></pre>
+<pre class="r"><code>lower = c(2, 0.15)
+upper = c(12, 4)
+
+res_opt &lt;- BOSS(eval_func, criterion = &#39;modal&#39;, update_step = 5, max_iter = 100, D = 2,
+                        lower = lower, upper = upper,
+                        noise_var = 1e-6,
+                        modal_iter_check = 10, modal_check_warmup = 20, modal_k.nn = 5,
+                        modal_eps = 0.01,
+                        initial_design = 5, delta = 0.01^2,
+                        optim.n = 5, optim.max.iter = 100)
+
+save(res_opt, file = paste0(output_path, &quot;/UDG_BOSS.rda&quot;))</code></pre>
+<p>The above BOSS algorithm converged in <span
+class="math inline">\(60\)</span> iterations.</p>
+</div>
+<div id="results-comparison" class="section level2">
+<h2>Results Comparison</h2>
+<div id="marginal-posterior-distributions" class="section level3">
+<h3>Marginal Posterior Distributions</h3>
+<pre class="r"><code>load(paste0(output_path, &quot;/UDG_inlabru.rda&quot;))
+
+set.seed(1234)
+inla.samples.a &lt;- R_fun_1(inla.rmarginal(49500, fit$marginals.fixed$R_internal_1))
+inla.samples.b &lt;- alpha_fun_1(inla.rmarginal(49500, fit$marginals.fixed$alpha_internal_1))
+
+load(paste0(output_path, &quot;/UDG_BOSS.rda&quot;))
+
+# construct covariance function for GP regression
+data_to_smooth &lt;- list()
+unique_data &lt;- unique(data.frame(x = res_opt$result$x, y = res_opt$result$y))
+data_to_smooth$x &lt;- as.matrix(dplyr::select(unique_data, -y))
+data_to_smooth$y &lt;- (unique_data$y - mean(unique_data$y))
+
+square_exp_cov &lt;- square_exp_cov_generator_nd(length_scale = res_opt$length_scale, signal_var = res_opt$signal_var)
+
+surrogate &lt;- function(xvalue, data_to_smooth, cov){
+  predict_gp(data_to_smooth, x_pred = xvalue, choice_cov = cov, noise_var = 1e-6)$mean
+}
+
+# grid method to normalize posterior density for plotting joint posterior of (R, n)
+ff &lt;- list()
+ff$fn &lt;- function(x) as.numeric(surrogate(matrix(x, nrow = 1), data_to_smooth, square_exp_cov))
+x.1 &lt;- (seq(from = 2, to = 12, length.out = 300) - 2)/10
+x.2 &lt;- (seq(from = 0.15, to = 4, length.out = 300) - 0.15)/3.85
+x_vals &lt;- expand.grid(x.1, x.2)
+names(x_vals) &lt;- c(&#39;x.1&#39;,&#39;x.2&#39;)
+x_original &lt;- t(t(x_vals)*(c(12, 4) - c(2, 0.15)) + c(2, 0.15)) 
+
+fn_vals &lt;- apply(x_vals, 1, function(x) ff$fn(matrix(x, ncol = 2)))
+
+# normalize
+lognormal_const &lt;- log(sum(exp(fn_vals))*0.02*0.0077*25/9)
+
+post_x &lt;- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
+
+
+# get posterior samples of (R, n) from BOSS
+dx &lt;- unique(post_x$x.1)[2] - unique(post_x$x.1)[1]
+dy &lt;- unique(post_x$x.2)[2] - unique(post_x$x.2)[1]
+set.seed(123456)
+sample_idx &lt;- rmultinom(1:250000, size = 49500, prob = post_x$pos)
+sample_x &lt;- data.frame(post_x, n = sample_idx)
+
+samples &lt;- data.frame(do.call(rbind, apply(sample_x, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))</code></pre>
+<div id="marginal-posterior-of-r" class="section level4">
+<h4>Marginal Posterior of <span class="math inline">\(R\)</span></h4>
+<pre class="r"><code># marginal of R
+R_marginal &lt;- data.frame(R = c(inla.samples.a, samples[,1]), 
+                         method = rep(c(&#39;inlabru&#39;, &#39;BOSS&#39;),  c(length(inla.samples.a), length(samples[,1]))))
+
+
+# plot marginal of R
+#tikz(file = &quot;R_marginal_UDG.tex&quot;, standAlone=T, width = 4, height = 2)
+ggplot(R_marginal, aes(R)) + geom_density(aes(color = method), show_guide = F) +
+  stat_density(aes(x = R, colour = method),
+                  geom=&quot;line&quot;,position=&quot;identity&quot;) + theme_minimal() + xlab(&#39;$R$&#39;)</code></pre>
+<pre><code>Warning: The `show_guide` argument of `layer()` is deprecated as of ggplot2 2.0.0.
+ℹ Please use the `show.legend` argument instead.
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+generated.</code></pre>
+<p><img src="figure/UDG.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#dev.off()
+#system(&#39;pdflatex R_marginal_UDG.tex&#39;)</code></pre>
+</div>
+<div id="marginal-posterior-of-n" class="section level4">
+<h4>Marginal Posterior of <span class="math inline">\(n\)</span></h4>
+<pre class="r"><code># marginal of n
+n_marginal &lt;- data.frame(n = c(inla.samples.b, samples[,2]), 
+                         method = rep(c(&#39;inlabru&#39;, &#39;BOSS&#39;),  c(length(inla.samples.b), length(samples[,2]))))
+
+# plot marginal of n
+#tikz(file = &quot;n_marginal_UDG.tex&quot;, standAlone=T, width = 4, height = 2)
+ggplot(n_marginal, aes(n)) + geom_density(aes(color = method), show_guide = F) +
+  stat_density(aes(x = n, colour = method),
+                  geom=&quot;line&quot;,position=&quot;identity&quot;) + theme_minimal() + xlab(&#39;$n$&#39;)</code></pre>
+<p><img src="figure/UDG.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#system(&#39;pdflatex n_marginal_UDG.tex&#39;)</code></pre>
+<p>From the above, it seems like the marginal distribution of <span
+class="math inline">\(R\)</span> and <span
+class="math inline">\(\beta\)</span> are pretty similar from
+<code>inlabru</code> and BOSS. Although, marginal posterior of <span
+class="math inline">\(R\)</span> seems to be slightly more heavier
+tailed than that of <code>inlabru</code>.</p>
+</div>
+</div>
+<div id="joint-posterior-distribution" class="section level3">
+<h3>Joint Posterior Distribution</h3>
+<div id="inlabru-1" class="section level4">
+<h4><code>inlabru</code></h4>
+<pre class="r"><code># get joint posterior sample of (R, n) from inlabru
+joint_samp &lt;- inla.posterior.sample(10000, fit, selection = list(R_internal_1 = 1, alpha_internal_1 = 1), seed = 12345)
+joint_samp &lt;- do.call(&#39;rbind&#39;, lapply(joint_samp, function(x) matrix(x$latent, ncol = 2)))
+
+inla.joint.samps &lt;- data.frame(R = R_fun_1(joint_samp[,1]), n = alpha_fun_1(joint_samp[,2]))
+
+# plot joint posterior density of (R,n) from inlabru
+#tikz(file = &quot;joint_post_R_n_inlabru.tex&quot;, standAlone=T, width = 5, height = 2)
+ggplot(inla.joint.samps, aes(R, n)) + stat_density_2d(
+  geom = &quot;raster&quot;,
+  aes(fill = after_stat(density)), n = 300,
+  contour = FALSE) +
+  geom_point(data = data.frame(R = R_fun_1(fit$summary.fixed$mode[2]), n = alpha_fun_1(fit$summary.fixed$mode[3])), color = &#39;red&#39;, shape = 1, size =0.5) + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$n$&#39;) + xlim(c(2, 12)) + ylim(c(0, 2))</code></pre>
+<p><img src="figure/UDG.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#dev.off()
+#system(&#39;pdflatex joint_post_R_n_inlabru.tex&#39;)</code></pre>
+</div>
+<div id="boss-1" class="section level4">
+<h4>BOSS</h4>
+<pre class="r"><code># plot joint posterior of (R, n)
+#tikz(file = &quot;joint_post_R_n.tex&quot;, standAlone=T, width = 5, height = 2)
+ggplot(post_x, aes(x.1,x.2)) + geom_raster(aes(fill = pos)) + 
+  geom_point(data = data.frame(x.1 = post_x$x.1[which.max(post_x$pos)], x.2 = post_x$x.2[which.max(post_x$pos)]), color = &#39;red&#39;, shape = 1, size =0.5) + 
+  scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$n$&#39;) +
+  xlim(c(2,12)) + ylim(c(0, 2))</code></pre>
+<p><img src="figure/UDG.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#dev.off()
+#system(&#39;pdflatex joint_post_R_n.tex&#39;)</code></pre>
+<p>Based on the previous figures, the pictures seem to be more clear:
+joint posterior of <span class="math inline">\((R, n)\)</span> based on
+<code>inlabru</code> is again a simple product of the marginal. On the
+other hand, the results from BOSS indicate that there is in fact a
+pretty strong correlation structure between <span
+class="math inline">\(R\)</span> and <span
+class="math inline">\(n\)</span>.</p>
+</div>
+</div>
+</div>
+<div id="posterior-distriution-of-mathcalus" class="section level2">
+<h2>Posterior Distriution of <span
+class="math inline">\(\mathcal{U}(s)\)</span></h2>
+<div
+id="posterior-distribution-of-mathcalus-and-exceedance-probability-based-on-inlabru"
+class="section level3">
+<h3>Posterior distribution of <span
+class="math inline">\(\mathcal{U}(s)\)</span> and Exceedance probability
+based on <code>inlabru</code></h3>
+<pre class="r"><code># posterior distribution of spatial random field U through inlabru
+U &lt;- predict(fit, fm_pixels(v_mesh, dim = c(300,300), mask = region, format = &#39;sp&#39;), ~ exp(field), seed = 1234)
+
+set.seed(1108)
+sigma &lt;- inla.hyperpar.sample(500000, fit)[,2]
+Q &lt;- rnorm(500000, 0, sigma)
+
+q &lt;- quantile(Q, 0.995)
+
+# get exceedance probability through inlabru
+exc_q &lt;- excursions.inla(fit, u = q, type = &#39;&gt;&#39;, name = &#39;field&#39;, F.limit = 0.6)</code></pre>
+<pre><code>No method selected, using QC</code></pre>
+<pre class="r"><code>sets_q &lt;- continuous(exc_q, v_mesh, 0.05)
+proj_q &lt;- inla.mesh.projector(sets_q$F.geometry, dims = c(300, 300))
+
+dat_q &lt;- list()
+dat_q$x &lt;- proj_q$x
+dat_q$y &lt;- proj_q$y
+dat_q$z &lt;- inla.mesh.project(proj_q, field = sets_q$`F`)
+
+r_q &lt;- raster(dat_q)
+r_q &lt;- as(r_q, &#39;SpatialPixelsDataFrame&#39;)
+r_q &lt;- crop(r_q, region)
+r_q &lt;- as.data.frame(r_q)
+r_q &lt;- r_q %&gt;%
+  mutate(prob = layer) %&gt;%
+  dplyr::select(-layer)</code></pre>
+<div
+id="posterior-distribution-of-mathcalus-and-exceedance-probability-based-on-boss-and-aghq"
+class="section level4">
+<h4>Posterior distribution of <span
+class="math inline">\(\mathcal{U}(s)\)</span> and Exceedance probability
+based on BOSS and AGHQ</h4>
+<pre class="r"><code># get posterior of U through BOSS via AGHQ
+ff &lt;- list(fn = function(x) {as.numeric(surrogate(matrix(pnorm(x), nrow = 1), data_to_smooth, square_exp_cov)) + sum(dnorm(x, log = TRUE))})
+ff$gr = function(x) numDeriv::grad(func = ff$fn, x)
+ff$he = function(x) numDeriv::hessian(func = ff$fn, x)
+
+aghq_result = aghq::aghq(ff = ff, 
+                         startingvalue = as.numeric(unique_data[which.max(unique_data$y), c(1,2)]), 
+                         k = 4)
+#optresults = )
+
+###
+quad = aghq_result$normalized_posterior$nodesandweights
+prob = exp(aghq_result$normalized_posterior$nodesandweights$logpost_normalized) * aghq_result$normalized_posterior$nodesandweights$weights
+sampled_freq &lt;- rmultinom(n = 1, size = 49500, prob = prob)
+sampled_theta1 = pnorm(quad$theta1) * 10 + 2
+sampled_theta2 = pnorm(quad$theta2) * 3.85 + 0.15
+sample_theta &lt;- data.frame(R = sampled_theta1, n = sampled_theta2, count = sampled_freq, prob = prob)</code></pre>
+<pre class="r"><code># compute posterior of U given (R,n)
+get_post_U &lt;- function(st){
+  R1 &lt;- st[1,&#39;R&#39;]
+  a1 &lt;- st[1,&#39;n&#39;]
+  
+  cmp &lt;- coordinates ~ gal1(f.gal1(x,y), model = &quot;offset&quot;)  +
+    beta1(1, model = &#39;linear&#39;) + 
+    field(coordinates, model = v_spde) + Intercept(1)
+  
+  form &lt;- coordinates ~ Intercept + beta1*exp(-(gal1/R1^2)^(a1)) + field
+  
+  fit_inner &lt;- lgcp(components = cmp, data = spv,
+                    samplers = region, domain = list(coordinates = v_mesh), 
+                    formula = form, options = list(control.inla=list(int.strategy=&quot;grid&quot;)))
+  
+  U &lt;- predict(fit, fm_pixels(v_mesh, dim = c(300,300), mask = region, format = &#39;sp&#39;), ~ exp(field), seed = 1234)
+  U1 &lt;- as.data.frame(U)
+  
+  set.seed(1108)
+  sigma &lt;- inla.hyperpar.sample(500000, fit_inner)[,2]
+  Q &lt;- rnorm(500000, 0, sigma)
+  
+  q &lt;- quantile(Q, 0.995)
+  
+  exc_0.5 &lt;- excursions.inla(fit_inner, u = q, type = &#39;&gt;&#39;, name = &#39;field&#39;, F.limit = 0.6)
+  sets_0.5 &lt;- continuous(exc_0.5, v_mesh, 0.05)
+  proj_0.5 &lt;- inla.mesh.projector(sets_0.5$F.geometry, dims = c(300, 300))
+  
+  dat_0.5 &lt;- list()
+  dat_0.5$x &lt;- proj_0.5$x
+  dat_0.5$y &lt;- proj_0.5$y
+  dat_0.5$z &lt;- inla.mesh.project(proj_0.5, field = sets_0.5$`F`)
+  
+  r_0.5 &lt;- raster(dat_0.5)
+  r_0.5 &lt;- as(r_0.5, &#39;SpatialPixelsDataFrame&#39;)
+  r_0.5 &lt;- crop(r_0.5, region)
+  r_0.5 &lt;- as.data.frame(r_0.5)
+  r_0.5 &lt;- r_0.5 %&gt;%
+    mutate(prob = layer) %&gt;%
+    dplyr::select(-layer)
+  
+  int &lt;- inla.rmarginal(st[1,&#39;count&#39;], fit_inner$marginals.fixed$Intercept)
+  b1 &lt;- inla.rmarginal(st[1,&#39;count&#39;], fit_inner$marginals.fixed$beta1)
+  sigma &lt;- inla.hyperpar.sample(st[1,&#39;count&#39;], fit_inner)[,2]
+  rho &lt;- inla.hyperpar.sample(st[1,&#39;count&#39;], fit_inner)[,1]
+  
+  return(list(exc = r_0.5, int = int, b1 = b1, rho = rho, sigma = sigma, U = U1[c(&#39;coords.x1&#39;, &#39;coords.x2&#39;, &#39;median&#39;)]))
+}
+
+BO_aghq_int &lt;- list()
+
+# integrate out (R,n) to get posterior of U through BOSS and AGHQ
+for(i in 1:16){
+  BO_aghq_int[[i]] &lt;- get_post_U(st = sample_theta[i,])
+}
+
+save(BO_aghq_int, file = paste0(output_path, &quot;/UDG_BOSS_AGHQ.rda&quot;))</code></pre>
+</div>
+<div id="exceedance-probability" class="section level4">
+<h4>Exceedance Probability</h4>
+<pre class="r"><code>load(paste0(output_path, &quot;/UDG_BOSS_AGHQ.rda&quot;))
+# get exceedance probability through BOSS
+mean_exceed_0.5 &lt;- data.frame(BO_aghq_int[[1]][[1]][,c(&#39;x&#39;,&#39;y&#39;)])
+
+prob_0.5 &lt;- lapply(lapply(BO_aghq_int, function(x) x$exc), function(y) y$prob)
+prob_0.5 &lt;- do.call(&#39;rbind&#39;, prob_0.5)
+prob_0.5 &lt;- colSums(prob_0.5*sample_theta$prob)
+
+mean_exceed_0.5$prob &lt;- prob_0.5
+
+exceed_map &lt;- bind_rows(r_q, mean_exceed_0.5)
+exceed_map$method &lt;- rep(c(&#39;inlabru&#39;, &#39;BOSS (ours)&#39;), each = 44100)</code></pre>
+<pre class="r"><code># plot the exceedance probability
+#options(tikzLatexPackages 
+#        =c(getOption( &quot;tikzLatexPackages&quot; ),&quot;\\usepackage{amsfonts}&quot;))
+#tikz(file = &quot;exceed_Us_compare.tex&quot;, standAlone=T, width = 6, height = 3)
+ggplot(exceed_map, aes(x,y)) + geom_raster(aes(fill = prob)) + 
+  scale_fill_distiller(palette = &#39;Spectral&#39;, name = &#39;P(U(s) &gt; C | X)&#39;) +
+  coord_fixed() + facet_wrap(.~method) +
+  xlab(&#39;X (kpc)&#39;) + ylab(&#39;Y (kpc)&#39;) + theme_minimal()</code></pre>
+<p><img src="figure/UDG.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#dev.off()
+#system(&#39;pdflatex exceed_Us_compare.tex&#39;)</code></pre>
+</div>
+<div id="posterior-distribution-of-us" class="section level4">
+<h4>Posterior Distribution of <span
+class="math inline">\(U(s)\)</span></h4>
+<pre class="r"><code># comparison of median of the posterior of U (inlabru vs BOSS)
+U_0.5 &lt;- data.frame(BO_aghq_int[[1]]$U[,c(&#39;coords.x1&#39;,&#39;coords.x2&#39;, &#39;median&#39;)])
+
+U_med &lt;- lapply(lapply(BO_aghq_int, function(x) x$U), function(y) y$median)
+U_med &lt;- do.call(&#39;rbind&#39;, U_med)
+U_med &lt;- colSums(U_med*sample_theta$prob)
+
+
+U1 &lt;- as.data.frame(U)
+U_dat &lt;- bind_rows(U_0.5, U1[c(&#39;coords.x1&#39;, &#39;coords.x2&#39;, &#39;median&#39;)])
+U_dat$method &lt;- rep(c(&#39;BOSS (ours)&#39;, &#39;inlabru&#39;), each = 82132)
+theBreaks &lt;- c(0, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 7)
+theCol = rev(RColorBrewer::brewer.pal(length(theBreaks)-1, &#39;Spectral&#39;))
+
+# plot it
+#tikz(file = &quot;post_med_exp_Us_compare.tex&quot;, standAlone=T, width = 5, height = 3)
+ggplot(U_dat, aes(coords.x1, coords.x2)) +
+  geom_contour_filled(aes(z = median), breaks = theBreaks) +
+  scale_fill_manual(values = theCol, name = &#39;exp(U(s))&#39;, guide = guide_legend(reverse = T)) +
+  coord_fixed() + facet_wrap(.~method) +
+  xlab(&#39;X (kpc)&#39;) + ylab(&#39;Y (kpc)&#39;) +
+  theme_minimal() +
+  theme(legend.text = element_text(size = 7),
+        legend.title = element_text(size = 8),
+        strip.background = element_rect(color = NULL, fill = &#39;white&#39;, linetype = &#39;blank&#39;))</code></pre>
+<p><img src="figure/UDG.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#dev.off()
+#system(&#39;pdflatex post_med_exp_Us_compare.tex&#39;)</code></pre>
+<p>The final results in terms of the UDG detection is quite similar
+between <code>inlabru</code> and BOSS.</p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.4.1 (2024-06-14)
+Platform: aarch64-apple-darwin20
+Running under: macOS 15.0
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/Toronto
+tzcode source: internal
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] coda_0.19-4.1          aghq_0.4.1             tikzDevice_0.12.6     
+ [4] doParallel_1.0.17      iterators_1.0.14       foreach_1.5.2         
+ [7] R.utils_2.12.3         R.oo_1.27.0            R.methodsS3_1.8.2     
+[10] RColorBrewer_1.1-3     spatialEco_2.0-2       inlabru_2.11.1        
+[13] fmesher_0.1.7          INLA_24.06.27          excursions_2.5.8      
+[16] Matrix_1.7-0           spatstat_3.2-1         spatstat.linnet_3.2-2 
+[19] spatstat.model_3.3-2   rpart_4.1.23           spatstat.explore_3.3-2
+[22] nlme_3.1-164           spatstat.random_3.3-2  spatstat.geom_3.3-3   
+[25] spatstat.univar_3.0-1  spatstat.data_3.1-2    zoo_1.8-12            
+[28] raster_3.6-30          sp_2.1-4               spatial_7.3-17        
+[31] lubridate_1.9.3        forcats_1.0.0          stringr_1.5.1         
+[34] dplyr_1.1.4            purrr_1.0.2            readr_2.1.5           
+[37] tidyr_1.3.1            tibble_3.2.1           ggplot2_3.5.1         
+[40] tidyverse_2.0.0        workflowr_1.7.1       
+
+loaded via a namespace (and not attached):
+ [1] rstudioapi_0.16.0     jsonlite_1.8.9        magrittr_2.0.3       
+ [4] spatstat.utils_3.1-0  farver_2.1.2          rmarkdown_2.28       
+ [7] fs_1.6.4              vctrs_0.6.5           terra_1.7-78         
+[10] htmltools_0.5.8.1     sass_0.4.9            KernSmooth_2.23-24   
+[13] bslib_0.8.0           plyr_1.8.9            cachem_1.1.0         
+[16] whisker_0.4.1         lifecycle_1.0.4       pkgconfig_2.0.3      
+[19] R6_2.5.1              fastmap_1.2.0         digest_0.6.37        
+[22] numDeriv_2016.8-1.1   colorspace_2.1-1      ps_1.8.0             
+[25] rprojroot_2.0.4       tensor_1.5            labeling_0.4.3       
+[28] fansi_1.0.6           spatstat.sparse_3.1-0 timechange_0.3.0     
+[31] httr_1.4.7            polyclip_1.10-7       abind_1.4-8          
+[34] mgcv_1.9-1            compiler_4.4.1        proxy_0.4-27         
+[37] bit64_4.5.2           withr_3.0.1           DBI_1.2.3            
+[40] highr_0.11            MASS_7.3-61           classInt_0.4-10      
+[43] tools_4.4.1           units_0.8-5           filehash_2.4-6       
+[46] httpuv_1.6.15         goftest_1.2-3         glue_1.7.0           
+[49] callr_3.7.6           promises_1.3.0        grid_4.4.1           
+[52] sf_1.0-19             getPass_0.2-4         generics_0.1.3       
+[55] isoband_0.2.7         gtable_0.3.5          tzdb_0.4.0           
+[58] class_7.3-22          sn_2.1.1              data.table_1.16.0    
+[61] hms_1.1.3             utf8_1.2.4            pillar_1.9.0         
+[64] vroom_1.6.5           later_1.3.2           splines_4.4.1        
+[67] lattice_0.22-6        bit_4.5.0             deldir_2.0-4         
+[70] tidyselect_1.2.1      knitr_1.48            git2r_0.33.0         
+[73] stats4_4.4.1          xfun_0.47             statmod_1.5.0        
+[76] mvQuad_1.0-8          stringi_1.8.4         yaml_2.3.10          
+[79] evaluate_1.0.0        codetools_0.2-20      cli_3.6.3            
+[82] munsell_0.5.1         processx_3.8.4        jquerylib_0.1.4      
+[85] Rcpp_1.0.13           MatrixModels_0.5-3    viridisLite_0.4.2    
+[88] scales_1.3.0          e1071_1.7-16          crayon_1.5.3         
+[91] rlang_1.1.4           mnormt_2.1.1         </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
