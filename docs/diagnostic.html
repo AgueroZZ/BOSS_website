@@ -518,15 +518,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree074cea3c5cd3c2679ce089d7e361e3a489809ba9targetblank074cea3a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree8b99f8794fcd11b8593455d8452f2a5d23d31685targetblank8b99f87a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/074cea3c5cd3c2679ce089d7e361e3a489809ba9" target="_blank">074cea3</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/8b99f8794fcd11b8593455d8452f2a5d23d31685" target="_blank">8b99f87</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree074cea3c5cd3c2679ce089d7e361e3a489809ba9targetblank074cea3a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree8b99f8794fcd11b8593455d8452f2a5d23d31685targetblank8b99f87a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -536,7 +536,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/074cea3c5cd3c2679ce089d7e361e3a489809ba9" target="_blank">074cea3</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/8b99f8794fcd11b8593455d8452f2a5d23d31685" target="_blank">8b99f87</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -555,28 +555,12 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
-    Ignored:    analysis/.Rhistory
-    Ignored:    code/.DS_Store
     Ignored:    data/.DS_Store
-    Ignored:    data/sim1/
-    Ignored:    output/.DS_Store
-    Ignored:    output/sim2/.DS_Store
-
-Untracked files:
-    Untracked:  code/mortality_BG_grid.R
-    Untracked:  code/mortality_NL_grid.R
-    Untracked:  data/co2/
-    Untracked:  data/mortality/
-    Untracked:  data/simA1/
-    Untracked:  output/co2/
-    Untracked:  output/mortality/
-    Untracked:  output/sim2/quad_sparse_list.rda
-    Untracked:  output/simA1/
+    Ignored:    data/sim3/
 
 Unstaged changes:
-    Modified:   output/sim2/BO_data_to_smooth.rda
-    Modified:   output/sim2/BO_result_list.rda
-    Modified:   output/sim2/rel_runtime.rda
+    Modified:   BOSS_website.Rproj
+    Modified:   output/UDG/UDG_BOSS_AGHQ.rda
 
 </code></pre>
 <p>
@@ -621,6 +605,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/8b99f8794fcd11b8593455d8452f2a5d23d31685/analysis/diagnostic.rmd" target="_blank">8b99f87</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-22
+</td>
+<td>
+wflow_publish("analysis/diagnostic.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/b5d1ce2e721f8f933f9bf67a5cdc5fc254a8513b/docs/diagnostic.html" target="_blank">b5d1ce2</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-22
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -742,6 +760,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/b5d1ce2e721f8f933f9bf67a5cdc5fc254a8513b/docs/figure/diagnostic.rmd/unnamed-chunk-2-1.png" target="_blank">b5d1ce2</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-22
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/6bb1cbf03b15d58ca7602a7e28b2686114b1d44c/docs/figure/diagnostic.rmd/unnamed-chunk-2-1.png" target="_blank">6bb1cbf</a>
 </td>
 <td>
@@ -761,6 +790,43 @@ integrate(function(x) exp(true_log_post(x)), lower = 0, upper = 10)</code></pre>
 <pre class="r"><code>plot(exp(true_log_post(x)) ~ x, type = &quot;l&quot;, cex.lab = 1.5, cex.axis = 1.5, 
      xlab = &quot;x&quot;, ylab = &quot;Posterior density&quot;, lwd = 2, col = &quot;blue&quot;)</code></pre>
 <p><img src="figure/diagnostic.rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-2">
+Past versions of unnamed-chunk-2-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/b5d1ce2e721f8f933f9bf67a5cdc5fc254a8513b/docs/figure/diagnostic.rmd/unnamed-chunk-2-2.png" target="_blank">b5d1ce2</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-22
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="kl-divergence" class="section level2">
 <h2>KL Divergence</h2>
@@ -908,14 +974,41 @@ the majority of the posterior mass is concentrated around the mode.
 Thus, as an empirical heuristic, we can check the convergence of the
 modal behavior of the surrogate density. Although this method is less
 rigorous than KL divergence or KS statistic, it is computationally
-efficient and can be used as a quick sanity check for convergence.</p>
-<p>For example, we could compute the relative change in the <span
-class="math inline">\(k\)</span> nearest neighbor average distance
-between the current mode and its neighboring design points, as well as
-the relative change of the hessian (trace) at the mode. Then, we can
-define the convergence criterion <span
-class="math inline">\(k_t\)</span> as the maximum of the two relative
-changes.</p>
+efficient and can be used as a quick diagnostic check for
+convergence.</p>
+<p>For the modal behavior, we compute the average <span
+class="math inline">\(k\)</span>-nearest neighbor distance between the
+current optimizer and its neighboring design points, as well as the
+relative change of the hessian (trace) at the current optimizer.</p>
+<p>Specifically, define the current optimizer as <span
+class="math inline">\(\boldsymbol{\theta}_t^*\)</span> and the average
+<span class="math inline">\(k\)</span>-nearest neighbor distance of
+design points to <span
+class="math inline">\(\boldsymbol{\theta}_t^*\)</span> as <span
+class="math inline">\(d_{t,k}\)</span>. Additionally, let <span
+class="math inline">\(H(\boldsymbol{\theta}_t^*)\)</span> be the
+negative Hessian at <span
+class="math inline">\(\boldsymbol{\theta}_t^*\)</span> based on the GP
+surrogate and write <span class="math inline">\(S_{t} =
+\sqrt{\mathrm{Tr}(H^{-1}(\boldsymbol{\theta}_t^*))}\)</span>. We can
+assess modal convergence by considering</p>
+<ol style="list-style-type: decimal">
+<li><span class="math inline">\(D_{t,k} = d_{t,k}/S_{t,k}\)</span>;</li>
+<li><span class="math inline">\(H_{t} = \frac{S_{t} -
+S_{t-1}}{S_{t-1}}\)</span>.</li>
+</ol>
+<p>We deem the algorithm to have reached convergence when <span
+class="math inline">\(\max\{D_{t,k}, H_{t}\} &lt; \varepsilon\)</span>
+for some user-defined <span class="math inline">\(\varepsilon &gt;
+0\)</span>. Heuristically, <span class="math inline">\(S_{t}\)</span>
+can be regarded as the size of the posterior standard deviation for
+sufficiently large <span class="math inline">\(t\)</span>. <span
+class="math inline">\(D_{t,k}\)</span> thus gives a measure of how close
+the current optimizer is to the true mode relative to the size of the
+posterior standard deviation. <span
+class="math inline">\(H_{t}\)</span>, on the other hand, gives a rough
+measure on the relative change of the size of the posterior standard
+deviation.</p>
 <pre class="r"><code>result_ad &lt;- BOSS(
   func = eval_once, initial_design = 5,
   update_step = 5, max_iter = 30,
@@ -980,18 +1073,18 @@ Session information
 </p>
 <div id="workflowr-sessioninfo" class="collapse">
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>R version 4.3.1 (2023-06-16)
-Platform: aarch64-apple-darwin20 (64-bit)
-Running under: macOS Monterey 12.7.4
+<pre><code>R version 4.4.1 (2024-06-14)
+Platform: aarch64-apple-darwin20
+Running under: macOS 15.0
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
-LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
-time zone: America/Chicago
+time zone: America/Toronto
 tzcode source: internal
 
 attached base packages:
@@ -1003,23 +1096,23 @@ other attached packages:
 loaded via a namespace (and not attached):
  [1] sass_0.4.9          utf8_1.2.4          generics_0.1.3     
  [4] lattice_0.22-6      stringi_1.8.4       digest_0.6.37      
- [7] magrittr_2.0.3      evaluate_1.0.1      grid_4.3.1         
+ [7] magrittr_2.0.3      evaluate_1.0.0      grid_4.4.1         
 [10] fastmap_1.2.0       rprojroot_2.0.4     jsonlite_1.8.9     
-[13] Matrix_1.6-4        processx_3.8.4      whisker_0.4.1      
+[13] Matrix_1.7-0        processx_3.8.4      whisker_0.4.1      
 [16] ps_1.8.0            promises_1.3.0      httr_1.4.7         
 [19] fansi_1.0.6         scales_1.3.0        numDeriv_2016.8-1.1
 [22] jquerylib_0.1.4     cli_3.6.3           rlang_1.1.4        
-[25] munsell_0.5.1       withr_3.0.2         cachem_1.1.0       
-[28] yaml_2.3.10         tools_4.3.1         dplyr_1.1.4        
+[25] munsell_0.5.1       withr_3.0.1         cachem_1.1.0       
+[28] yaml_2.3.10         tools_4.4.1         dplyr_1.1.4        
 [31] colorspace_2.1-1    httpuv_1.6.15       vctrs_0.6.5        
 [34] R6_2.5.1            lifecycle_1.0.4     git2r_0.33.0       
-[37] stringr_1.5.1       fs_1.6.4            MASS_7.3-60        
+[37] stringr_1.5.1       fs_1.6.4            MASS_7.3-61        
 [40] pkgconfig_2.0.3     callr_3.7.6         pillar_1.9.0       
-[43] bslib_0.8.0         later_1.3.2         gtable_0.3.6       
-[46] glue_1.8.0          Rcpp_1.0.13-1       highr_0.11         
-[49] xfun_0.48           tibble_3.2.1        tidyselect_1.2.1   
+[43] bslib_0.8.0         later_1.3.2         gtable_0.3.5       
+[46] glue_1.7.0          Rcpp_1.0.13         highr_0.11         
+[49] xfun_0.47           tibble_3.2.1        tidyselect_1.2.1   
 [52] rstudioapi_0.16.0   knitr_1.48          htmltools_0.5.8.1  
-[55] rmarkdown_2.28      compiler_4.3.1      getPass_0.2-4      </code></pre>
+[55] rmarkdown_2.28      compiler_4.4.1      getPass_0.2-4      </code></pre>
 </div>
 </div>
 </div>
