@@ -30,6 +30,14 @@ These more advanced examples aim to provide the readers some further understandi
 
 + [Example 3: Detecting Ultra-Diffuse Galaxies](UDG.html)
 
+
+**Discussion on Diagnostic of BOSS:**
+
+To guide the readers with the practical implementation of the BOSS algorithm, we provide a discussion on some possible diagnostic tools that can be used to assess the convergence of BOSS.
+
++ [Convergence Diagnostic](diagnostic.html)
+
+
 **Background Readings:**
 
 Our implementation of the BOSS is grounded in the framework of Bayesian hierarchical models, specifically the conditional Latent Gaussian Models (cLGMs). 
