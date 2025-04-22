@@ -125,11 +125,16 @@ Based on the KS statistic, the conclusion is similar to that of the KL divergenc
 For higher-dimensional problems, computing KL divergence is computationally more intensive due to the need for numerical integration or sampling-based methods. 
 
 Due to Bernstein-Von-Mises theorem, when the sample size is large, the majority of the posterior mass is concentrated around the mode.
-Thus, as an empirical heuristic, we can check the convergence of the modal behavior of the surrogate density.
-Although this method is less rigorous than KL divergence or KS statistic, it is computationally efficient and can be used as a quick sanity check for convergence.
+Thus, as an empirical heuristic, we can check the convergence of the modal behavior of the surrogate density. Although this method is less rigorous than KL divergence or KS statistic, it is computationally efficient and can be used as a quick diagnostic check for convergence.
 
-For example, we could compute the relative change in the $k$ nearest neighbor average distance between the current mode and its neighboring design points, as well as the relative change of the hessian (trace) at the mode. 
-Then, we can define the convergence criterion $k_t$ as the maximum of the two relative changes.
+For the modal behavior, we compute the average $k$-nearest neighbor distance between the current optimizer and its neighboring design points, as well as the relative change of the hessian (trace) at the current optimizer. 
+
+Specifically, define the current optimizer as $\boldsymbol{\theta}_t^*$ and the average $k$-nearest neighbor distance of design points to $\boldsymbol{\theta}_t^*$ as $d_{t,k}$. Additionally, let $H(\boldsymbol{\theta}_t^*)$ be the negative Hessian at $\boldsymbol{\theta}_t^*$ based on the GP surrogate and write $S_{t} = \sqrt{\mathrm{Tr}(H^{-1}(\boldsymbol{\theta}_t^*))}$. We can assess modal convergence by considering
+
+1. $D_{t,k} = d_{t,k}/S_{t,k}$;
+2. $H_{t} = \frac{S_{t} - S_{t-1}}{S_{t-1}}$.
+
+We deem the algorithm to have reached convergence when $\max\{D_{t,k}, H_{t}\} < \varepsilon$ for some user-defined $\varepsilon > 0$. Heuristically, $S_{t}$ can be regarded as the size of the posterior standard deviation for sufficiently large $t$. $D_{t,k}$ thus gives a measure of how close the current optimizer is to the true mode relative to the size of the posterior standard deviation. $H_{t}$, on the other hand, gives a rough measure on the relative change of the size of the posterior standard deviation.
 
 
 ```{r}
