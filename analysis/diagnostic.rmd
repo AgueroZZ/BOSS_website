@@ -48,9 +48,11 @@ true_log_post_mapped <- function(y) {eval_once_mapped(y) - true_log_norm_constan
 
 ```{r}
 plot((true_log_post_mapped(y)) ~ y, type = "l", cex.lab = 1.5, cex.axis = 1.5, 
-     xlab = "y", ylab = "log density", lwd = 2, col = "blue")
+     xlab = "y", ylab = "Log density", lwd = 2, col = "blue")
 true_log_post <- function(x) {true_log_post_mapped(qnorm((x - lower)/(upper - lower))) - dnorm(qnorm((x - lower)/(upper - lower)), log = T) - log(upper - lower)}
 integrate(function(x) exp(true_log_post(x)), lower = 0, upper = 10)
+plot(exp(true_log_post(x)) ~ x, type = "l", cex.lab = 1.5, cex.axis = 1.5, 
+     xlab = "x", ylab = "Posterior density", lwd = 2, col = "blue")
 ```
 
 
