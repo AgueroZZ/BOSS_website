@@ -518,15 +518,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree8b99f8794fcd11b8593455d8452f2a5d23d31685targetblank8b99f87a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree6af839cd903ab6070257b7c4b57c81bb32c1a848targetblank6af839ca">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/8b99f8794fcd11b8593455d8452f2a5d23d31685" target="_blank">8b99f87</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/6af839cd903ab6070257b7c4b57c81bb32c1a848" target="_blank">6af839c</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree8b99f8794fcd11b8593455d8452f2a5d23d31685targetblank8b99f87a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree6af839cd903ab6070257b7c4b57c81bb32c1a848targetblank6af839ca"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -536,7 +536,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/8b99f8794fcd11b8593455d8452f2a5d23d31685" target="_blank">8b99f87</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/6af839cd903ab6070257b7c4b57c81bb32c1a848" target="_blank">6af839c</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -555,12 +555,28 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
+    Ignored:    analysis/.Rhistory
+    Ignored:    code/.DS_Store
     Ignored:    data/.DS_Store
-    Ignored:    data/sim3/
+    Ignored:    data/sim1/
+    Ignored:    output/.DS_Store
+    Ignored:    output/sim2/.DS_Store
+
+Untracked files:
+    Untracked:  code/mortality_BG_grid.R
+    Untracked:  code/mortality_NL_grid.R
+    Untracked:  data/co2/
+    Untracked:  data/mortality/
+    Untracked:  data/simA1/
+    Untracked:  output/co2/
+    Untracked:  output/mortality/
+    Untracked:  output/sim2/quad_sparse_list.rda
+    Untracked:  output/simA1/
 
 Unstaged changes:
-    Modified:   BOSS_website.Rproj
-    Modified:   output/UDG/UDG_BOSS_AGHQ.rda
+    Modified:   output/sim2/BO_data_to_smooth.rda
+    Modified:   output/sim2/BO_result_list.rda
+    Modified:   output/sim2/rel_runtime.rda
 
 </code></pre>
 <p>
@@ -605,6 +621,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/6af839cd903ab6070257b7c4b57c81bb32c1a848/analysis/diagnostic.rmd" target="_blank">6af839c</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-22
+</td>
+<td>
+workflowr::wflow_publish("analysis/diagnostic.rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/b02f19cce34e0af019d7e965a7a65cb6f5d84ee2/docs/diagnostic.html" target="_blank">b02f19c</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-22
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -836,7 +886,7 @@ density at time <span class="math inline">\(t\)</span> and <span
 class="math inline">\(t-j\)</span>, respectively. We can compute the KL
 divergence between <span class="math inline">\(f_t\)</span> and <span
 class="math inline">\(f_{t-j}\)</span> as follows: <span
-class="math display">\[k_t = KL(f_t,f_{t-j}) = \int \log
+class="math display">\[Q_t = KL(f_t,f_{t-j}) = \int \log
 \frac{f_t(x)}{f_{t-j}(x)}f_{t}(x)dx.\]</span></p>
 <p>For one-dimensional problems, this can be done efficiently through
 numerical integration. For higher-dimensional problems, sampling-based
@@ -906,7 +956,7 @@ class="math inline">\(F_{t-j}\)</span> of the surrogate densities <span
 class="math inline">\(f_t\)</span> and <span
 class="math inline">\(f_{t-j}\)</span>, respectively. Specifically, for
 one dimensional problems, the KS statistic is defined as: <span
-class="math display">\[k_t = \max_x |F_t(x) - F_{t-j}(x)|.\]</span></p>
+class="math display">\[Q_t = \max_x |F_t(x) - F_{t-j}(x)|.\]</span></p>
 <pre class="r"><code>result_ad &lt;- BOSS(
   func = eval_once, initial_design = 5,
   update_step = 5, max_iter = 30,
@@ -998,14 +1048,15 @@ assess modal convergence by considering</p>
 S_{t-1}}{S_{t-1}}\)</span>.</li>
 </ol>
 <p>We deem the algorithm to have reached convergence when <span
-class="math inline">\(\max\{D_{t,k}, H_{t}\} &lt; \varepsilon\)</span>
-for some user-defined <span class="math inline">\(\varepsilon &gt;
-0\)</span>. Heuristically, <span class="math inline">\(S_{t}\)</span>
-can be regarded as the size of the posterior standard deviation for
-sufficiently large <span class="math inline">\(t\)</span>. <span
+class="math inline">\(Q_t =\max\{D_{t,k}, H_{t}\} &lt;
+\varepsilon\)</span> for some user-defined <span
+class="math inline">\(\varepsilon &gt; 0\)</span>. Heuristically, <span
+class="math inline">\(S_{t}\)</span> can be regarded as the size of the
+posterior standard deviation for sufficiently large <span
+class="math inline">\(t\)</span>. <span
 class="math inline">\(D_{t,k}\)</span> thus gives a measure of how close
-the current optimizer is to the true mode relative to the size of the
-posterior standard deviation. <span
+the current optimizer is to the existing design points relative to the
+size of the posterior standard deviation. <span
 class="math inline">\(H_{t}\)</span>, on the other hand, gives a rough
 measure on the relative change of the size of the posterior standard
 deviation.</p>
@@ -1073,18 +1124,18 @@ Session information
 </p>
 <div id="workflowr-sessioninfo" class="collapse">
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>R version 4.4.1 (2024-06-14)
-Platform: aarch64-apple-darwin20
-Running under: macOS 15.0
+<pre><code>R version 4.3.1 (2023-06-16)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Monterey 12.7.4
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
-LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
-time zone: America/Toronto
+time zone: America/Chicago
 tzcode source: internal
 
 attached base packages:
@@ -1096,23 +1147,23 @@ other attached packages:
 loaded via a namespace (and not attached):
  [1] sass_0.4.9          utf8_1.2.4          generics_0.1.3     
  [4] lattice_0.22-6      stringi_1.8.4       digest_0.6.37      
- [7] magrittr_2.0.3      evaluate_1.0.0      grid_4.4.1         
+ [7] magrittr_2.0.3      evaluate_1.0.1      grid_4.3.1         
 [10] fastmap_1.2.0       rprojroot_2.0.4     jsonlite_1.8.9     
-[13] Matrix_1.7-0        processx_3.8.4      whisker_0.4.1      
+[13] Matrix_1.6-4        processx_3.8.4      whisker_0.4.1      
 [16] ps_1.8.0            promises_1.3.0      httr_1.4.7         
 [19] fansi_1.0.6         scales_1.3.0        numDeriv_2016.8-1.1
 [22] jquerylib_0.1.4     cli_3.6.3           rlang_1.1.4        
-[25] munsell_0.5.1       withr_3.0.1         cachem_1.1.0       
-[28] yaml_2.3.10         tools_4.4.1         dplyr_1.1.4        
+[25] munsell_0.5.1       withr_3.0.2         cachem_1.1.0       
+[28] yaml_2.3.10         tools_4.3.1         dplyr_1.1.4        
 [31] colorspace_2.1-1    httpuv_1.6.15       vctrs_0.6.5        
 [34] R6_2.5.1            lifecycle_1.0.4     git2r_0.33.0       
-[37] stringr_1.5.1       fs_1.6.4            MASS_7.3-61        
+[37] stringr_1.5.1       fs_1.6.4            MASS_7.3-60        
 [40] pkgconfig_2.0.3     callr_3.7.6         pillar_1.9.0       
-[43] bslib_0.8.0         later_1.3.2         gtable_0.3.5       
-[46] glue_1.7.0          Rcpp_1.0.13         highr_0.11         
-[49] xfun_0.47           tibble_3.2.1        tidyselect_1.2.1   
+[43] bslib_0.8.0         later_1.3.2         gtable_0.3.6       
+[46] glue_1.8.0          Rcpp_1.0.13-1       highr_0.11         
+[49] xfun_0.48           tibble_3.2.1        tidyselect_1.2.1   
 [52] rstudioapi_0.16.0   knitr_1.48          htmltools_0.5.8.1  
-[55] rmarkdown_2.28      compiler_4.4.1      getPass_0.2-4      </code></pre>
+[55] rmarkdown_2.28      compiler_4.3.1      getPass_0.2-4      </code></pre>
 </div>
 </div>
 </div>
