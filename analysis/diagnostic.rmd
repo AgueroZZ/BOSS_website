@@ -60,7 +60,7 @@ plot(exp(true_log_post(x)) ~ x, type = "l", cex.lab = 1.5, cex.axis = 1.5,
 
 Let $f_t$ and $f_{t-j}$ be the corresponding surrogate density at time $t$ and $t-j$, respectively.
 We can compute the KL divergence between $f_t$ and $f_{t-j}$ as follows:
-$$k_t = KL(f_t,f_{t-j}) = \int \log \frac{f_t(x)}{f_{t-j}(x)}f_{t}(x)dx.$$
+$$Q_t = KL(f_t,f_{t-j}) = \int \log \frac{f_t(x)}{f_{t-j}(x)}f_{t}(x)dx.$$
 
 For one-dimensional problems, this can be done efficiently through numerical integration.
 For higher-dimensional problems, sampling-based methods can be used to approximate the KL divergence.
@@ -93,7 +93,7 @@ Based on the KL divergence, it seems like the algorithm has converged around 30 
 
 The Kolmogorov-Smirnov (KS) statistic measures the maximum difference between the cumulative distribution functions (CDFs) $F_t$ and $F_{t-j}$ of the surrogate densities $f_t$ and $f_{t-j}$, respectively.
 Specifically, for one dimensional problems, the KS statistic is defined as:
-$$k_t = \max_x |F_t(x) - F_{t-j}(x)|.$$
+$$Q_t = \max_x |F_t(x) - F_{t-j}(x)|.$$
 
 
 ```{r}
@@ -129,12 +129,16 @@ Thus, as an empirical heuristic, we can check the convergence of the modal behav
 
 For the modal behavior, we compute the average $k$-nearest neighbor distance between the current optimizer and its neighboring design points, as well as the relative change of the hessian (trace) at the current optimizer. 
 
-Specifically, define the current optimizer as $\boldsymbol{\theta}_t^*$ and the average $k$-nearest neighbor distance of design points to $\boldsymbol{\theta}_t^*$ as $d_{t,k}$. Additionally, let $H(\boldsymbol{\theta}_t^*)$ be the negative Hessian at $\boldsymbol{\theta}_t^*$ based on the GP surrogate and write $S_{t} = \sqrt{\mathrm{Tr}(H^{-1}(\boldsymbol{\theta}_t^*))}$. We can assess modal convergence by considering
+Specifically, define the current optimizer as $\boldsymbol{\theta}_t^*$ and the average $k$-nearest neighbor distance of design points to $\boldsymbol{\theta}_t^*$ as $d_{t,k}$. 
+Additionally, let $H(\boldsymbol{\theta}_t^*)$ be the negative Hessian at $\boldsymbol{\theta}_t^*$ based on the GP surrogate and write $S_{t} = \sqrt{\mathrm{Tr}(H^{-1}(\boldsymbol{\theta}_t^*))}$. We can assess modal convergence by considering
 
 1. $D_{t,k} = d_{t,k}/S_{t,k}$;
 2. $H_{t} = \frac{S_{t} - S_{t-1}}{S_{t-1}}$.
 
-We deem the algorithm to have reached convergence when $\max\{D_{t,k}, H_{t}\} < \varepsilon$ for some user-defined $\varepsilon > 0$. Heuristically, $S_{t}$ can be regarded as the size of the posterior standard deviation for sufficiently large $t$. $D_{t,k}$ thus gives a measure of how close the current optimizer is to the true mode relative to the size of the posterior standard deviation. $H_{t}$, on the other hand, gives a rough measure on the relative change of the size of the posterior standard deviation.
+We deem the algorithm to have reached convergence when $Q_t =\max\{D_{t,k}, H_{t}\} < \varepsilon$ for some user-defined $\varepsilon > 0$. 
+Heuristically, $S_{t}$ can be regarded as the size of the posterior standard deviation for sufficiently large $t$. 
+$D_{t,k}$ thus gives a measure of how close the current optimizer is to the existing design points relative to the size of the posterior standard deviation. 
+$H_{t}$, on the other hand, gives a rough measure on the relative change of the size of the posterior standard deviation.
 
 
 ```{r}
