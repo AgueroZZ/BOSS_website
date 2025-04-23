@@ -399,7 +399,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-21
+<strong>Last updated:</strong> 2025-04-23
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -530,15 +530,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2a070ced7893bc58aa79c39ba255186dd78a696etargetblank2a070cea">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreec944a81517702b557cf947cf96c1a3286993109btargetblankc944a81a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/2a070ced7893bc58aa79c39ba255186dd78a696e" target="_blank">2a070ce</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/c944a81517702b557cf947cf96c1a3286993109b" target="_blank">c944a81</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2a070ced7893bc58aa79c39ba255186dd78a696etargetblank2a070cea"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreec944a81517702b557cf947cf96c1a3286993109btargetblankc944a81a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -548,7 +548,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/2a070ced7893bc58aa79c39ba255186dd78a696e" target="_blank">2a070ce</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/c944a81517702b557cf947cf96c1a3286993109b" target="_blank">c944a81</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -564,14 +564,11 @@ were generated:
 <pre><code>
 Ignored files:
     Ignored:    .DS_Store
+    Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
     Ignored:    data/.DS_Store
     Ignored:    data/sim3/
-
-Untracked files:
-    Untracked:  data/UDG/
-    Untracked:  output/UDG/
 
 </code></pre>
 <p>
@@ -620,6 +617,40 @@ Message
 Rmd
 </td>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/c944a81517702b557cf947cf96c1a3286993109b/analysis/UDG.Rmd" target="_blank">c944a81</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-23
+</td>
+<td>
+wflow_publish("analysis/UDG.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/380a5300b5af4911147bc75d7f51fe2ec353fd1f/docs/UDG.html" target="_blank">380a530</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-21
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/2a070ced7893bc58aa79c39ba255186dd78a696e/analysis/UDG.Rmd" target="_blank">2a070ce</a>
 </td>
 <td>
@@ -639,14 +670,6 @@ wflow_publish("analysis/UDG.Rmd")
 </div>
 </div>
 </div>
-<div id="introduction" class="section level2">
-<h2>Introduction</h2>
-<p>For this example, we look at the real-world application of using
-log-Gaussian Cox process (LGCP) to detect a class of extremely faint
-Ultra-Diffuse Galaxies (UDGs). The main idea is to detect the clustering
-signals of their constituent star clusters. The data being modeled is
-thus the point pattern of these star clusters.</p>
-<p>The model we consider is as follow:</p>
 <pre class="r"><code>library(tidyverse)
 library(spatial)
 library(raster)
@@ -668,7 +691,6 @@ function_path &lt;- &quot;./code&quot;
 output_path &lt;- &quot;./output/UDG&quot;
 data_path &lt;- &quot;./data/UDG&quot;
 source(paste0(function_path, &quot;/00_BOSS.R&quot;))</code></pre>
-</div>
 <div id="data" class="section level2">
 <h2>Data</h2>
 <p>We first load the point pattern data we will model, and construct the
@@ -685,6 +707,43 @@ region &lt;- SpatialPolygonsDataFrame(region, data.frame(id = region@polygons[[1
 plot(region)
 points(v_acs[,3:4]/4300*76)</code></pre>
 <p><img src="figure/UDG.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-1">
+Past versions of unnamed-chunk-2-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/380a5300b5af4911147bc75d7f51fe2ec353fd1f/docs/figure/UDG.Rmd/unnamed-chunk-2-1.png" target="_blank">380a530</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code># Construct Spatial covariate that captures GC intensity in a bright normal galaxy
 
 grid &lt;- makegrid(region, n = 20000)
@@ -862,6 +921,43 @@ This warning is displayed once every 8 hours.
 Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
 generated.</code></pre>
 <p><img src="figure/UDG.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
+Past versions of unnamed-chunk-7-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-7-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/380a5300b5af4911147bc75d7f51fe2ec353fd1f/docs/figure/UDG.Rmd/unnamed-chunk-7-1.png" target="_blank">380a530</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#dev.off()
 #system(&#39;pdflatex R_marginal_UDG.tex&#39;)</code></pre>
 </div>
@@ -877,6 +973,43 @@ ggplot(n_marginal, aes(n)) + geom_density(aes(color = method), show_guide = F) +
   stat_density(aes(x = n, colour = method),
                   geom=&quot;line&quot;,position=&quot;identity&quot;) + theme_minimal() + xlab(&#39;$n$&#39;)</code></pre>
 <p><img src="figure/UDG.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/380a5300b5af4911147bc75d7f51fe2ec353fd1f/docs/figure/UDG.Rmd/unnamed-chunk-8-1.png" target="_blank">380a530</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#system(&#39;pdflatex n_marginal_UDG.tex&#39;)</code></pre>
 <p>From the above, it seems like the marginal distribution of <span
 class="math inline">\(R\)</span> and <span
@@ -904,6 +1037,43 @@ ggplot(inla.joint.samps, aes(R, n)) + stat_density_2d(
   contour = FALSE) +
   geom_point(data = data.frame(R = R_fun_1(fit$summary.fixed$mode[2]), n = alpha_fun_1(fit$summary.fixed$mode[3])), color = &#39;red&#39;, shape = 1, size =0.5) + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$n$&#39;) + xlim(c(2, 12)) + ylim(c(0, 2))</code></pre>
 <p><img src="figure/UDG.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/380a5300b5af4911147bc75d7f51fe2ec353fd1f/docs/figure/UDG.Rmd/unnamed-chunk-9-1.png" target="_blank">380a530</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#dev.off()
 #system(&#39;pdflatex joint_post_R_n_inlabru.tex&#39;)</code></pre>
 </div>
@@ -916,6 +1086,43 @@ ggplot(post_x, aes(x.1,x.2)) + geom_raster(aes(fill = pos)) +
   scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$n$&#39;) +
   xlim(c(2,12)) + ylim(c(0, 2))</code></pre>
 <p><img src="figure/UDG.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
+Past versions of unnamed-chunk-10-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-10-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/380a5300b5af4911147bc75d7f51fe2ec353fd1f/docs/figure/UDG.Rmd/unnamed-chunk-10-1.png" target="_blank">380a530</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#dev.off()
 #system(&#39;pdflatex joint_post_R_n.tex&#39;)</code></pre>
 <p>Based on the previous figures, the pictures seem to be more clear:
@@ -1068,6 +1275,43 @@ ggplot(exceed_map, aes(x,y)) + geom_raster(aes(fill = prob)) +
   coord_fixed() + facet_wrap(.~method) +
   xlab(&#39;X (kpc)&#39;) + ylab(&#39;Y (kpc)&#39;) + theme_minimal()</code></pre>
 <p><img src="figure/UDG.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-1">
+Past versions of unnamed-chunk-15-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-15-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/380a5300b5af4911147bc75d7f51fe2ec353fd1f/docs/figure/UDG.Rmd/unnamed-chunk-15-1.png" target="_blank">380a530</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#dev.off()
 #system(&#39;pdflatex exceed_Us_compare.tex&#39;)</code></pre>
 </div>
@@ -1100,6 +1344,43 @@ ggplot(U_dat, aes(coords.x1, coords.x2)) +
         legend.title = element_text(size = 8),
         strip.background = element_rect(color = NULL, fill = &#39;white&#39;, linetype = &#39;blank&#39;))</code></pre>
 <p><img src="figure/UDG.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-16-1">
+Past versions of unnamed-chunk-16-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-16-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/380a5300b5af4911147bc75d7f51fe2ec353fd1f/docs/figure/UDG.Rmd/unnamed-chunk-16-1.png" target="_blank">380a530</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-21
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#dev.off()
 #system(&#39;pdflatex post_med_exp_Us_compare.tex&#39;)</code></pre>
 <p>The final results in terms of the UDG detection is quite similar
