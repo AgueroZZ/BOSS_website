@@ -9,14 +9,6 @@ editor_options:
   chunk_output_type: console
 ---
 
-## Introduction
-
-For this example, we look at the real-world application of using log-Gaussian Cox process (LGCP) to detect a class of extremely faint Ultra-Diffuse Galaxies (UDGs). The main idea is to detect the clustering signals of their constituent star clusters. The data being modeled is thus the point pattern of these star clusters.
-
-The model we consider is as follow:
-
-
-
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(spatial)
