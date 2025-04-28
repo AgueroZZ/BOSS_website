@@ -1,0 +1,249 @@
+---
+title: "problem_with_opt"
+author: "Ziang Zhang"
+date: "2025-04-27"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Introduction
+
+Here I am showing an example where `opt` is not working as expected for AF. 
+
+Let's load the example in Simulation 4.1, and take a look at the "oracle" posterior density. 
+
+```{r eval=FALSE}
+library(BayesGP)
+library(tidyverse)
+library(npreg)
+function_path <- "./code"
+output_path <- "./output/sim1"
+data_path <- "./data/sim1"
+source(paste0(function_path, "/00_BOSS.R"))
+
+lower = 0.5; upper = 4.5; a = 1.5; noise_var = 1e-6
+### Simulate data:
+set.seed(123)
+n <- 100
+x <- runif(n = n, min = 0, max = 10)
+true_func <- function(x, true_alpha = 1.5){1 + 
+    0.5 * cos((2*pi*x)/true_alpha) - 1.3 * sin((2*pi*x)/true_alpha) +
+    1.1 * cos((4*pi*x)/true_alpha) + 0.3 * sin((4*pi*x)/true_alpha)}
+log_mu <- true_func(x) + rnorm(n, sd = 2)
+y <- rpois(n = n, lambda = exp(log_mu))
+data <- data.frame(y = y, x = x, indx = 1:n, log_mu = log_mu)
+log_prior <- function(alpha){
+  dnorm(x = alpha, mean = 3, log = T, sd = 0.5)
+}
+eval_once <- function(alpha){
+  a_fit <- (2*pi)/alpha
+  x <- data$x
+  data$cosx <- cos(a_fit * x)
+  data$sinx <- sin(a_fit * x)
+  data$cos2x <- cos(2*a_fit * x)
+  data$sin2x <- sin(2*a_fit * x)
+  mod <- model_fit(formula = y ~ cosx + sinx + cos2x + sin2x + f(x = indx, model = "IID", 
+                                                                 sd.prior = list(param = 1)),
+                   data = data, method = "aghq", family = "Poisson", aghq_k = 4
+  )
+  (mod$mod$normalized_posterior$lognormconst) + log_prior(alpha)
+}
+surrogate <- function(xvalue, data_to_smooth, choice_cov) {
+  predict_gp(
+    data = data_to_smooth,
+    x_pred = matrix(xvalue, ncol = 1),
+    choice_cov = choice_cov,
+    noise_var = noise_var
+  )$mean
+}
+x_vals <- seq(lower, upper, by = 0.005)
+load(paste0(output_path, "/exact_grid_result.rda"))
+plot(x = exact_grid_result$x, y = exact_grid_result$pos, col = "black", cex = 0.5, type = "l",
+     xlab = "x", ylab = "density", main = "Posterior Density (Exact Grid)", lwd = 2)
+abline(v = exact_grid_result$x[which.max(exact_grid_result$exact_vals)], col = "green", lty = "dashed")
+abline(v = exact_grid_result$x[which.max(exact_grid_result$exact_vals)], col = "blue", lty = "dashed")
+abline(v = a, col = "purple", lty = "dashed")
+grid()
+```
+
+
+```{r}
+library(BayesGP)
+library(tidyverse)
+library(npreg)
+function_path <- "./code"
+output_path <- "./output/sim2"
+data_path <- "./data/sim2"
+source(paste0(function_path, "/00_BOSS.R"))
+
+set.seed(123)
+lower = 0; upper = 10
+x_grid <- seq(lower, upper, length.out = 1000)
+noise_var <- 1e-6
+
+func_generator <- function(f1, f2) {
+  func <- function(x, a) {
+    sapply(x, function(xi) {
+      if (xi <= a) {
+        f1(xi)
+      } else {
+        f2(xi) - f2(a) + f1(a)
+      }
+    })
+  }
+  func
+}
+my_func <- func_generator(f1 = function(x) x*log(x^2 + 1), f2 = function(x) 3.3*x)
+
+# Simulate observations from a regression model with a piecewise linear function
+simulate_observation <- function(a, func, x_grid, measurement = 3) {
+  # Generate n random x values between 0 and 1
+  x <- rep(x_grid, each = measurement)
+  n <- length(x)
+  
+  # Initialize y
+  y <- numeric(n)
+  
+  # Loop through each x to compute the corresponding y value based on the piecewise function
+  fx <- func(x = x, a = a)
+  
+  # Add random noise e from a standard normal distribution
+  e <- rnorm(n, mean = 0, sd = 0.3)
+  y <- fx + e
+  
+  return(data.frame(x, y))
+}
+
+# Knot value
+a <- 6.5
+data <- simulate_observation(a = a, func = my_func, x_grid = x_grid, measurement = 1)
+
+lower = 0.1; upper = 9.9
+eval_once <- function(alpha){
+  a_fit <- alpha
+  data$x1 <- ifelse(data$x <= a_fit, data$x, a_fit)
+  data$x2 <- ifelse(data$x > a_fit, (data$x - a_fit), 0)
+  mod <- model_fit(formula = y ~ f(x1, model = "IWP", order = 2, sd.prior = list(param = 1, h = 1), initial_location = 0) + f(x2, model = "IWP", order = 2, sd.prior = list(param = 1, h = 1), initial_location = 0), 
+                   data = data, method = "aghq", family = "Gaussian", aghq_k = 3
+  )
+  (mod$mod$normalized_posterior$lognormconst)
+}
+# Apply smoothing to the result
+surrogate <- function(xvalue, data_to_smooth){
+  data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
+  predict(ss(x = as.numeric(data_to_smooth$x), y = data_to_smooth$y, df = length(unique(as.numeric(data_to_smooth$x))), m = 2, all.knots = TRUE), x = xvalue)$y
+}
+load(paste0(output_path, "/exact_grid_result.rda"))
+load(paste0(output_path, "/exact_grid_result_smooth.rda"))
+plot(exact_grid_result$x, exact_grid_result$pos, type = "l", col = "red", xlab = "x (0-10)", ylab = "density", main = "Posterior")
+abline(v = a, col = "purple")
+grid()
+```
+
+
+
+## Using grid-based optimization of AF
+
+First, let's see what we get when we use the grid-based optimization of AF. 
+
+
+```{r}
+objective_func <- eval_once
+max_iter <- 20
+result_grid <- BOSS(func = objective_func, update_step = 5, max_iter = (max_iter-5),
+                  delta = 0.01, noise_var = noise_var,
+                  opt.lengthscale.grid = 100, opt.grid = 2000,
+                  lower = lower, upper = upper,
+                  criterion = "modal", verbose = 0,
+                  modal_iter_check = 1, modal_check_warmup = 5, modal_k.nn = 5, modal_eps = 0,
+                  initial_design = 5)
+
+data_to_smooth <- result_grid$result
+data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
+
+ff <- list()
+ff$fn <- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth))
+x_vals <- (seq(from = lower, to = upper, length.out = 1000) - lower)/(upper - lower)
+fn_vals <- sapply(x_vals, ff$fn)
+dx <- diff(x_vals)
+# Compute the trapezoidal areas and sum them up
+integral_approx <- sum(0.5 * (exp(fn_vals[-1]) + exp(fn_vals[-length(x_vals)])) * dx)
+post_x <- data.frame(y = x_vals, pos = exp(fn_vals)/integral_approx)
+post_x_final <- data.frame(x = (lower + x_vals*(upper - lower)), pos = post_x$pos /(upper - lower))
+
+ggplot() +
+    geom_line(data = post_x_final, aes(x = x, y = pos), color = "red", size = 1) +
+    geom_line(data = exact_grid_result_smooth, aes(x = x, y = pos), color = "black", size = 0.5, linetype = "dashed") +
+    ggtitle(paste0("Comparison Posterior Density: B = ", max_iter)) +
+    xlab("Value") +
+    ylab("Density") +
+    coord_cartesian(ylim = c(0,10), xlim = c(5,8)) + 
+    theme(text=element_text(size=10)) +
+    theme_minimal() 
+```
+
+Let's also take a look at the convergence of modal statistics:
+
+```{r}
+plot(result_grid$modal_result$modal_max_diff ~ result_grid$modal_result$i, xlab = "Iteration", ylab = "Modal Statistics", main = "Convergence of Modal Statistics")
+```
+
+As well as the placement of design points:
+
+```{r}
+plot(result_grid$result$x_original, xlab = "iteration", ylab = "Design Points", ylim = c(lower,upper))
+```
+
+
+
+## Using opt-based optimization of AF
+
+Then, let's see what we get when we use the opt-based optimization of AF. 
+
+```{r}
+objective_func <- eval_once
+result_opt <- BOSS(func = objective_func, update_step = 5, max_iter = (max_iter-5),
+                  delta = 0.01, noise_var = noise_var,
+                  lower = lower, upper = upper,
+                  opt.lengthscale.grid = 100, 
+                  criterion = "modal", verbose = 3,
+                  modal_iter_check = 1, modal_check_warmup = 5, modal_k.nn = 5, modal_eps = 0,
+                  initial_design = 5)
+
+data_to_smooth <- result_opt$result
+data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
+
+ff <- list()
+ff$fn <- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth))
+x_vals <- (seq(from = lower, to = upper, length.out = 1000) - lower)/(upper - lower)
+fn_vals <- sapply(x_vals, ff$fn)
+dx <- diff(x_vals)
+# Compute the trapezoidal areas and sum them up
+integral_approx <- sum(0.5 * (exp(fn_vals[-1]) + exp(fn_vals[-length(x_vals)])) * dx)
+post_x <- data.frame(y = x_vals, pos = exp(fn_vals)/integral_approx)
+post_x_final <- data.frame(x = (lower + x_vals*(upper - lower)), pos = post_x$pos /(upper - lower))
+
+ggplot() +
+    geom_line(data = post_x_final, aes(x = x, y = pos), color = "red", size = 1) +
+    geom_line(data = exact_grid_result_smooth, aes(x = x, y = pos), color = "black", size = 0.5, linetype = "dashed") +
+    ggtitle(paste0("Comparison Posterior Density: B = ", max_iter)) +
+    xlab("Value") +
+    ylab("Density") +
+    coord_cartesian(ylim = c(0,10), xlim = c(5,8)) + 
+    theme(text=element_text(size=10)) +
+    theme_minimal() 
+```
+
+
+Let's also take a look at the convergence of modal statistics:
+
+```{r}
+plot(result_opt$modal_result$modal_max_diff ~ result_opt$modal_result$i, xlab = "Iteration", ylab = "Modal Statistics", main = "Convergence of Modal Statistics")
+```
+
+As well as the placement of design points:
+
+```{r}
+plot(result_opt$result$x_original, xlab = "iteration", ylab = "Design Points", ylim = c(lower,upper))
+```

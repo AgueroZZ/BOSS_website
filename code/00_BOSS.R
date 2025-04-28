@@ -172,10 +172,12 @@ BOSS <- function(func,
                  KL_iter_check        = 10,
                  KL_check_warmup      = 20,
                  KL_eps               = 0.1,
+                 KL.grid              = NULL,
                  # KS-specific
                  KS_iter_check        = 10,
                  KS_check_warmup      = 20,
                  KS_eps               = 0.1,
+                 KS.grid              = NULL,
                  # modal-specific
                  modal_iter_check     = 10,
                  modal_check_warmup   = 20,
@@ -226,7 +228,8 @@ BOSS <- function(func,
     args <- c(args, list(
       KL_iter_check   = KL_iter_check,
       KL_check_warmup = KL_check_warmup,
-      KL_eps          = KL_eps
+      KL_eps          = KL_eps,
+      KL.grid        = KL.grid
     ))
     return(do.call(BOSS_KL, args))
   }
@@ -236,7 +239,8 @@ BOSS <- function(func,
     args <- c(args, list(
       KS_iter_check   = KS_iter_check,
       KS_check_warmup = KS_check_warmup,
-      KS_eps          = KS_eps
+      KS_eps          = KS_eps,
+      KS.grid         = KS.grid
     ))
     return(do.call(BOSS_KS, args))
   }
@@ -410,8 +414,11 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
     }
     # if next_point is already covered, skip
     if(any(apply(xmat_trans, 1, function(row) all(abs(row - next_point) == 0)))) {
+      if(verbose == 3){
+        # ("Next point is already covered, skipping.")
+        print(paste("Next point:", next_point*(upper - lower) + lower, "is already covered, skipping."))
+      }
       next
-      warning("Next point is already covered, skipping.")
     }
     # Update design matrices and evaluate the function.
     xmat_trans <- rbind(xmat_trans, next_point)
@@ -751,7 +758,7 @@ BOSS_KS <- function(func, update_step = 5, max_iter = 100, D = 1,
                        lower = rep(0, D), upper = rep(1, D),
                        noise_var = 1e-6,
                        KS_iter_check = 10,  KS_check_warmup = 20,
-                       KS_eps = 0.1,
+                       KS_eps = 0.1, KS.grid = NULL,
                        initial_design = 5, delta = 0.01,
                        optim.n = 5, optim.max.iter = 1000,
                        opt.lengthscale.grid = NULL,  # Grid-based option for lengthscale optimization.
@@ -834,6 +841,8 @@ BOSS_KS <- function(func, update_step = 5, max_iter = 100, D = 1,
 
   # Initialize the grid for the acquisition function, if provided.
   if (!is.null(opt.grid)) {
+    # If KS.grid is not provided, use opt.grid.
+    KS.grid <- opt.grid
     grid_list <- replicate(D, seq(0, 1, length.out = opt.grid), simplify = FALSE)
     grid <- as.matrix(expand.grid(grid_list))
   }
@@ -878,7 +887,10 @@ BOSS_KS <- function(func, update_step = 5, max_iter = 100, D = 1,
     # Optimize the acquisition function (UCB).
     if(verbose == 3) print("Maximize Acquisition Function")
     if(is.null(opt.grid)){
-      opt.grid <- 100
+      # If KS.grid is not provided, set a default of 100 points.
+      if (is.null(KS.grid)) {
+        KS.grid <- 100
+      }
       # Multi-start local optimization.
       initialize_UCB <- matrix(runif(D*optim.n, rep(0, D), rep((1), D)),
                                nrow = optim.n, ncol = D, byrow = TRUE)
@@ -901,8 +913,11 @@ BOSS_KS <- function(func, update_step = 5, max_iter = 100, D = 1,
     }
     # if next_point is already covered, skip
     if(any(apply(xmat_trans, 1, function(row) all(abs(row - next_point) == 0)))) {
+      if(verbose == 3){
+        # ("Next point is already covered, skipping.")
+        print(paste("Next point:", next_point*(upper - lower) + lower, "is already covered, skipping."))
+      }
       next
-      warning("Next point is already covered, skipping.")
     }
     # Update design matrices and evaluate the function.
     xmat_trans <- rbind(xmat_trans, next_point)
@@ -936,7 +951,7 @@ BOSS_KS <- function(func, update_step = 5, max_iter = 100, D = 1,
       KS_grid <- (seq(
         from = lower,
         to = upper,
-        length.out = opt.grid
+        length.out = KS.grid
       ) - lower) / (upper - lower)
 
       fn_vals <- sapply(KS_grid, function(x) fn_new(x))
@@ -984,7 +999,7 @@ BOSS_KL <- function(func, update_step = 5, max_iter = 100, D = 1,
                     lower = rep(0, D), upper = rep(1, D),
                     noise_var = 1e-6,
                     KL_iter_check = 10,  KL_check_warmup = 20,
-                    KL_eps = 0.1,
+                    KL_eps = 0.1, KL.grid = NULL,
                     initial_design = 5, delta = 0.01,
                     optim.n = 5, optim.max.iter = 1000,
                     opt.lengthscale.grid = NULL,  # Grid-based option for lengthscale optimization.
@@ -1008,7 +1023,7 @@ BOSS_KL <- function(func, update_step = 5, max_iter = 100, D = 1,
 
   # Check if D = 1, if not, return an error saying KL is only for 1D.
   if(D > 1) {
-    stop("KL is only implemented for D = 1. Please use criterion = `aghq` or `modal`.")
+    stop("KL is only implemented for D = 1. Please use criterion = `modal` or `aghq`.")
   }
 
   # Initialize matrices/vectors to store evaluations.
@@ -1067,6 +1082,8 @@ BOSS_KL <- function(func, update_step = 5, max_iter = 100, D = 1,
 
   # Initialize the grid for the acquisition function, if provided.
   if (!is.null(opt.grid)) {
+    # If KL.grid is not provided, use opt.grid as default.
+    KL.grid <- opt.grid
     grid_list <- replicate(D, seq(0, 1, length.out = opt.grid), simplify = FALSE)
     grid <- as.matrix(expand.grid(grid_list))
   }
@@ -1111,7 +1128,11 @@ BOSS_KL <- function(func, update_step = 5, max_iter = 100, D = 1,
     # Optimize the acquisition function (UCB).
     if(verbose == 3) print("Maximize Acquisition Function")
     if(is.null(opt.grid)){
-      opt.grid <- 100
+      # if KL.grid is also not provided, initialize it to 100
+      if(is.null(KL.grid)){
+        KL.grid <- 100
+      }
+
       # Multi-start local optimization.
       initialize_UCB <- matrix(runif(D*optim.n, rep(0, D), rep((1), D)),
                                nrow = optim.n, ncol = D, byrow = TRUE)
@@ -1134,8 +1155,11 @@ BOSS_KL <- function(func, update_step = 5, max_iter = 100, D = 1,
     }
     # if next_point is already covered, skip
     if(any(apply(xmat_trans, 1, function(row) all(abs(row - next_point) == 0)))) {
+      if(verbose == 3){
+        # ("Next point is already covered, skipping.")
+        print(paste("Next point:", next_point*(upper - lower) + lower, "is already covered, skipping."))
+      }
       next
-      warning("Next point is already covered, skipping.")
     }
     # Update design matrices and evaluate the function.
     xmat_trans <- rbind(xmat_trans, next_point)
@@ -1169,7 +1193,7 @@ BOSS_KL <- function(func, update_step = 5, max_iter = 100, D = 1,
       KL_grid <- (seq(
         from = lower,
         to = upper,
-        length.out = opt.grid
+        length.out = KL.grid
       ) - lower) / (upper - lower)
 
       fn_vals <- sapply(KL_grid, function(x) fn_new(x))
