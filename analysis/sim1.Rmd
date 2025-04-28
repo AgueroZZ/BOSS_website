@@ -127,7 +127,7 @@ grid()
 Now, let's assess the performance of the BOSS algorithm with different choices of $B$, ranging from $10$ to $80$.
 
 ```{r message=FALSE, warning=FALSE}
-eval_num <- c(15, 30, 45, 60, 80)
+eval_num <- seq(10, 80, by = 5)
 # Initialize BOSS with 3 equally spaced design points
 initial_design <- 5
 ```
@@ -135,31 +135,39 @@ initial_design <- 5
 Running the BOSS algorithm at each $B$:
 
 ```{r eval=FALSE}
+set.seed(123)
+n_grid <- nrow(exact_grid_result); optim.n = 20
 objective_func <- eval_once
-rel_runtime <- c()
+result_ad <- BOSS(
+  func = objective_func,
+  update_step = 5, max_iter = (max(eval_num) - initial_design),
+  optim.n = optim.n,
+  delta = 0.01, noise_var = noise_var,
+  lower = lower, upper = upper,
+  # Checking KL convergence
+  criterion = "KL", KL.grid = 3000, KL_check_warmup = 5, KL_iter_check = 5, KL_eps = 0,
+  initial_design = initial_design
+)
 BO_result_list <- list()
 BO_result_original_list <- list()
 for (i in 1:length(eval_num)) {
-  n_grid <- nrow(exact_grid_result)
   eval_number <- eval_num[i]
-  begin_time <- Sys.time()
-  result_ad <- BOSS(func = objective_func, update_step = 5, max_iter = (eval_number - initial_design),
-                       opt.lengthscale.grid = 100, opt.grid = nrow(exact_grid_result),
-                       delta = 0.01, noise_var = noise_var,
-                       lower = lower, upper = upper,
-                       # turning off AGHQ check
-                       AGHQ_iter_check = Inf, AGHQ_eps = 0,
-                       initial_design = initial_design)
-
-  end_time <- Sys.time()
-  rel_runtime[i] <- as.numeric((end_time - begin_time), units = "mins")/1.344585
+  result_ad_selected <- list(x = result_ad$result$x[1:eval_number, , drop = F],
+                             x_original = result_ad$result$x_original[1:eval_number, , drop = F],
+                             y = result_ad$result$y[1:eval_number])
   
-  data_to_smooth <- result_ad$result
+  # Optimize the hyperparameter
+  opt_hyper <- opt_hyperparameters(result_ad_selected, optim.n = optim.n)
+  result_ad_selected$length_scale <- opt_hyper$length_scale
+  result_ad_selected$signal_var <- opt_hyper$signal_var
+
+  # Compute final surrogate
+  data_to_smooth <- result_ad_selected
   data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
   BO_result_original_list[[i]] <- data_to_smooth
 
   ff <- list()
-  ff$fn <- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = result_ad$length_scale, signal_var = result_ad$signal_var)))
+  ff$fn <- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = result_ad_selected$length_scale, signal_var = result_ad_selected$signal_var)))
   x_vals <- (seq(from = lower, to = upper, length.out = n_grid) - lower)/(upper - lower)
   fn_vals <- sapply(x_vals, ff$fn)
   obj <- function(x) {exp(ff$fn(x))}
@@ -169,18 +177,27 @@ for (i in 1:length(eval_num)) {
 }
 save(BO_result_list, file = paste0(output_path, "/BO_result_list.rda"))
 save(BO_result_original_list, file = paste0(output_path, "/BO_result_original_list.rda"))
-save(rel_runtime, file = paste0(output_path, "/rel_runtime.rda"))
+save(result_ad, file = paste0(output_path, "/result_ad.rda"))
 ```
 
-Let's compare the first from the BOSS algorithm with the exact grid result:
+
+
+Take a look at the convergence diagnostic of the BOSS algorithm:
+
+```{r}
+load(paste0(output_path, "/result_ad.rda"))
+plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = "o", xlab = "iteration", ylab = "KL Stats", log = "y")
+```
+
+
+
+Let's compare the results from the BOSS algorithm with the exact grid result:
 
 ### {.tabset .tabset-pills}
 
 ```{r message=FALSE, warning=FALSE}
 load(paste0(output_path, "/BO_result_list.rda"))
 load(paste0(output_path, "/BO_result_original_list.rda"))
-load(paste0(output_path, "/rel_runtime.rda"))
-plot(rel_runtime ~ eval_num, type = "o", ylab = "rel-runtime", xlab = "eval number: B", cex.lab = 1.0, cex.axis = 1.0)
 plot_list <- list()
 for (i in 1:length(eval_num)) {
     plot_list[[i]] <- ggplot() +
@@ -191,7 +208,7 @@ for (i in 1:length(eval_num)) {
     ylab("Density") +
     theme_minimal() +
     theme(text = element_text(size = 10), axis.text = element_text(size = 15)) + # only change the lab and axis text size
-    lims(y = range(exact_grid_result$pos))
+    coord_cartesian(ylim = c(0, max(exact_grid_result$pos)))
 }
 ```
 
@@ -201,34 +218,27 @@ for (i in 1:length(eval_num)) {
 plot_list[[1]]
 ```
 
-#### B = `r eval_num[2]`
-
-```{r}
-plot_list[[2]]
-```
-
-
 #### B = `r eval_num[5]`
 
 ```{r}
 plot_list[[5]]
 ```
 
+#### B = `r eval_num[9]`
 
+```{r}
+plot_list[[9]]
+```
 
+#### B = `r eval_num[15]`
+
+```{r}
+plot_list[[15]]
+```
 
 
 ```{r eval=FALSE, include=FALSE}
 # Use tikzDevice to generate the tex file
-tikzDevice::tikz(file = paste0(output_path, "/runtime_compare.tex"),
-                 width = 8, height = 8, standAlone = TRUE)
-plot(rel_runtime ~ eval_num, type = "o", ylab = "rel-runtime", xlab = "eval number: B", cex.lab = 2.0, cex.axis = 2.0)
-dev.off()
-system(paste0('pdflatex -output-directory=', output_path, ' ', output_path, '/runtime_compare.tex'))
-file.remove(paste0(output_path, "/runtime_compare.tex"))
-file.remove(paste0(output_path, "/runtime_compare.aux"))
-file.remove(paste0(output_path, "/runtime_compare.log"))
-
 for (i in 1:length(eval_num)) {
   base_name <- paste0("ComparisonPosteriorDensity_B_", eval_num[i])
   tex_file_name <- paste0("/ComparisonPosteriorDensity_B_", eval_num[i], ".tex")
@@ -262,7 +272,7 @@ for (i in 1:length(eval_num)) {
   } else {
     warning("TeX file was not created: ", tex_file_name)
   }
-  ggsave(filename = (paste0("figures/Comparison Posterior Density: B = ", eval_num[i], " .pdf")),
+  ggsave(filename = (paste0(output_path, "/figures/Comparison Posterior Density: B = ", eval_num[i], " .pdf")),
          width = 8, height = 8)
 }
 ```
@@ -274,18 +284,6 @@ To assess the accuracy of BOSS, we will compute the KL and KS statistics compari
 
 ```{r message=FALSE, warning=FALSE}
 #### Compute the KL distance:
-Compute_KL <- function(x, qx, px){
-  to_kept <- which(px > 0)
-  x <- x[to_kept]
-  qx <- qx[to_kept]
-  px <- px[to_kept]
-  # px <- px + .Machine$double.eps
-  # qx <- qx + .Machine$double.eps
-  dx <- diff(x)
-  left <- c(0,dx)
-  right <- c(dx,0)
-  0.5 * sum(left * log(px/qx) * px) + 0.5 * sum(right * log(px/qx) * px)
-}
 KL_vec <- c()
 for (i in 1:length(eval_num)) {
   KL_vec[i] <- Compute_KL(x = exact_grid_result$x, px = exact_grid_result$pos, qx = BO_result_list[[i]]$pos)
@@ -293,10 +291,6 @@ for (i in 1:length(eval_num)) {
 plot((KL_vec) ~ eval_num, type = "o", ylab = "KL", xlab = "eval number: B", cex.lab = 1, cex.axis = 1)
 
 #### Compute the KS distance:
-Compute_KS <- function(x, qx, px){
-  dx <- c(diff(x),0)
-  max(abs(cumsum(qx * dx) - cumsum(px * dx)))
-}
 KS_vec <- c()
 for (i in 1:length(eval_num)) {
   KS_vec[i] <- Compute_KS(x = exact_grid_result$x, px = exact_grid_result$pos, qx = BO_result_list[[i]]$pos)
@@ -394,63 +388,45 @@ simulate_once <- function(seed){
   #################################
   #################################
   #################################
-  objective_func <- eval_once
-  rel_runtime <- c()
-  BO_result_list <- list()
-  BO_result_original_list <- list()
-  for (i in 1:length(eval_num)) {
-    n_grid <- nrow(exact_grid_result)
-    eval_number <- eval_num[i]
-    result_ad <- BOSS(
-      func = objective_func,
-      update_step = 5,
-      max_iter = (eval_number - initial_design),
-      opt.lengthscale.grid = 100,
-      opt.grid = nrow(exact_grid_result),
-      delta = 0.01,
-      noise_var = noise_var,
-      lower = lower,
-      upper = upper,
-      # turning off AGHQ check
-      AGHQ_iter_check = Inf,
-      AGHQ_eps = 0,
-      initial_design = initial_design
-    )
-    data_to_smooth <- result_ad$result
-    data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
-    BO_result_original_list[[i]] <- data_to_smooth
-    
-    ff <- list()
-    ff$fn <- function(x)
-      as.numeric(
-        surrogate(
-          x,
-          data_to_smooth = data_to_smooth,
-          choice_cov = square_exp_cov_generator_nd(
-            length_scale = result_ad$length_scale,
-            signal_var = result_ad$signal_var
-          )
-        )
-      )
-    x_vals <- (seq(
-      from = lower,
-      to = upper,
-      length.out = n_grid
-    ) - lower) / (upper - lower)
-    fn_vals <- sapply(x_vals, ff$fn)
-    obj <- function(x) {
-      exp(ff$fn(x))
-    }
-    lognormal_const <- log(integrate(
-      obj,
-      lower = 0,
-      upper = 1,
-      subdivisions = 1000
-    )$value)
-    post_x <- data.frame(y = x_vals, pos = exp(fn_vals - lognormal_const))
-    BO_result_list[[i]] <- data.frame(x = (lower + x_vals * (upper - lower)),
-                                      pos = post_x$pos / (upper - lower))
-  }
+n_grid <- nrow(exact_grid_result); optim.n = 20
+objective_func <- eval_once
+result_ad <- BOSS(
+  func = objective_func,
+  update_step = 5, max_iter = (max(eval_num) - initial_design),
+  optim.n = optim.n,
+  delta = 0.01, noise_var = noise_var,
+  lower = lower, upper = upper,
+  # Checking KL convergence
+  criterion = "KL", KL.grid = 3000, KL_check_warmup = 5, KL_iter_check = 5, KL_eps = 0,
+  initial_design = initial_design
+)
+BO_result_list <- list()
+BO_result_original_list <- list()
+for (i in 1:length(eval_num)) {
+  eval_number <- eval_num[i]
+  result_ad_selected <- list(x = result_ad$result$x[1:eval_number, , drop = F],
+                             x_original = result_ad$result$x_original[1:eval_number, , drop = F],
+                             y = result_ad$result$y[1:eval_number])
+  
+  # Optimize the hyperparameter
+  opt_hyper <- opt_hyperparameters(result_ad_selected, optim.n = optim.n)
+  result_ad_selected$length_scale <- opt_hyper$length_scale
+  result_ad_selected$signal_var <- opt_hyper$signal_var
+
+  # Compute final surrogate
+  data_to_smooth <- result_ad_selected
+  data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
+  BO_result_original_list[[i]] <- data_to_smooth
+
+  ff <- list()
+  ff$fn <- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = result_ad_selected$length_scale, signal_var = result_ad_selected$signal_var)))
+  x_vals <- (seq(from = lower, to = upper, length.out = n_grid) - lower)/(upper - lower)
+  fn_vals <- sapply(x_vals, ff$fn)
+  obj <- function(x) {exp(ff$fn(x))}
+  lognormal_const <- log(integrate(obj, lower = 0, upper = 1, subdivisions = 1000)$value)
+  post_x <- data.frame(y = x_vals, pos = exp(fn_vals - lognormal_const))
+  BO_result_list[[i]] <- data.frame(x = (lower + x_vals*(upper - lower)), pos = post_x$pos /(upper - lower))
+}
   
   #################################
   #################################
@@ -498,8 +474,8 @@ Plot the results across $10$ independent replications:
 ```{r}
 load(paste0(output_path, "/all_result.rda"))
 
-mean_result <- all_result %>% group_by(eval_num) %>%
-  summarise(KL = mean(KL), KS = mean(KS))
+median_result <- all_result %>% group_by(eval_num) %>%
+  summarise(KL = median(KL), KS = median(KS))
 
 lower_result <- all_result %>% group_by(eval_num) %>%
   summarise(KL = quantile(KL, 0.1), KS = quantile(KS, 0.1))
@@ -507,21 +483,17 @@ lower_result <- all_result %>% group_by(eval_num) %>%
 upper_result <- all_result %>% group_by(eval_num) %>%
   summarise(KL = quantile(KL, 0.9), KS = quantile(KS, 0.9))
 
-plot(mean_result$eval_num, mean_result$KL, type = "o", 
+plot(median_result$eval_num, median_result$KL, type = "o", 
      ylab = "KL", xlab = "eval number: B",
-     # log = "y",
-     # ylim = c(min(lower_result$KL), max(upper_result$KL)),
      cex.lab = 1.0, cex.axis = 1.0)
-polygon(c(mean_result$eval_num, rev(mean_result$eval_num)), 
+polygon(c(median_result$eval_num, rev(median_result$eval_num)), 
         c(lower_result$KL, rev(upper_result$KL)), 
         col = rgb(0.2, 0.2, 0.2, 0.2), border = NA)
 
-plot(mean_result$eval_num, mean_result$KS, type = "o",
+plot(median_result$eval_num, median_result$KS, type = "o",
      ylab = "KS", xlab = "eval number: B", 
-     # log = "y",
-     # ylim = c(min(lower_result$KS), max(upper_result$KS)),
      cex.lab = 1.0, cex.axis = 1.0)
-polygon(c(mean_result$eval_num, rev(mean_result$eval_num)), 
+polygon(c(median_result$eval_num, rev(median_result$eval_num)), 
         c(lower_result$KS, rev(upper_result$KS)), 
         col = rgb(0.2, 0.2, 0.2, 0.2), border = NA)
 ```
