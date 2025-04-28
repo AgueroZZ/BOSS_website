@@ -399,7 +399,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-18
+<strong>Last updated:</strong> 2025-04-28
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -530,15 +530,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree750a2f0b73a55a194c2c73a490617fa1d221c74etargetblank750a2f0a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree75a5380334f512bca91ab988dd9fd4fe483e74b0targetblank75a5380a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/750a2f0b73a55a194c2c73a490617fa1d221c74e" target="_blank">750a2f0</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/75a5380334f512bca91ab988dd9fd4fe483e74b0" target="_blank">75a5380</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree750a2f0b73a55a194c2c73a490617fa1d221c74etargetblank750a2f0a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree75a5380334f512bca91ab988dd9fd4fe483e74b0targetblank75a5380a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -548,7 +548,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/750a2f0b73a55a194c2c73a490617fa1d221c74e" target="_blank">750a2f0</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/75a5380334f512bca91ab988dd9fd4fe483e74b0" target="_blank">75a5380</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -568,6 +568,7 @@ Ignored files:
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
     Ignored:    analysis/.Rhistory
+    Ignored:    analysis/figure/
     Ignored:    code/.DS_Store
     Ignored:    data/.DS_Store
     Ignored:    data/sim1/
@@ -575,9 +576,46 @@ Ignored files:
     Ignored:    output/sim2/.DS_Store
 
 Untracked files:
+    Untracked:  ComparisonPosteriorDensity_B_10.tex
+    Untracked:  ComparisonPosteriorDensity_B_15.tex
+    Untracked:  ComparisonPosteriorDensity_B_20.tex
+    Untracked:  ComparisonPosteriorDensity_B_25.tex
+    Untracked:  ComparisonPosteriorDensity_B_30.tex
+    Untracked:  ComparisonPosteriorDensity_B_35.tex
+    Untracked:  ComparisonPosteriorDensity_B_40.tex
+    Untracked:  ComparisonPosteriorDensity_B_45.tex
+    Untracked:  ComparisonPosteriorDensity_B_50.tex
+    Untracked:  ComparisonPosteriorDensity_B_55.tex
+    Untracked:  ComparisonPosteriorDensity_B_60.tex
+    Untracked:  ComparisonPosteriorDensity_B_65.tex
+    Untracked:  ComparisonPosteriorDensity_B_70.tex
+    Untracked:  ComparisonPosteriorDensity_B_75.tex
+    Untracked:  ComparisonPosteriorDensity_B_80.tex
+    Untracked:  code/mortality_BG_grid.R
+    Untracked:  code/mortality_NL_grid.R
+    Untracked:  data/co2/
+    Untracked:  data/mortality/
+    Untracked:  data/simA1/
+    Untracked:  output/co2/
+    Untracked:  output/mortality/BOSS_result.rds
+    Untracked:  output/mortality/BO_result_BG.rda
+    Untracked:  output/mortality/BO_result_NL.rda
+    Untracked:  output/mortality/mod_BG.rda
+    Untracked:  output/mortality/mod_NL.rda
+    Untracked:  output/sim1/figures/
+    Untracked:  output/sim1/result_ad.rda
+    Untracked:  output/sim2/BOSS_result.rda
     Untracked:  output/sim2/quad_sparse_list.rda
+    Untracked:  output/simA1/
 
 Unstaged changes:
+    Modified:   analysis/problem_with_opt.rmd
+    Modified:   code/00_BOSS.R
+    Modified:   output/sim1/BO_result_list.rda
+    Modified:   output/sim1/BO_result_original_list.rda
+    Modified:   output/sim1/all_result.rda
+    Modified:   output/sim1/kl_compare.pdf
+    Modified:   output/sim1/ks_compare.pdf
     Modified:   output/sim2/BO_data_to_smooth.rda
     Modified:   output/sim2/BO_result_list.rda
     Modified:   output/sim2/rel_runtime.rda
@@ -624,6 +662,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/75a5380334f512bca91ab988dd9fd4fe483e74b0/analysis/sim2.Rmd" target="_blank">75a5380</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+<td>
+workflowr::wflow_publish("analysis/sim2.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/469352f097d1e8b479707f5d7799f4924e86b04e/docs/sim2.html" target="_blank">469352f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-18
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1197,28 +1269,30 @@ Ziang Zhang
 <h2>BOSS</h2>
 <p>Finally, we implement the BOSS algorithm to this problem.</p>
 <pre class="r"><code>eval_num &lt;- seq(from = 10, to = 50, by = 5); noise_var = 1e-6; initial_design = 5</code></pre>
-<pre class="r"><code>rel_runtime &lt;- c()
+<pre class="r"><code>set.seed(123)
+optim.n = 50
+objective_func &lt;- eval_once
+result_ad &lt;- BOSS(
+  func = objective_func,
+  update_step = 5, max_iter = (max(eval_num) - initial_design),
+  optim.n = optim.n,
+  delta = 0.01, noise_var = noise_var,
+  lower = lower, upper = upper,
+  # Checking KL convergence
+  criterion = &quot;KL&quot;, KL.grid = 1000, KL_check_warmup = 5, KL_iter_check = 5, KL_eps = 0,
+  initial_design = initial_design
+)
+
 BO_result_list &lt;- list(); BO_result_original_list &lt;- list()
 
 for (i in 1:length(eval_num)) {
   eval_number &lt;- eval_num[i]
-  begin_time &lt;- Sys.time()
+
+  result_ad_selected &lt;- list(x = result_ad$result$x[1:eval_number, , drop = F],
+                             x_original = result_ad$result$x_original[1:eval_number, , drop = F],
+                             y = result_ad$result$y[1:eval_number])
   
-  result_ad &lt;- BOSS(
-    func = eval_once,
-    update_step = 5,
-    max_iter = (eval_number - initial_design),
-    opt.lengthscale.grid = 100,
-    opt.grid = 2000,
-    delta = 0.01,
-    noise_var = noise_var,
-    lower = lower, upper = upper,
-    # turning off AGHQ stopping criterion
-    AGHQ_iter_check = 5, AGHQ_k = 10, AGHQ_eps = 0, AGHQ_check_warmup = 30, buffer = 1e-5,
-    initial_design = initial_design
-  )
-  
-  data_to_smooth &lt;- result_ad$result
+  data_to_smooth &lt;- result_ad_selected
   BO_result_original_list[[i]] &lt;- data_to_smooth
   
   ff &lt;- list()
@@ -1230,16 +1304,17 @@ for (i in 1:length(eval_num)) {
   integral_approx &lt;- sum(0.5 * (exp(fn_vals[-1]) + exp(fn_vals[-length(x_vals)])) * dx)
   post_x &lt;- data.frame(y = x_vals, pos = exp(fn_vals)/integral_approx)
   BO_result_list[[i]] &lt;- data.frame(x = (lower + x_vals*(upper - lower)), pos = post_x$pos /(upper - lower))
-  end_time &lt;- Sys.time()
-  rel_runtime[i] &lt;- as.numeric((end_time - begin_time), units = &quot;mins&quot;)/1.961008
 }
-save(rel_runtime, file = paste0(output_path, &quot;/rel_runtime.rda&quot;))
 save(BO_result_list, file = paste0(output_path, &quot;/BO_result_list.rda&quot;))
-save(BO_result_original_list, file = paste0(output_path, &quot;/BO_data_to_smooth.rda&quot;))</code></pre>
+save(BO_result_original_list, file = paste0(output_path, &quot;/BO_data_to_smooth.rda&quot;))
+save(result_ad, file = paste0(output_path, &quot;/BOSS_result.rda&quot;))</code></pre>
+<p>Take a look at the convergence diagnostic plot.</p>
+<pre class="r"><code>load(paste0(output_path, &quot;/BOSS_result.rda&quot;))
+plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = &quot;o&quot;, xlab = &quot;Iteration&quot;, ylab = &quot;KL divergence&quot;, main = &quot;Convergence Diagnostic Plot&quot;, log = &quot;y&quot;)</code></pre>
+<p><img src="figure/sim2.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
 <div id="section" class="section level3 tabset tabset-pills">
 <h3 class="tabset tabset-pills"></h3>
-<pre class="r"><code>load(paste0(output_path, &quot;/rel_runtime.rda&quot;))
-load(paste0(output_path, &quot;/BO_result_list.rda&quot;))
+<pre class="r"><code>load(paste0(output_path, &quot;/BO_result_list.rda&quot;))
 load(paste0(output_path, &quot;/BO_data_to_smooth.rda&quot;))
 plot_list &lt;- list()
 for (i in 1:length(eval_num)) {
@@ -1267,48 +1342,6 @@ generated.</code></pre>
 This warning is displayed once every 8 hours.
 Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
 generated.</code></pre>
-<p><img src="figure/sim2.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-12-1">
-Past versions of unnamed-chunk-12-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-12-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/2badc2879803b605fe88e2684c064042524abf1c/docs/figure/sim2.Rmd/unnamed-chunk-12-1.png" target="_blank">2badc28</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-18
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div id="b-15" class="section level4">
-<h4>B = 15</h4>
-<pre class="r"><code>plot_list[[2]]</code></pre>
 <p><img src="figure/sim2.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-13-1">
@@ -1332,6 +1365,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/469352f097d1e8b479707f5d7799f4924e86b04e/docs/figure/sim2.Rmd/unnamed-chunk-13-1.png" target="_blank">469352f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-18
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/2badc2879803b605fe88e2684c064042524abf1c/docs/figure/sim2.Rmd/unnamed-chunk-13-1.png" target="_blank">2badc28</a>
@@ -1376,6 +1420,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/469352f097d1e8b479707f5d7799f4924e86b04e/docs/figure/sim2.Rmd/unnamed-chunk-14-1.png" target="_blank">469352f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-18
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/2badc2879803b605fe88e2684c064042524abf1c/docs/figure/sim2.Rmd/unnamed-chunk-14-1.png" target="_blank">2badc28</a>
 </td>
 <td>
@@ -1390,16 +1445,9 @@ Ziang Zhang
 </div>
 </div>
 </div>
-</div>
-<div id="ks-and-kl" class="section level3">
-<h3>KS and KL</h3>
-<p>We can also compute the KS and KL divergence between the posterior
-distribution from BOSS and the exact grid.</p>
-<pre class="r"><code>KL_vec &lt;- c()
-for (i in 1:length(eval_num)) {
-  KL_vec[i] &lt;- Compute_KL(x = exact_grid_result_smooth$x, px = exact_grid_result_smooth$pos, qx = BO_result_list[[i]]$pos)
-}
-plot(log(KL_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KL divergence&quot;, xlab = &quot;B&quot;)</code></pre>
+<div id="b-40" class="section level4">
+<h4>B = 40</h4>
+<pre class="r"><code>plot_list[[7]]</code></pre>
 <p><img src="figure/sim2.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-1">
@@ -1425,6 +1473,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/469352f097d1e8b479707f5d7799f4924e86b04e/docs/figure/sim2.Rmd/unnamed-chunk-15-1.png" target="_blank">469352f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-18
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/2badc2879803b605fe88e2684c064042524abf1c/docs/figure/sim2.Rmd/unnamed-chunk-15-1.png" target="_blank">2badc28</a>
 </td>
 <td>
@@ -1438,49 +1497,29 @@ Ziang Zhang
 </table>
 </div>
 </div>
+</div>
+<div id="b-50" class="section level4">
+<h4>B = 50</h4>
+<pre class="r"><code>plot_list[[9]]</code></pre>
+<p><img src="figure/sim2.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="ks-and-kl" class="section level3">
+<h3>KS and KL</h3>
+<p>We can also compute the KS and KL divergence between the posterior
+distribution from BOSS and the exact grid.</p>
+<pre class="r"><code>KL_vec &lt;- c()
+for (i in 1:length(eval_num)) {
+  KL_vec[i] &lt;- Compute_KL(x = exact_grid_result_smooth$x, px = exact_grid_result_smooth$pos, qx = BO_result_list[[i]]$pos)
+}
+plot(log(KL_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KL divergence&quot;, xlab = &quot;B&quot;)</code></pre>
+<p><img src="figure/sim2.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>KS_vec &lt;- c()
 for (i in 1:length(eval_num)) {
   KS_vec[i] &lt;- Compute_KS(x = exact_grid_result_smooth$x, px = exact_grid_result_smooth$pos, qx = BO_result_list[[i]]$pos)
 }
 plot(log(KS_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KS distance&quot;, xlab = &quot;B&quot;)</code></pre>
-<p><img src="figure/sim2.Rmd/unnamed-chunk-15-2.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-2">
-Past versions of unnamed-chunk-15-2.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-15-2" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/2badc2879803b605fe88e2684c064042524abf1c/docs/figure/sim2.Rmd/unnamed-chunk-15-2.png" target="_blank">2badc28</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-18
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/sim2.Rmd/unnamed-chunk-17-2.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="aghq" class="section level2">
@@ -1529,7 +1568,7 @@ start_time &lt;- Sys.time()
 aghq_result_grid &lt;- obtain_aghq(f = fn, k = 10, optresult = grid_opt_list)
 end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>Time difference of 0.07852912 secs</code></pre>
+<pre><code>Time difference of 0.07758021 secs</code></pre>
 <pre class="r"><code>quad_exact &lt;- aghq_result_grid$normalized_posterior$nodesandweights</code></pre>
 <p>Now, we compute the AGHQ rule on the BOSS surrogate.</p>
 <pre class="r"><code>quad_BO_list &lt;- list()
@@ -1569,6 +1608,11 @@ for (i in 1:length(BO_result_original_list)) {
   end_time - start_time
   quad_BO_list[[i]] &lt;- aghq_result_BOSS$normalized_posterior$nodesandweights
 }</code></pre>
+<pre><code>Warning in sqrt(sse/(n - df)): NaNs produced
+Warning in sqrt(sse/(n - df)): NaNs produced
+Warning in sqrt(sse/(n - df)): NaNs produced
+Warning in sqrt(sse/(n - df)): NaNs produced
+Warning in sqrt(sse/(n - df)): NaNs produced</code></pre>
 <p>Let’s visualize the AGHQ rule on the exact grid and BOSS
 surrogate.</p>
 <pre class="r"><code>plot(weights ~ theta1, type = &quot;o&quot;, col = &quot;black&quot;, 
@@ -1584,103 +1628,6 @@ points(weights ~ theta1, type = &quot;o&quot;, col = &quot;blue&quot;,
 points(weights ~ theta1, type = &quot;o&quot;, col = &quot;green&quot;,
        data = quad_BO_list[[2]], pch = 2)
 legend(&quot;topright&quot;, legend = c(&quot;Exact grid&quot;, paste0(&quot;BOSS: B = &quot;, eval_num[9]), paste0(&quot;BOSS: B = &quot;, eval_num[6]), paste0(&quot;BOSS: B = &quot;, eval_num[4]), paste0(&quot;BOSS: B = &quot;, eval_num[2])),
-       col = c(&quot;black&quot;, &quot;purple&quot;, &quot;red&quot;, &quot;blue&quot;, &quot;green&quot;), pch = c(1, 4, 3, 19, 2))</code></pre>
-<p><img src="figure/sim2.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-19-1">
-Past versions of unnamed-chunk-19-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-19-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/2badc2879803b605fe88e2684c064042524abf1c/docs/figure/sim2.Rmd/unnamed-chunk-19-1.png" target="_blank">2badc28</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-18
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>As a comparison, take a look at the AGHQ rule obtained from MCMC:</p>
-<pre class="r"><code>compute_aghq_mcmc &lt;- function(samps){
-  dens &lt;- density(samps, from = 0, to = 10, n = 1000)
-  log_dens &lt;- data.frame(x = dens$x, y = log(dens$y))
-  
-  # take out rows with NA, NaN, and +- Inf
-  log_dens &lt;- na.omit(log_dens)
-  log_dens &lt;- log_dens[is.finite(log_dens$x) &amp; is.finite(log_dens$y), ]
-  log_dens$y &lt;- log_dens$y - mean(log_dens$y)
-  
-  lf_data_mcmc &lt;- data.frame(x = log_dens$x/10,
-                     lfx = log_dens$y)
-
-  ## Convert to the real line:
-  lg_data_mcmc &lt;- data.frame(y = qnorm(lf_data_mcmc$x),
-                        lgy = lf_data_mcmc$lfx + dnorm(qnorm(lf_data_mcmc$x), log = T))
-  
-  lg_data_mcmc &lt;- lg_data_mcmc[!is.na(lg_data_mcmc$y) &amp; !is.na(lg_data_mcmc$lgy), ]
-  lg_data_mcmc &lt;- lg_data_mcmc[is.finite(lg_data_mcmc$y) &amp; is.finite(lg_data_mcmc$lgy), ]
-  
-  ss_mcmc &lt;- ss(x = lg_data_mcmc$y,
-                y = lg_data_mcmc$lgy,
-                df = length(unique(lg_data_mcmc$y)),
-                m = 2,
-                all.knots = TRUE)
-  
-  fn_mcmc &lt;- function(y) as.numeric(surrogate_ss(xvalue = y, ss = ss_mcmc))
-  
-  opt_list_mcmc = list(ff = list(fn = fn_mcmc, gr = function(x) numDeriv::grad(fn_mcmc, x), he = function(x) numDeriv::hessian(fn_mcmc, x)), 
-                             mode = lg_data_mcmc$y[which.max(lg_data_mcmc$lgy)])
-  
-  opt_list_mcmc$hessian = -opt_list_mcmc$ff$he(opt_list_mcmc$mode)
-  
-  aghq_result_mcmc &lt;- obtain_aghq(f = fn_mcmc, k = 10, optresult = opt_list_mcmc)
-
-  quad_mcmc &lt;- aghq_result_mcmc$normalized_posterior$nodesandweights
-  return(quad_mcmc)
-}
-quad_mcmc_list &lt;- list()
-quad_mcmc_list[[1]] &lt;- compute_aghq_mcmc(mcmc_samps_selected[1:15])
-quad_mcmc_list[[2]] &lt;- compute_aghq_mcmc(mcmc_samps_selected[1:25])
-quad_mcmc_list[[3]] &lt;- compute_aghq_mcmc(mcmc_samps_selected[1:35])
-quad_mcmc_list[[4]] &lt;- compute_aghq_mcmc(mcmc_samps_selected[1:40])
-quad_mcmc_list[[5]] &lt;- compute_aghq_mcmc(mcmc_samps_selected[1:50])</code></pre>
-<pre class="r"><code>plot(weights ~ theta1, type = &quot;o&quot;, col = &quot;black&quot;, 
-     data = quad_exact, ylim = c(0, 0.2), 
-     xlim = c(0, 1),
-     xlab = &quot;quadrature&quot;, ylab = &quot;weights&quot;)
-points(weights ~ theta1, type = &quot;o&quot;, col = &quot;purple&quot;, 
-       data = quad_mcmc_list[[5]], pch = 4)
-points(weights ~ theta1, type = &quot;o&quot;, col = &quot;red&quot;, 
-       data = quad_mcmc_list[[4]], pch = 3)
-points(weights ~ theta1, type = &quot;o&quot;, col = &quot;blue&quot;, 
-       data = quad_mcmc_list[[2]], pch = 19)
-points(weights ~ theta1, type = &quot;o&quot;, col = &quot;green&quot;,
-       data = quad_mcmc_list[[1]], pch = 2)
-
-legend(&quot;topright&quot;, legend = c(&quot;Exact grid&quot;, &quot;MCMC: n = 50&quot;, &quot;MCMC: n = 35&quot;, &quot;MCMC: n = 25&quot;, &quot;MCMC: n = 15&quot;),
        col = c(&quot;black&quot;, &quot;purple&quot;, &quot;red&quot;, &quot;blue&quot;, &quot;green&quot;), pch = c(1, 4, 3, 19, 2))</code></pre>
 <p><img src="figure/sim2.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -1705,6 +1652,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/469352f097d1e8b479707f5d7799f4924e86b04e/docs/figure/sim2.Rmd/unnamed-chunk-21-1.png" target="_blank">469352f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-18
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/2badc2879803b605fe88e2684c064042524abf1c/docs/figure/sim2.Rmd/unnamed-chunk-21-1.png" target="_blank">2badc28</a>
@@ -1847,6 +1805,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/469352f097d1e8b479707f5d7799f4924e86b04e/docs/figure/sim2.Rmd/unnamed-chunk-24-1.png" target="_blank">469352f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-18
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/2badc2879803b605fe88e2684c064042524abf1c/docs/figure/sim2.Rmd/unnamed-chunk-24-1.png" target="_blank">2badc28</a>
