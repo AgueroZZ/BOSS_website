@@ -247,28 +247,30 @@ eval_num <- seq(from = 10, to = 50, by = 5); noise_var = 1e-6; initial_design = 
 
 
 ```{r eval=FALSE}
-rel_runtime <- c()
+set.seed(123)
+optim.n = 50
+objective_func <- eval_once
+result_ad <- BOSS(
+  func = objective_func,
+  update_step = 5, max_iter = (max(eval_num) - initial_design),
+  optim.n = optim.n,
+  delta = 0.01, noise_var = noise_var,
+  lower = lower, upper = upper,
+  # Checking KL convergence
+  criterion = "KL", KL.grid = 1000, KL_check_warmup = 5, KL_iter_check = 5, KL_eps = 0,
+  initial_design = initial_design
+)
+
 BO_result_list <- list(); BO_result_original_list <- list()
 
 for (i in 1:length(eval_num)) {
   eval_number <- eval_num[i]
-  begin_time <- Sys.time()
+
+  result_ad_selected <- list(x = result_ad$result$x[1:eval_number, , drop = F],
+                             x_original = result_ad$result$x_original[1:eval_number, , drop = F],
+                             y = result_ad$result$y[1:eval_number])
   
-  result_ad <- BOSS(
-    func = eval_once,
-    update_step = 5,
-    max_iter = (eval_number - initial_design),
-    opt.lengthscale.grid = 100,
-    opt.grid = 2000,
-    delta = 0.01,
-    noise_var = noise_var,
-    lower = lower, upper = upper,
-    # turning off AGHQ stopping criterion
-    AGHQ_iter_check = 5, AGHQ_k = 10, AGHQ_eps = 0, AGHQ_check_warmup = 30, buffer = 1e-5,
-    initial_design = initial_design
-  )
-  
-  data_to_smooth <- result_ad$result
+  data_to_smooth <- result_ad_selected
   BO_result_original_list[[i]] <- data_to_smooth
   
   ff <- list()
@@ -280,18 +282,24 @@ for (i in 1:length(eval_num)) {
   integral_approx <- sum(0.5 * (exp(fn_vals[-1]) + exp(fn_vals[-length(x_vals)])) * dx)
   post_x <- data.frame(y = x_vals, pos = exp(fn_vals)/integral_approx)
   BO_result_list[[i]] <- data.frame(x = (lower + x_vals*(upper - lower)), pos = post_x$pos /(upper - lower))
-  end_time <- Sys.time()
-  rel_runtime[i] <- as.numeric((end_time - begin_time), units = "mins")/1.961008
 }
-save(rel_runtime, file = paste0(output_path, "/rel_runtime.rda"))
 save(BO_result_list, file = paste0(output_path, "/BO_result_list.rda"))
 save(BO_result_original_list, file = paste0(output_path, "/BO_data_to_smooth.rda"))
+save(result_ad, file = paste0(output_path, "/BOSS_result.rda"))
 ```
+
+Take a look at the convergence diagnostic plot.
+
+```{r}
+load(paste0(output_path, "/BOSS_result.rda"))
+plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = "o", xlab = "Iteration", ylab = "KL divergence", main = "Convergence Diagnostic Plot", log = "y")
+```
+
+
 
 ### {.tabset .tabset-pills}
 
 ```{r}
-load(paste0(output_path, "/rel_runtime.rda"))
 load(paste0(output_path, "/BO_result_list.rda"))
 load(paste0(output_path, "/BO_data_to_smooth.rda"))
 plot_list <- list()
@@ -315,17 +323,23 @@ for (i in 1:length(eval_num)) {
 plot_list[[1]]
 ```
 
-#### B = `r eval_num[2]`
-
-```{r}
-plot_list[[2]]
-```
-
-
 #### B = `r eval_num[5]`
 
 ```{r}
 plot_list[[5]]
+```
+
+#### B = `r eval_num[7]`
+
+```{r}
+plot_list[[7]]
+```
+
+
+#### B = `r eval_num[9]`
+
+```{r}
+plot_list[[9]]
 ```
 
 ### KS and KL
@@ -465,75 +479,6 @@ legend("topright", legend = c("Exact grid", paste0("BOSS: B = ", eval_num[9]), p
        
        
 ```
-
-
-As a comparison, take a look at the AGHQ rule obtained from MCMC:
-
-```{r}
-compute_aghq_mcmc <- function(samps){
-  dens <- density(samps, from = 0, to = 10, n = 1000)
-  log_dens <- data.frame(x = dens$x, y = log(dens$y))
-  
-  # take out rows with NA, NaN, and +- Inf
-  log_dens <- na.omit(log_dens)
-  log_dens <- log_dens[is.finite(log_dens$x) & is.finite(log_dens$y), ]
-  log_dens$y <- log_dens$y - mean(log_dens$y)
-  
-  lf_data_mcmc <- data.frame(x = log_dens$x/10,
-                     lfx = log_dens$y)
-
-  ## Convert to the real line:
-  lg_data_mcmc <- data.frame(y = qnorm(lf_data_mcmc$x),
-                        lgy = lf_data_mcmc$lfx + dnorm(qnorm(lf_data_mcmc$x), log = T))
-  
-  lg_data_mcmc <- lg_data_mcmc[!is.na(lg_data_mcmc$y) & !is.na(lg_data_mcmc$lgy), ]
-  lg_data_mcmc <- lg_data_mcmc[is.finite(lg_data_mcmc$y) & is.finite(lg_data_mcmc$lgy), ]
-  
-  ss_mcmc <- ss(x = lg_data_mcmc$y,
-                y = lg_data_mcmc$lgy,
-                df = length(unique(lg_data_mcmc$y)),
-                m = 2,
-                all.knots = TRUE)
-  
-  fn_mcmc <- function(y) as.numeric(surrogate_ss(xvalue = y, ss = ss_mcmc))
-  
-  opt_list_mcmc = list(ff = list(fn = fn_mcmc, gr = function(x) numDeriv::grad(fn_mcmc, x), he = function(x) numDeriv::hessian(fn_mcmc, x)), 
-                             mode = lg_data_mcmc$y[which.max(lg_data_mcmc$lgy)])
-  
-  opt_list_mcmc$hessian = -opt_list_mcmc$ff$he(opt_list_mcmc$mode)
-  
-  aghq_result_mcmc <- obtain_aghq(f = fn_mcmc, k = 10, optresult = opt_list_mcmc)
-
-  quad_mcmc <- aghq_result_mcmc$normalized_posterior$nodesandweights
-  return(quad_mcmc)
-}
-quad_mcmc_list <- list()
-quad_mcmc_list[[1]] <- compute_aghq_mcmc(mcmc_samps_selected[1:15])
-quad_mcmc_list[[2]] <- compute_aghq_mcmc(mcmc_samps_selected[1:25])
-quad_mcmc_list[[3]] <- compute_aghq_mcmc(mcmc_samps_selected[1:35])
-quad_mcmc_list[[4]] <- compute_aghq_mcmc(mcmc_samps_selected[1:40])
-quad_mcmc_list[[5]] <- compute_aghq_mcmc(mcmc_samps_selected[1:50])
-```
-
-```{r}
-plot(weights ~ theta1, type = "o", col = "black", 
-     data = quad_exact, ylim = c(0, 0.2), 
-     xlim = c(0, 1),
-     xlab = "quadrature", ylab = "weights")
-points(weights ~ theta1, type = "o", col = "purple", 
-       data = quad_mcmc_list[[5]], pch = 4)
-points(weights ~ theta1, type = "o", col = "red", 
-       data = quad_mcmc_list[[4]], pch = 3)
-points(weights ~ theta1, type = "o", col = "blue", 
-       data = quad_mcmc_list[[2]], pch = 19)
-points(weights ~ theta1, type = "o", col = "green",
-       data = quad_mcmc_list[[1]], pch = 2)
-
-legend("topright", legend = c("Exact grid", "MCMC: n = 50", "MCMC: n = 35", "MCMC: n = 25", "MCMC: n = 15"),
-       col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2))
-
-```
-
 
 
 As a comparison, take a look at the AGHQ rule obtained from sparser grids:
