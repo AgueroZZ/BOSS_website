@@ -400,7 +400,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-28
+<strong>Last updated:</strong> 2025-04-29
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreeb265bc895a7796429458a19f90feec00850c5295targetblankb265bc8a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree7b33730cac4b120787dbb542e40ed09de1cd63fftargetblank7b33730a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/b265bc895a7796429458a19f90feec00850c5295" target="_blank">b265bc8</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/7b33730cac4b120787dbb542e40ed09de1cd63ff" target="_blank">7b33730</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreeb265bc895a7796429458a19f90feec00850c5295targetblankb265bc8a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree7b33730cac4b120787dbb542e40ed09de1cd63fftargetblank7b33730a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/b265bc895a7796429458a19f90feec00850c5295" target="_blank">b265bc8</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/7b33730cac4b120787dbb542e40ed09de1cd63ff" target="_blank">7b33730</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -576,21 +576,6 @@ Ignored files:
     Ignored:    output/sim2/.DS_Store
 
 Untracked files:
-    Untracked:  ComparisonPosteriorDensity_B_10.tex
-    Untracked:  ComparisonPosteriorDensity_B_15.tex
-    Untracked:  ComparisonPosteriorDensity_B_20.tex
-    Untracked:  ComparisonPosteriorDensity_B_25.tex
-    Untracked:  ComparisonPosteriorDensity_B_30.tex
-    Untracked:  ComparisonPosteriorDensity_B_35.tex
-    Untracked:  ComparisonPosteriorDensity_B_40.tex
-    Untracked:  ComparisonPosteriorDensity_B_45.tex
-    Untracked:  ComparisonPosteriorDensity_B_50.tex
-    Untracked:  ComparisonPosteriorDensity_B_55.tex
-    Untracked:  ComparisonPosteriorDensity_B_60.tex
-    Untracked:  ComparisonPosteriorDensity_B_65.tex
-    Untracked:  ComparisonPosteriorDensity_B_70.tex
-    Untracked:  ComparisonPosteriorDensity_B_75.tex
-    Untracked:  ComparisonPosteriorDensity_B_80.tex
     Untracked:  code/mortality_BG_grid.R
     Untracked:  code/mortality_NL_grid.R
     Untracked:  data/co2/
@@ -604,6 +589,7 @@ Untracked files:
     Untracked:  output/mortality/mod_NL.rda
     Untracked:  output/sim1/figures/
     Untracked:  output/sim1/result_ad.rda
+    Untracked:  output/sim2/BOSS_result.rda
     Untracked:  output/sim2/quad_sparse_list.rda
     Untracked:  output/simA1/
 
@@ -661,6 +647,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/7b33730cac4b120787dbb542e40ed09de1cd63ff/analysis/sim1.Rmd" target="_blank">7b33730</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-29
+</td>
+<td>
+workflowr::wflow_publish("analysis/sim1.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/761276f9d13774be37b863d423c03f6a86d8c274/docs/sim1.html" target="_blank">761276f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -899,7 +919,20 @@ output_path &lt;- &quot;./output/sim1&quot;
 data_path &lt;- &quot;./data/sim1&quot;
 source(paste0(function_path, &quot;/00_BOSS.R&quot;))</code></pre>
 <p>We simulate <span class="math inline">\(n = 100\)</span> data with
-true periodicity <span class="math inline">\(a = 1.5\)</span>:</p>
+true periodicity <span class="math inline">\(a = 1.5\)</span>: <span
+class="math display">\[
+\begin{aligned}
+    y_i|\mu_i &amp;\overset{ind}{\sim} \text{Poisson}(\mu_i), \\
+    \log(\mu_i) =&amp; 1 +
+    0.5 \cos\bigg(\frac{2\pi x_i}{1.5}\bigg) - 1.3  \sin\bigg(\frac{2\pi
+x_i}{1.5}\bigg) + \\
+    &amp; 1.1 \cos\bigg(\frac{4\pi x_i}{1.5}\bigg) +
+0.3  \sin\bigg(\frac{4\pi x_i}{1.5}\bigg) + \epsilon_i, \\
+    \epsilon_i &amp;\overset{iid}{\sim} \mathcal{N}(0,4).
+\end{aligned}
+\]</span> The covariates <span class="math inline">\(\boldsymbol{x} =
+\{x_i\}_{i=1}^n\)</span> are independently simulated from <span
+class="math inline">\(\text{Unif}[0,10]\)</span>.</p>
 <pre class="r"><code>lower = 0.5; upper = 4.5; a = 1.5; noise_var = 1e-6
 ### Simulate data:
 set.seed(123)
@@ -1116,7 +1149,7 @@ save(BO_result_original_list, file = paste0(output_path, &quot;/BO_result_origin
 save(result_ad, file = paste0(output_path, &quot;/result_ad.rda&quot;))</code></pre>
 <p>Take a look at the convergence diagnostic of the BOSS algorithm:</p>
 <pre class="r"><code>load(paste0(output_path, &quot;/result_ad.rda&quot;))
-plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = &quot;o&quot;, xlab = &quot;iteration&quot;, ylab = &quot;KL Stats&quot;, log = &quot;y&quot;)</code></pre>
+plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = &quot;o&quot;, xlab = &quot;iteration&quot;, ylab = &quot;KL Stats&quot;)</code></pre>
 <p><img src="figure/sim1.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
@@ -1140,6 +1173,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/761276f9d13774be37b863d423c03f6a86d8c274/docs/figure/sim1.Rmd/unnamed-chunk-9-1.png" target="_blank">761276f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/e659bad8a3fb84d496a353c1ad5a23c01897d325/docs/figure/sim1.Rmd/unnamed-chunk-9-1.png" target="_blank">e659bad</a>
@@ -1188,6 +1232,9 @@ Ziang Zhang
 </table>
 </div>
 </div>
+<p>The KL statistics appears to be stable after <span
+class="math inline">\(60\)</span> iterations of BO, indicating that the
+BOSS algorithm likely converges.</p>
 <p>Let’s compare the results from the BOSS algorithm with the exact grid
 result:</p>
 <div id="section" class="section level3 tabset tabset-pills">
@@ -1232,6 +1279,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/761276f9d13774be37b863d423c03f6a86d8c274/docs/figure/sim1.Rmd/unnamed-chunk-11-1.png" target="_blank">761276f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/e659bad8a3fb84d496a353c1ad5a23c01897d325/docs/figure/sim1.Rmd/unnamed-chunk-11-1.png" target="_blank">e659bad</a>
@@ -1309,6 +1367,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/761276f9d13774be37b863d423c03f6a86d8c274/docs/figure/sim1.Rmd/unnamed-chunk-12-1.png" target="_blank">761276f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/e659bad8a3fb84d496a353c1ad5a23c01897d325/docs/figure/sim1.Rmd/unnamed-chunk-12-1.png" target="_blank">e659bad</a>
 </td>
 <td>
@@ -1327,6 +1396,43 @@ Ziang Zhang
 <h4>B = 50</h4>
 <pre class="r"><code>plot_list[[9]]</code></pre>
 <p><img src="figure/sim1.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-13-1">
+Past versions of unnamed-chunk-13-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-13-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/761276f9d13774be37b863d423c03f6a86d8c274/docs/figure/sim1.Rmd/unnamed-chunk-13-1.png" target="_blank">761276f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="b-80" class="section level4">
 <h4>B = 80</h4>
@@ -1356,6 +1462,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/761276f9d13774be37b863d423c03f6a86d8c274/docs/figure/sim1.Rmd/unnamed-chunk-14-1.png" target="_blank">761276f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/e659bad8a3fb84d496a353c1ad5a23c01897d325/docs/figure/sim1.Rmd/unnamed-chunk-14-1.png" target="_blank">e659bad</a>
 </td>
 <td>
@@ -1383,6 +1500,43 @@ for (i in 1:length(eval_num)) {
 }
 plot((KL_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KL&quot;, xlab = &quot;eval number: B&quot;, cex.lab = 1, cex.axis = 1)</code></pre>
 <p><img src="figure/sim1.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-16-1">
+Past versions of unnamed-chunk-16-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-16-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/761276f9d13774be37b863d423c03f6a86d8c274/docs/figure/sim1.Rmd/unnamed-chunk-16-1.png" target="_blank">761276f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>#### Compute the KS distance:
 KS_vec &lt;- c()
 for (i in 1:length(eval_num)) {
@@ -1390,6 +1544,43 @@ for (i in 1:length(eval_num)) {
 }
 plot((KS_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KS&quot;, xlab = &quot;eval number: B&quot;, cex.lab = 1, cex.axis = 1)</code></pre>
 <p><img src="figure/sim1.Rmd/unnamed-chunk-16-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-16-2">
+Past versions of unnamed-chunk-16-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-16-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/761276f9d13774be37b863d423c03f6a86d8c274/docs/figure/sim1.Rmd/unnamed-chunk-16-2.png" target="_blank">761276f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>This is the KL and KS distance between BOSS and the exact grid result
 for this particular replication. To more robustly assess the
 performance, let’s consider the KL and KS distance over <span
@@ -1552,6 +1743,43 @@ polygon(c(median_result$eval_num, rev(median_result$eval_num)),
         c(lower_result$KL, rev(upper_result$KL)), 
         col = rgb(0.2, 0.2, 0.2, 0.2), border = NA)</code></pre>
 <p><img src="figure/sim1.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-20-1">
+Past versions of unnamed-chunk-20-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-20-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/761276f9d13774be37b863d423c03f6a86d8c274/docs/figure/sim1.Rmd/unnamed-chunk-20-1.png" target="_blank">761276f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>plot(median_result$eval_num, median_result$KS, type = &quot;o&quot;,
      ylab = &quot;KS&quot;, xlab = &quot;eval number: B&quot;, 
      cex.lab = 1.0, cex.axis = 1.0)
@@ -1559,6 +1787,43 @@ polygon(c(median_result$eval_num, rev(median_result$eval_num)),
         c(lower_result$KS, rev(upper_result$KS)), 
         col = rgb(0.2, 0.2, 0.2, 0.2), border = NA)</code></pre>
 <p><img src="figure/sim1.Rmd/unnamed-chunk-20-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-20-2">
+Past versions of unnamed-chunk-20-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-20-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/761276f9d13774be37b863d423c03f6a86d8c274/docs/figure/sim1.Rmd/unnamed-chunk-20-2.png" target="_blank">761276f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
