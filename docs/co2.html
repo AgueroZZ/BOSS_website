@@ -519,15 +519,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2e9142f788f88a3be4aca2c036c50fd36242393atargetblank2e9142fa">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree511d2f209e08f12daaf3273e194fb118606c8bf1targetblank511d2f2a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/2e9142f788f88a3be4aca2c036c50fd36242393a" target="_blank">2e9142f</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/511d2f209e08f12daaf3273e194fb118606c8bf1" target="_blank">511d2f2</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2e9142f788f88a3be4aca2c036c50fd36242393atargetblank2e9142fa"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree511d2f209e08f12daaf3273e194fb118606c8bf1targetblank511d2f2a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -537,7 +537,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/2e9142f788f88a3be4aca2c036c50fd36242393a" target="_blank">2e9142f</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/511d2f209e08f12daaf3273e194fb118606c8bf1" target="_blank">511d2f2</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -651,6 +651,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/511d2f209e08f12daaf3273e194fb118606c8bf1/analysis/co2.Rmd" target="_blank">511d2f2</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-29
+</td>
+<td>
+workflowr::wflow_publish("analysis/co2.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/dc232e04a0ee92f0318e4da3c9d3a8b170ab208a/docs/co2.html" target="_blank">dc232e0</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-29
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -830,6 +864,43 @@ save(BO_result, file = paste0(output_path, &quot;/BO_result.rda&quot;))</code></
 plot(BO_result$KL_result$KL ~ BO_result$KL_result$i, type = &quot;o&quot;, 
      ylab = &quot;KL divergence&quot;, xlab = &quot;iteration&quot;, cex.lab = 1.5, cex.axis = 1.5)</code></pre>
 <p><img src="figure/co2.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
+Past versions of unnamed-chunk-5-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-5-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/dc232e04a0ee92f0318e4da3c9d3a8b170ab208a/docs/figure/co2.Rmd/unnamed-chunk-5-1.png" target="_blank">dc232e0</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>data_to_smooth &lt;- list()
 data_to_smooth$x &lt;- as.numeric(BO_result$result$x)[order(as.numeric(BO_result$result$x))]
 data_to_smooth$x_original &lt;- as.numeric(BO_result$result$x_original)[order(as.numeric(BO_result$result$x))]
@@ -841,7 +912,14 @@ y &lt;- qnorm((x - lower)/(upper - lower))
 ff &lt;- list()
 ff$fn &lt;- function(y) as.numeric(surrogate(pnorm(y), data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = BO_result$length_scale, signal_var = BO_result$signal_var)) + dnorm(y, log = TRUE))
 fn_vals &lt;- sapply(y, ff$fn)
-plot(exp(fn_vals) ~ y, type = &quot;l&quot;)</code></pre>
+lognormal_const &lt;- integrate_aghq(f = ff$fn, k = 10)
+post_y &lt;- data.frame(y = y, pos = exp(fn_vals - lognormal_const))
+post_x &lt;- data.frame(x = pnorm(post_y$y) * (upper - lower) + lower, post = (post_y$pos / dnorm(post_y$y))/(upper - lower) )
+plot(post_x$post ~ post_x$x, type = &quot;l&quot;, ylab = &quot;Post&quot;, 
+     xlab = expression(alpha) , cex.lab = 1.5, cex.axis = 1.5)
+for(x_val in data_to_smooth$x_original) {
+  segments(x_val, -0.02, x_val, -0.05, col = &quot;red&quot;)
+}</code></pre>
 <p><img src="figure/co2.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
@@ -867,53 +945,18 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/45f5f0a8e39f8756954321a854126657ffdc668d/docs/figure/co2.Rmd/unnamed-chunk-7-1.png" target="_blank">45f5f0a</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/dc232e04a0ee92f0318e4da3c9d3a8b170ab208a/docs/figure/co2.Rmd/unnamed-chunk-7-1.png" target="_blank">dc232e0</a>
 </td>
 <td>
 Ziang Zhang
 </td>
 <td>
-2025-04-20
+2025-04-29
 </td>
 </tr>
-</tbody>
-</table>
-</div>
-</div>
-<pre class="r"><code>lognormal_const &lt;- integrate_aghq(f = ff$fn, k = 10)
-post_y &lt;- data.frame(y = y, pos = exp(fn_vals - lognormal_const))
-post_x &lt;- data.frame(x = pnorm(post_y$y) * (upper - lower) + lower, post = (post_y$pos / dnorm(post_y$y))/(upper - lower) )
-plot(post_x$post ~ post_x$x, type = &quot;l&quot;, ylab = &quot;Post&quot;, 
-     xlab = &#39;$\\alpha$&#39; , cex.lab = 1.5, cex.axis = 1.5)
-for(x_val in data_to_smooth$x_original) {
-  segments(x_val, -0.02, x_val, -0.05, col = &quot;red&quot;)
-}</code></pre>
-<p><img src="figure/co2.Rmd/unnamed-chunk-7-2.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-2">
-Past versions of unnamed-chunk-7-2.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-7-2" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
 <tr>
 <td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/45f5f0a8e39f8756954321a854126657ffdc668d/docs/figure/co2.Rmd/unnamed-chunk-7-2.png" target="_blank">45f5f0a</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/45f5f0a8e39f8756954321a854126657ffdc668d/docs/figure/co2.Rmd/unnamed-chunk-7-1.png" target="_blank">45f5f0a</a>
 </td>
 <td>
 Ziang Zhang
@@ -936,6 +979,43 @@ my_cdf[which(post_x$x == 3.47)] - my_cdf[which(post_x$x == 3.11)]</code></pre>
 abline(v = 3.47, col = &quot;purple&quot;)
 abline(v = 3.11, col = &quot;purple&quot;)</code></pre>
 <p><img src="figure/co2.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-1">
+Past versions of unnamed-chunk-8-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/dc232e04a0ee92f0318e4da3c9d3a8b170ab208a/docs/figure/co2.Rmd/unnamed-chunk-8-1.png" target="_blank">dc232e0</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <pre class="r"><code>my_cdf[which(post_x$x == 3.82)] - my_cdf[which(post_x$x == 2.82)]</code></pre>
 <pre><code>[1] 0.9575946</code></pre>
 <pre class="r"><code>plot(post_x$post ~ post_x$x, type = &quot;l&quot;, ylab = &quot;Post&quot;, 
@@ -943,6 +1023,43 @@ abline(v = 3.11, col = &quot;purple&quot;)</code></pre>
 abline(v = 3.82, col = &quot;purple&quot;)
 abline(v = 2.82, col = &quot;purple&quot;)</code></pre>
 <p><img src="figure/co2.Rmd/unnamed-chunk-8-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-8-2">
+Past versions of unnamed-chunk-8-2.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-8-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/dc232e04a0ee92f0318e4da3c9d3a8b170ab208a/docs/figure/co2.Rmd/unnamed-chunk-8-2.png" target="_blank">dc232e0</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>To look at the posterior of the latent field (e.g <span
 class="math inline">\(g\)</span>), we can compute the AGHQ rule to
 integrate out the conditioning parameter <span
@@ -1035,6 +1152,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/dc232e04a0ee92f0318e4da3c9d3a8b170ab208a/docs/figure/co2.Rmd/unnamed-chunk-12-1.png" target="_blank">dc232e0</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-29
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/45f5f0a8e39f8756954321a854126657ffdc668d/docs/figure/co2.Rmd/unnamed-chunk-12-1.png" target="_blank">45f5f0a</a>
 </td>
 <td>
@@ -1058,6 +1186,43 @@ plot(ts_summary$q0.5 ~ ts_summary$time, type = &quot;l&quot;, lty = &quot;solid&
 lines(ts_summary$q0.975 ~ ts_summary$time, col = &quot;red&quot;, lty = &quot;dashed&quot;)
 lines(ts_summary$q0.025 ~ ts_summary$time, col = &quot;red&quot;, lty = &quot;dashed&quot;)</code></pre>
 <p><img src="figure/co2.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-13-1">
+Past versions of unnamed-chunk-13-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-13-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/dc232e04a0ee92f0318e4da3c9d3a8b170ab208a/docs/figure/co2.Rmd/unnamed-chunk-13-1.png" target="_blank">dc232e0</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="implement-grid-based-algorithm" class="section level2">
 <h2>Implement grid-based algorithm</h2>
@@ -1092,6 +1257,43 @@ for(x_val in data_to_smooth$x_original) {
   segments(x_val, -0.02, x_val, -0.05, col = &quot;red&quot;)
 }</code></pre>
 <p><img src="figure/co2.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-1">
+Past versions of unnamed-chunk-15-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-15-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/dc232e04a0ee92f0318e4da3c9d3a8b170ab208a/docs/figure/co2.Rmd/unnamed-chunk-15-1.png" target="_blank">dc232e0</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-29
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>As shown in the figure, the BOSS algorithm is able provide a good
 approximation of the posterior distribution, while requiring
 significantly fewer evaluations of the likelihood function.</p>
