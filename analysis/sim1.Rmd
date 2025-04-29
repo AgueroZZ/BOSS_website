@@ -22,6 +22,16 @@ source(paste0(function_path, "/00_BOSS.R"))
 ```
 
 We simulate $n = 100$ data with true periodicity $a = 1.5$:
+\[
+\begin{aligned}
+    y_i|\mu_i &\overset{ind}{\sim} \text{Poisson}(\mu_i), \\
+    \log(\mu_i) =& 1 + 
+    0.5 \cos\bigg(\frac{2\pi x_i}{1.5}\bigg) - 1.3  \sin\bigg(\frac{2\pi x_i}{1.5}\bigg) + \\
+    & 1.1 \cos\bigg(\frac{4\pi x_i}{1.5}\bigg) + 0.3  \sin\bigg(\frac{4\pi x_i}{1.5}\bigg) + \epsilon_i, \\
+    \epsilon_i &\overset{iid}{\sim} \mathcal{N}(0,4).
+\end{aligned}
+\]
+The covariates $\boldsymbol{x} = \{x_i\}_{i=1}^n$ are independently simulated from $\text{Unif}[0,10]$.
 
 ```{r message=FALSE, warning=FALSE}
 lower = 0.5; upper = 4.5; a = 1.5; noise_var = 1e-6
@@ -186,8 +196,10 @@ Take a look at the convergence diagnostic of the BOSS algorithm:
 
 ```{r}
 load(paste0(output_path, "/result_ad.rda"))
-plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = "o", xlab = "iteration", ylab = "KL Stats", log = "y")
+plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = "o", xlab = "iteration", ylab = "KL Stats")
 ```
+
+The KL statistics appears to be stable after $60$ iterations of BO, indicating that the BOSS algorithm likely converges.
 
 
 
