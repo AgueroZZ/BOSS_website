@@ -9,6 +9,22 @@ editor_options:
   chunk_output_type: console
 ---
 
+## Introduction
+
+In this example, we simulate $n = 1000$ observations from the following model with a change point $\alpha = 6.5$:
+\[
+\begin{aligned}
+    y_i|\eta_i &\overset{ind}{\sim} \mathcal{N}(\eta_i, \sigma^2), \\
+    \eta_i &= g_1(x_i)\mathbb{I}(x_i \leq \alpha) + g_2(x_i)\mathbb{I}(x_i > \alpha), \\
+    g_1(x) &= x \log(x^2 + 1), \quad g_2(x) = 3.3 x + 3.035.
+\end{aligned}
+\]
+The response variable is denoted by $y_i$ with mean $\eta_i$ and standard deviation $\sigma = 0.3$.
+The covariate $x_i$ is equally spaced in the interval $[0,10]$. 
+We assume $g_1$ and $g_2$ are two unknown smooth functions, continuously joined at an unknown change point $\alpha$. 
+The target of inference is the posterior of $\alpha$, as well as the posteriors of two unknown functions.
+
+
 ## Data
 
 ```{r message=FALSE, warning=FALSE}
@@ -21,8 +37,7 @@ data_path <- "./data/sim2"
 source(paste0(function_path, "/00_BOSS.R"))
 ```
 
-Let's use the following function to simulate $n = 1000$ observations from a change point model.
-The true change point is at $a = 6.5$.
+Let's use the following function to simulate $n = 1000$ observations from the above change point model.
 
 ```{r}
 set.seed(123)
@@ -65,7 +80,9 @@ simulate_observation <- function(a, func, x_grid, measurement = 3) {
 # Knot value
 a <- 6.5
 # Simulate the data
-plot(my_func(x = seq(0.1,10,length.out = 100), a = a)~seq(0.1,10,length.out = 100), type = "l")
+plot(my_func(x = seq(0.1,10,length.out = 100), a = a)~seq(0.1,10,length.out = 100),
+     xlab = "x", ylab = "g(x)", main = "True function with change point",
+     type = "l")
 data <- simulate_observation(a = a, func = my_func, x_grid = x_grid, measurement = 1)
 plot(y~x, data)
 save(data, file = paste0(data_path, "/data.rda"))
@@ -152,11 +169,12 @@ Take a look at the MCMC samples.
 
 ```{r}
 load(paste0(output_path, "/mcmc_samps.rda"))
-plot(mcmc_samps)
-burnin <- 500
-hist(mcmc_samps[-c(1:burnin)], breaks = 30)
+plot(mcmc_samps, xlab = "Iteration", ylab = "Change point location (a)", main = "MCMC samples")
+burnin <- 1000
 thinning <- 3
 mcmc_samps_selected <- mcmc_samps[-c(1:burnin)][seq(1, length(mcmc_samps[-c(1:burnin)]), by=thinning)]
+hist(mcmc_samps_selected, breaks = 50, 
+     xlab = "Change point location (a)", main = "Histogram of MCMC samples") 
 dens <- density(mcmc_samps_selected, from = 0, to = 10, n = 1000)
 plot(dens, xlim = c(0, 10), main = "Kernel Density Estimation of MCMC samples", xlab = "Change point location (a)", ylab = "Density")
 ```
@@ -225,7 +243,7 @@ exact_grid_result_smooth$pos <- exact_grid_result_smooth$fx / integral_approx
 save(exact_grid_result_smooth, file = paste0(output_path, "/exact_grid_result_smooth.rda"))
 ```
 
-Let's visualize the posterior distribution.
+Let's visualize the posterior distribution from the exact grid approach.
 
 ```{r}
 load(paste0(output_path, "/exact_grid_result.rda"))
@@ -242,7 +260,7 @@ grid()
 Finally, we implement the BOSS algorithm to this problem.
 
 ```{r}
-eval_num <- seq(from = 10, to = 50, by = 5); noise_var = 1e-6; initial_design = 5
+eval_num <- seq(from = 10, to = 80, by = 5); noise_var = 1e-6; initial_design = 5
 ```
 
 
@@ -292,9 +310,10 @@ Take a look at the convergence diagnostic plot.
 
 ```{r}
 load(paste0(output_path, "/BOSS_result.rda"))
-plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = "o", xlab = "Iteration", ylab = "KL divergence", main = "Convergence Diagnostic Plot", log = "y")
+plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = "o", xlab = "Iteration", ylab = "KL divergence", main = "Convergence Diagnostic Plot")
 ```
 
+Based on the KL convergence, the surrgoate from BOSS is not changing much after 20 iterations, indicating that the surrogate is likely converged.
 
 
 ### {.tabset .tabset-pills}
@@ -322,6 +341,13 @@ for (i in 1:length(eval_num)) {
 ```{r}
 plot_list[[1]]
 ```
+
+#### B = `r eval_num[3]`
+
+```{r}
+plot_list[[3]]
+```
+
 
 #### B = `r eval_num[5]`
 
@@ -351,15 +377,16 @@ KL_vec <- c()
 for (i in 1:length(eval_num)) {
   KL_vec[i] <- Compute_KL(x = exact_grid_result_smooth$x, px = exact_grid_result_smooth$pos, qx = BO_result_list[[i]]$pos)
 }
-plot(log(KL_vec) ~ eval_num, type = "o", ylab = "KL divergence", xlab = "B")
+plot((KL_vec) ~ eval_num, type = "o", ylab = "KL divergence", xlab = "B")
 
 KS_vec <- c()
 for (i in 1:length(eval_num)) {
   KS_vec[i] <- Compute_KS(x = exact_grid_result_smooth$x, px = exact_grid_result_smooth$pos, qx = BO_result_list[[i]]$pos)
 }
-plot(log(KS_vec) ~ eval_num, type = "o", ylab = "KS distance", xlab = "B")
+plot((KS_vec) ~ eval_num, type = "o", ylab = "KS distance", xlab = "B")
 ```
 
+Indeed, the KL/KS divergence is greatly reduced after 15 iterations, and is close to zero after 45 iterations.
 
 
 ## AGHQ
