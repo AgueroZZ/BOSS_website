@@ -399,7 +399,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-28
+<strong>Last updated:</strong> 2025-04-29
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -530,15 +530,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree75a5380334f512bca91ab988dd9fd4fe483e74b0targetblank75a5380a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree4e3d9f7aca08e0be14f6dd6c28a69cea2787f1b8targetblank4e3d9f7a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/75a5380334f512bca91ab988dd9fd4fe483e74b0" target="_blank">75a5380</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/4e3d9f7aca08e0be14f6dd6c28a69cea2787f1b8" target="_blank">4e3d9f7</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree75a5380334f512bca91ab988dd9fd4fe483e74b0targetblank75a5380a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree4e3d9f7aca08e0be14f6dd6c28a69cea2787f1b8targetblank4e3d9f7a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -548,7 +548,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/75a5380334f512bca91ab988dd9fd4fe483e74b0" target="_blank">75a5380</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/4e3d9f7aca08e0be14f6dd6c28a69cea2787f1b8" target="_blank">4e3d9f7</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -568,7 +568,6 @@ Ignored files:
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
     Ignored:    analysis/.Rhistory
-    Ignored:    analysis/figure/
     Ignored:    code/.DS_Store
     Ignored:    data/.DS_Store
     Ignored:    data/sim1/
@@ -576,21 +575,6 @@ Ignored files:
     Ignored:    output/sim2/.DS_Store
 
 Untracked files:
-    Untracked:  ComparisonPosteriorDensity_B_10.tex
-    Untracked:  ComparisonPosteriorDensity_B_15.tex
-    Untracked:  ComparisonPosteriorDensity_B_20.tex
-    Untracked:  ComparisonPosteriorDensity_B_25.tex
-    Untracked:  ComparisonPosteriorDensity_B_30.tex
-    Untracked:  ComparisonPosteriorDensity_B_35.tex
-    Untracked:  ComparisonPosteriorDensity_B_40.tex
-    Untracked:  ComparisonPosteriorDensity_B_45.tex
-    Untracked:  ComparisonPosteriorDensity_B_50.tex
-    Untracked:  ComparisonPosteriorDensity_B_55.tex
-    Untracked:  ComparisonPosteriorDensity_B_60.tex
-    Untracked:  ComparisonPosteriorDensity_B_65.tex
-    Untracked:  ComparisonPosteriorDensity_B_70.tex
-    Untracked:  ComparisonPosteriorDensity_B_75.tex
-    Untracked:  ComparisonPosteriorDensity_B_80.tex
     Untracked:  code/mortality_BG_grid.R
     Untracked:  code/mortality_NL_grid.R
     Untracked:  data/co2/
@@ -662,6 +646,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/4e3d9f7aca08e0be14f6dd6c28a69cea2787f1b8/analysis/sim2.Rmd" target="_blank">4e3d9f7</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-29
+</td>
+<td>
+workflowr::wflow_publish("analysis/sim2.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/c46cde77f7288ddab276db7397d54f4042cbb553/docs/sim2.html" target="_blank">c46cde7</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -839,6 +857,32 @@ update function boss
 </div>
 </div>
 </div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>In this example, we simulate <span class="math inline">\(n =
+1000\)</span> observations from the following model with a change point
+<span class="math inline">\(\alpha = 6.5\)</span>: <span
+class="math display">\[
+\begin{aligned}
+    y_i|\eta_i &amp;\overset{ind}{\sim} \mathcal{N}(\eta_i, \sigma^2),
+\\
+    \eta_i &amp;= g_1(x_i)\mathbb{I}(x_i \leq \alpha) +
+g_2(x_i)\mathbb{I}(x_i &gt; \alpha), \\
+    g_1(x) &amp;= x \log(x^2 + 1), \quad g_2(x) = 3.3 x + 3.035.
+\end{aligned}
+\]</span> The response variable is denoted by <span
+class="math inline">\(y_i\)</span> with mean <span
+class="math inline">\(\eta_i\)</span> and standard deviation <span
+class="math inline">\(\sigma = 0.3\)</span>. The covariate <span
+class="math inline">\(x_i\)</span> is equally spaced in the interval
+<span class="math inline">\([0,10]\)</span>. We assume <span
+class="math inline">\(g_1\)</span> and <span
+class="math inline">\(g_2\)</span> are two unknown smooth functions,
+continuously joined at an unknown change point <span
+class="math inline">\(\alpha\)</span>. The target of inference is the
+posterior of <span class="math inline">\(\alpha\)</span>, as well as the
+posteriors of two unknown functions.</p>
+</div>
 <div id="data" class="section level2">
 <h2>Data</h2>
 <pre class="r"><code>library(BayesGP)
@@ -849,9 +893,8 @@ output_path &lt;- &quot;./output/sim2&quot;
 data_path &lt;- &quot;./data/sim2&quot;
 source(paste0(function_path, &quot;/00_BOSS.R&quot;))</code></pre>
 <p>Let’s use the following function to simulate <span
-class="math inline">\(n = 1000\)</span> observations from a change point
-model. The true change point is at <span class="math inline">\(a =
-6.5\)</span>.</p>
+class="math inline">\(n = 1000\)</span> observations from the above
+change point model.</p>
 <pre class="r"><code>set.seed(123)
 lower = 0; upper = 10
 x_grid &lt;- seq(lower, upper, length.out = 1000)
@@ -892,7 +935,9 @@ simulate_observation &lt;- function(a, func, x_grid, measurement = 3) {
 # Knot value
 a &lt;- 6.5
 # Simulate the data
-plot(my_func(x = seq(0.1,10,length.out = 100), a = a)~seq(0.1,10,length.out = 100), type = &quot;l&quot;)</code></pre>
+plot(my_func(x = seq(0.1,10,length.out = 100), a = a)~seq(0.1,10,length.out = 100),
+     xlab = &quot;x&quot;, ylab = &quot;g(x)&quot;, main = &quot;True function with change point&quot;,
+     type = &quot;l&quot;)</code></pre>
 <p><img src="figure/sim2.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-1">
@@ -1043,7 +1088,7 @@ end_runtime - begin_runtime
 save(mcmc_samps, file = paste0(output_path, &quot;/mcmc_samps.rda&quot;))</code></pre>
 <p>Take a look at the MCMC samples.</p>
 <pre class="r"><code>load(paste0(output_path, &quot;/mcmc_samps.rda&quot;))
-plot(mcmc_samps)</code></pre>
+plot(mcmc_samps, xlab = &quot;Iteration&quot;, ylab = &quot;Change point location (a)&quot;, main = &quot;MCMC samples&quot;)</code></pre>
 <p><img src="figure/sim2.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-1">
@@ -1082,8 +1127,11 @@ Ziang Zhang
 </table>
 </div>
 </div>
-<pre class="r"><code>burnin &lt;- 500
-hist(mcmc_samps[-c(1:burnin)], breaks = 30)</code></pre>
+<pre class="r"><code>burnin &lt;- 1000
+thinning &lt;- 3
+mcmc_samps_selected &lt;- mcmc_samps[-c(1:burnin)][seq(1, length(mcmc_samps[-c(1:burnin)]), by=thinning)]
+hist(mcmc_samps_selected, breaks = 50, 
+     xlab = &quot;Change point location (a)&quot;, main = &quot;Histogram of MCMC samples&quot;) </code></pre>
 <p><img src="figure/sim2.Rmd/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-5-2">
@@ -1122,9 +1170,7 @@ Ziang Zhang
 </table>
 </div>
 </div>
-<pre class="r"><code>thinning &lt;- 3
-mcmc_samps_selected &lt;- mcmc_samps[-c(1:burnin)][seq(1, length(mcmc_samps[-c(1:burnin)]), by=thinning)]
-dens &lt;- density(mcmc_samps_selected, from = 0, to = 10, n = 1000)
+<pre class="r"><code>dens &lt;- density(mcmc_samps_selected, from = 0, to = 10, n = 1000)
 plot(dens, xlim = c(0, 10), main = &quot;Kernel Density Estimation of MCMC samples&quot;, xlab = &quot;Change point location (a)&quot;, ylab = &quot;Density&quot;)</code></pre>
 <p><img src="figure/sim2.Rmd/unnamed-chunk-5-3.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
@@ -1220,7 +1266,8 @@ dx &lt;- diff(exact_grid_result_smooth$x)
 integral_approx &lt;- sum(0.5 * (exact_grid_result_smooth$fx[-1] + exact_grid_result_smooth$fx[-length(exact_grid_result_smooth$fx)]) * dx)
 exact_grid_result_smooth$pos &lt;- exact_grid_result_smooth$fx / integral_approx
 save(exact_grid_result_smooth, file = paste0(output_path, &quot;/exact_grid_result_smooth.rda&quot;))</code></pre>
-<p>Let’s visualize the posterior distribution.</p>
+<p>Let’s visualize the posterior distribution from the exact grid
+approach.</p>
 <pre class="r"><code>load(paste0(output_path, &quot;/exact_grid_result.rda&quot;))
 load(paste0(output_path, &quot;/exact_grid_result_smooth.rda&quot;))
 plot(exact_grid_result$x, exact_grid_result$pos, type = &quot;l&quot;, col = &quot;red&quot;, xlab = &quot;x (0-10)&quot;, ylab = &quot;density&quot;, main = &quot;Posterior&quot;)
@@ -1268,7 +1315,7 @@ Ziang Zhang
 <div id="boss" class="section level2">
 <h2>BOSS</h2>
 <p>Finally, we implement the BOSS algorithm to this problem.</p>
-<pre class="r"><code>eval_num &lt;- seq(from = 10, to = 50, by = 5); noise_var = 1e-6; initial_design = 5</code></pre>
+<pre class="r"><code>eval_num &lt;- seq(from = 10, to = 80, by = 5); noise_var = 1e-6; initial_design = 5</code></pre>
 <pre class="r"><code>set.seed(123)
 optim.n = 50
 objective_func &lt;- eval_once
@@ -1310,8 +1357,48 @@ save(BO_result_original_list, file = paste0(output_path, &quot;/BO_data_to_smoot
 save(result_ad, file = paste0(output_path, &quot;/BOSS_result.rda&quot;))</code></pre>
 <p>Take a look at the convergence diagnostic plot.</p>
 <pre class="r"><code>load(paste0(output_path, &quot;/BOSS_result.rda&quot;))
-plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = &quot;o&quot;, xlab = &quot;Iteration&quot;, ylab = &quot;KL divergence&quot;, main = &quot;Convergence Diagnostic Plot&quot;, log = &quot;y&quot;)</code></pre>
+plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = &quot;o&quot;, xlab = &quot;Iteration&quot;, ylab = &quot;KL divergence&quot;, main = &quot;Convergence Diagnostic Plot&quot;)</code></pre>
 <p><img src="figure/sim2.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
+Past versions of unnamed-chunk-11-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/c46cde77f7288ddab276db7397d54f4042cbb553/docs/figure/sim2.Rmd/unnamed-chunk-11-1.png" target="_blank">c46cde7</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Based on the KL convergence, the surrgoate from BOSS is not changing
+much after 20 iterations, indicating that the surrogate is likely
+converged.</p>
 <div id="section" class="section level3 tabset tabset-pills">
 <h3 class="tabset tabset-pills"></h3>
 <pre class="r"><code>load(paste0(output_path, &quot;/BO_result_list.rda&quot;))
@@ -1367,6 +1454,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/c46cde77f7288ddab276db7397d54f4042cbb553/docs/figure/sim2.Rmd/unnamed-chunk-13-1.png" target="_blank">c46cde7</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/469352f097d1e8b479707f5d7799f4924e86b04e/docs/figure/sim2.Rmd/unnamed-chunk-13-1.png" target="_blank">469352f</a>
 </td>
 <td>
@@ -1392,9 +1490,9 @@ Ziang Zhang
 </div>
 </div>
 </div>
-<div id="b-30" class="section level4">
-<h4>B = 30</h4>
-<pre class="r"><code>plot_list[[5]]</code></pre>
+<div id="b-20" class="section level4">
+<h4>B = 20</h4>
+<pre class="r"><code>plot_list[[3]]</code></pre>
 <p><img src="figure/sim2.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-14-1">
@@ -1418,6 +1516,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/c46cde77f7288ddab276db7397d54f4042cbb553/docs/figure/sim2.Rmd/unnamed-chunk-14-1.png" target="_blank">c46cde7</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/469352f097d1e8b479707f5d7799f4924e86b04e/docs/figure/sim2.Rmd/unnamed-chunk-14-1.png" target="_blank">469352f</a>
@@ -1445,9 +1554,9 @@ Ziang Zhang
 </div>
 </div>
 </div>
-<div id="b-40" class="section level4">
-<h4>B = 40</h4>
-<pre class="r"><code>plot_list[[7]]</code></pre>
+<div id="b-30" class="section level4">
+<h4>B = 30</h4>
+<pre class="r"><code>plot_list[[5]]</code></pre>
 <p><img src="figure/sim2.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-15-1">
@@ -1471,6 +1580,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/c46cde77f7288ddab276db7397d54f4042cbb553/docs/figure/sim2.Rmd/unnamed-chunk-15-1.png" target="_blank">c46cde7</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/469352f097d1e8b479707f5d7799f4924e86b04e/docs/figure/sim2.Rmd/unnamed-chunk-15-1.png" target="_blank">469352f</a>
@@ -1498,10 +1618,89 @@ Ziang Zhang
 </div>
 </div>
 </div>
+<div id="b-40" class="section level4">
+<h4>B = 40</h4>
+<pre class="r"><code>plot_list[[7]]</code></pre>
+<p><img src="figure/sim2.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-16-1">
+Past versions of unnamed-chunk-16-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-16-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/c46cde77f7288ddab276db7397d54f4042cbb553/docs/figure/sim2.Rmd/unnamed-chunk-16-1.png" target="_blank">c46cde7</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
 <div id="b-50" class="section level4">
 <h4>B = 50</h4>
 <pre class="r"><code>plot_list[[9]]</code></pre>
-<p><img src="figure/sim2.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/sim2.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-17-1">
+Past versions of unnamed-chunk-17-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-17-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/c46cde77f7288ddab276db7397d54f4042cbb553/docs/figure/sim2.Rmd/unnamed-chunk-17-1.png" target="_blank">c46cde7</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-28
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="ks-and-kl" class="section level3">
@@ -1512,14 +1711,16 @@ distribution from BOSS and the exact grid.</p>
 for (i in 1:length(eval_num)) {
   KL_vec[i] &lt;- Compute_KL(x = exact_grid_result_smooth$x, px = exact_grid_result_smooth$pos, qx = BO_result_list[[i]]$pos)
 }
-plot(log(KL_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KL divergence&quot;, xlab = &quot;B&quot;)</code></pre>
-<p><img src="figure/sim2.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+plot((KL_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KL divergence&quot;, xlab = &quot;B&quot;)</code></pre>
+<p><img src="figure/sim2.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>KS_vec &lt;- c()
 for (i in 1:length(eval_num)) {
   KS_vec[i] &lt;- Compute_KS(x = exact_grid_result_smooth$x, px = exact_grid_result_smooth$pos, qx = BO_result_list[[i]]$pos)
 }
-plot(log(KS_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KS distance&quot;, xlab = &quot;B&quot;)</code></pre>
-<p><img src="figure/sim2.Rmd/unnamed-chunk-17-2.png" width="672" style="display: block; margin: auto;" /></p>
+plot((KS_vec) ~ eval_num, type = &quot;o&quot;, ylab = &quot;KS distance&quot;, xlab = &quot;B&quot;)</code></pre>
+<p><img src="figure/sim2.Rmd/unnamed-chunk-18-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Indeed, the KL/KS divergence is greatly reduced after 15 iterations,
+and is close to zero after 45 iterations.</p>
 </div>
 </div>
 <div id="aghq" class="section level2">
@@ -1568,7 +1769,7 @@ start_time &lt;- Sys.time()
 aghq_result_grid &lt;- obtain_aghq(f = fn, k = 10, optresult = grid_opt_list)
 end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>Time difference of 0.07758021 secs</code></pre>
+<pre><code>Time difference of 0.08803821 secs</code></pre>
 <pre class="r"><code>quad_exact &lt;- aghq_result_grid$normalized_posterior$nodesandweights</code></pre>
 <p>Now, we compute the AGHQ rule on the BOSS surrogate.</p>
 <pre class="r"><code>quad_BO_list &lt;- list()
@@ -1612,6 +1813,7 @@ for (i in 1:length(BO_result_original_list)) {
 Warning in sqrt(sse/(n - df)): NaNs produced
 Warning in sqrt(sse/(n - df)): NaNs produced
 Warning in sqrt(sse/(n - df)): NaNs produced
+Warning in sqrt(sse/(n - df)): NaNs produced
 Warning in sqrt(sse/(n - df)): NaNs produced</code></pre>
 <p>Let’s visualize the AGHQ rule on the exact grid and BOSS
 surrogate.</p>
@@ -1629,55 +1831,7 @@ points(weights ~ theta1, type = &quot;o&quot;, col = &quot;green&quot;,
        data = quad_BO_list[[2]], pch = 2)
 legend(&quot;topright&quot;, legend = c(&quot;Exact grid&quot;, paste0(&quot;BOSS: B = &quot;, eval_num[9]), paste0(&quot;BOSS: B = &quot;, eval_num[6]), paste0(&quot;BOSS: B = &quot;, eval_num[4]), paste0(&quot;BOSS: B = &quot;, eval_num[2])),
        col = c(&quot;black&quot;, &quot;purple&quot;, &quot;red&quot;, &quot;blue&quot;, &quot;green&quot;), pch = c(1, 4, 3, 19, 2))</code></pre>
-<p><img src="figure/sim2.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-21-1">
-Past versions of unnamed-chunk-21-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-21-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/469352f097d1e8b479707f5d7799f4924e86b04e/docs/figure/sim2.Rmd/unnamed-chunk-21-1.png" target="_blank">469352f</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-18
-</td>
-</tr>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/2badc2879803b605fe88e2684c064042524abf1c/docs/figure/sim2.Rmd/unnamed-chunk-21-1.png" target="_blank">2badc28</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-18
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/sim2.Rmd/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>As a comparison, take a look at the AGHQ rule obtained from sparser
 grids:</p>
 <pre class="r"><code>result_sparser &lt;- function(length.out.integer = 100) {
@@ -1782,55 +1936,7 @@ points(weights ~ theta1, type = &quot;o&quot;, col = &quot;green&quot;,
        data = quad_sparse_list[[2]], pch = 2)
 legend(&quot;topright&quot;, legend = c(&quot;Exact grid&quot;, &quot;Sparse: 50&quot;, &quot;Sparse: 35&quot;, &quot;Sparse: 25&quot;, &quot;Sparse: 15&quot;),
        col = c(&quot;black&quot;, &quot;purple&quot;, &quot;red&quot;, &quot;blue&quot;, &quot;green&quot;), pch = c(1, 4, 3, 19, 2))</code></pre>
-<p><img src="figure/sim2.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-24-1">
-Past versions of unnamed-chunk-24-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-24-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/469352f097d1e8b479707f5d7799f4924e86b04e/docs/figure/sim2.Rmd/unnamed-chunk-24-1.png" target="_blank">469352f</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-18
-</td>
-</tr>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/2badc2879803b605fe88e2684c064042524abf1c/docs/figure/sim2.Rmd/unnamed-chunk-24-1.png" target="_blank">2badc28</a>
-</td>
-<td>
-Ziang Zhang
-</td>
-<td>
-2025-04-18
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<p><img src="figure/sim2.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
