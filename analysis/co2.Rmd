@@ -9,6 +9,9 @@ editor_options:
 
 ## Read in the data
 
+In this example, we apply the BOSS algorithm to analyze the atmospheric carbon dioxide (CO2) concentration data, which were collected from an observatory in Hawaii monthly before May 1974, and weekly afterward. 
+In total, this dataset consists of $n = 2267$ observations.
+
 ```{r}
 library(BayesGP)
 library(tidyverse)
@@ -45,9 +48,25 @@ observed_dataset$t3 <- observed_dataset$timeYears
 observed_dataset$t4 <- observed_dataset$timeYears
 ```
 
+Motivated by the literature, the hierarchical model has the following structure:
+\begin{equation}
+    \begin{aligned}
+        y_i &= g_{tr}(x_i) + g_{1}(x_i) + g_{\frac{1}{2}}(x_i) + g_{\alpha}(x_i) + e_i,\\
+        g_{1} &\sim \text{sGP}_1(\sigma_{s}),\  g_{\frac{1}{2}} \sim \text{sGP}_{\frac{1}{2}}(\sigma_{s}) \\
+        g_{\alpha} &\sim \text{sGP}_{\alpha}(\sigma_{\alpha}),\  g_{tr} \sim \text{IWP}_2(\sigma_{tr}), \\
+        e_i &\overset{iid}{\sim} \mathcal{N}(0,\sigma_e^2).
+    \end{aligned}
+\end{equation}
+Here $y_i$ denote the CO2 concentration observed at the time $x_i$ in years since March 30, 1960. 
+The component $g_{tr}$ represents the long term growth trend, modeled using a second order Integrated Wiener process (IWP).
+The components $g_1$ and $g_{\frac{1}{2}}$ represent the annual cycle and its first harmonic, modeled using seasonal Gaussian processes (sGP) with one-year and half-year periodicity.
+The component $g_{\alpha}$ is another cyclic component, modeled with a sGP with ${\alpha}$-year periodicity, where $\alpha$ is an unknown parameter assigned with an uniform prior between $2$ to $6$. 
+All the boundary conditions of the sGP and the IWP are assigned independent priors, $\mathcal{N}(0,1000)$.
 
 
 ## Implement the BOSS algorithm
+
+Let $\alpha$ be the conditioning parameter, the proposed BOSS algorithm is implemented, with $5$ starting values equally spaced in $[2,6]$ and $B = 30$ BO iterations. 
 
 ```{r}
 lower <- 2; upper <- 6; noise_var <- 1e-6
@@ -60,7 +79,6 @@ eval_once <- function(a){
                         family = "Gaussian", aghq_k = 3)
   mod_once$mod$normalized_posterior$lognormconst
 }
-
 surrogate <- function(xvalue, data_to_smooth, choice_cov) {
   predict_gp(
     data = data_to_smooth,
@@ -69,7 +87,6 @@ surrogate <- function(xvalue, data_to_smooth, choice_cov) {
     noise_var = noise_var
   )$mean
 }
-
 integrate_aghq <- function(f, k = 100, startingvalue = 0){
   ff <- list(fn = f, gr = function(x) numDeriv::grad(f, x), he = function(x) numDeriv::hessian(f, x))
   aghq::aghq(ff = ff, k = k, startingvalue = startingvalue)$normalized_posterior$lognormconst
@@ -78,20 +95,28 @@ integrate_aghq <- function(f, k = 100, startingvalue = 0){
 
 
 ```{r eval=FALSE}
+optim.n = 20
 begin_time <- Sys.time()
 BO_result <- BOSS(eval_once, update_step = 5, max_iter = 30, 
         lower = lower, upper = upper, noise_var = noise_var, initial_design = 5,
-        # turning off AGHQ check
-        AGHQ_iter_check = 5, AGHQ_eps = 0, AGHQ_check_warmup = 10,
-        opt.lengthscale.grid = 100, opt.grid = 100,
-        delta = 0.01)
+        optim.n = optim.n, delta = 0.01,
+        criterion = "KL", KL.grid = 3000, KL_check_warmup = 5, KL_iter_check = 5, KL_eps = 0)
 end_time <- Sys.time()
 end_time - begin_time
 save(BO_result, file = paste0(output_path, "/BO_result.rda"))
 ```
 
+
+Take a look at the diagnostic plot of the BOSS algorithm:
+
 ```{r}
 load(paste0(output_path, "/BO_result.rda"))
+plot(BO_result$KL_result$KL ~ BO_result$KL_result$i, type = "o", 
+     ylab = "KL divergence", xlab = "iteration", cex.lab = 1.5, cex.axis = 1.5)
+```
+
+
+```{r}
 data_to_smooth <- list()
 data_to_smooth$x <- as.numeric(BO_result$result$x)[order(as.numeric(BO_result$result$x))]
 data_to_smooth$x_original <- as.numeric(BO_result$result$x_original)[order(as.numeric(BO_result$result$x))]
@@ -99,6 +124,7 @@ data_to_smooth$y <- as.numeric(BO_result$result$y)[order(as.numeric(BO_result$re
 data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
 ```
 
+Take a look at the normalized posterior from the BOSS algorithm:
 
 ```{r}
 x <- seq(2.01, 5.99, by = 0.01)
@@ -137,7 +163,9 @@ abline(v = 2.82, col = "purple")
 ```
 
 
-Compute AGHQ:
+To look at the posterior of the latent field (e.g $g$), we can compute the AGHQ rule to integrate out the conditioning parameter $\alpha$.
+
+Let's compute $K = 10$ nodes and weights for the posterior distribution of $\alpha$ using the AGHQ rule.
 
 ```{r}
 aghq_boss <- function(f, k = 100, data_to_smooth){
@@ -232,6 +260,8 @@ lines(ts_summary$q0.025 ~ ts_summary$time, col = "red", lty = "dashed")
 
 
 ## Implement grid-based algorithm
+
+Finally, to ensure the validity of the BOSS algorithm, we will compare the result with the exact posterior distribution of $\alpha$ obtained through a dense grid-based algorithm.
 
 ```{r eval=FALSE}
 library(parallel)
