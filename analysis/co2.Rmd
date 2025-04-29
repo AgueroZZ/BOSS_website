@@ -132,13 +132,11 @@ y <- qnorm((x - lower)/(upper - lower))
 ff <- list()
 ff$fn <- function(y) as.numeric(surrogate(pnorm(y), data_to_smooth = data_to_smooth, choice_cov = square_exp_cov_generator_nd(length_scale = BO_result$length_scale, signal_var = BO_result$signal_var)) + dnorm(y, log = TRUE))
 fn_vals <- sapply(y, ff$fn)
-plot(exp(fn_vals) ~ y, type = "l")
-
 lognormal_const <- integrate_aghq(f = ff$fn, k = 10)
 post_y <- data.frame(y = y, pos = exp(fn_vals - lognormal_const))
 post_x <- data.frame(x = pnorm(post_y$y) * (upper - lower) + lower, post = (post_y$pos / dnorm(post_y$y))/(upper - lower) )
 plot(post_x$post ~ post_x$x, type = "l", ylab = "Post", 
-     xlab = '$\\alpha$' , cex.lab = 1.5, cex.axis = 1.5)
+     xlab = expression(alpha) , cex.lab = 1.5, cex.axis = 1.5)
 for(x_val in data_to_smooth$x_original) {
   segments(x_val, -0.02, x_val, -0.05, col = "red")
 }
