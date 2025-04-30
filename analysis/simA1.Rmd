@@ -88,7 +88,7 @@ integrate(function(x) exp(true_log_post(x)), lower = 0, upper = 10)
 ```
 
 
-Apply BO:
+Let's run BOSS with the above log posterior function:
 
 ```{r}
 objective_func <- eval_once
@@ -96,20 +96,22 @@ eval_num <- seq(5, 100, by = 5)
 ```
 
 ```{r eval=FALSE}
-BO_result_list <- list()
-BO_result_original_list <- list()
 result_ad <- BOSS(
-  func = objective_func, initial_design = 5,
+  func = eval_once, initial_design = 5,
   update_step = 5, max_iter = (max(eval_num) - 5),
   opt.lengthscale.grid = 100, opt.grid = 1000,
   delta = 0.01, noise_var = noise_var,
   lower = lower, upper = upper,
+  verbose = 0,
   modal_iter_check = 5, modal_check_warmup = 10, modal_k.nn = 5, modal_eps = 0, criterion = "modal"
 )
 saveRDS(result_ad, file = paste0(data_path, "/result_ad_easy.rds"))
 ```
 
+
 ```{r eval=FALSE}
+BO_result_list <- list()
+BO_result_original_list <- list()
 result_ad <- readRDS(file = paste0(data_path, "/result_ad_easy.rds"))
 for (i in 1:length(eval_num)) {
   eval_number <- eval_num[i]
@@ -136,6 +138,9 @@ saveRDS(BO_result_original_list, file = paste0(data_path, "/BO_result_original_l
 ```
 
 ### Some illustrations{.tabset .tabset-pills}
+
+Here are some illustrations of the approximated posterior from BOSS with different numbers of BO iterations $B$ (red: approximated posterior, black: true posterior). 
+
 
 ```{r}
 BO_result_list <- readRDS(file = paste0(data_path, "/BO_result_list_easy.rds"))
@@ -307,9 +312,12 @@ for (i in 1:length(eval_num)) {
 ```
 
 
+
 ### KL and KS:
 
-```{r eval=FALSE, include=FALSE}
+Let's visualize the KL and KS divergence between the true posterior and the approximated posterior from BOSS. 
+
+```{r}
 KL_vec <- c()
 for (i in 1:length(eval_num)) {
   KL_vec[i] <- Compute_KL(x = x, logpx = true_log_post(x), logqx = log(BO_result_list[[i]]$pos))
@@ -355,7 +363,7 @@ plot(log(KS_vec) ~ eval_num, type = "o", ylab = "Log KS", xlab = "eval number: B
 dev.off()
 ```
 
-
+Based on the KL and KS divergence, we can the approximated posterior from BOSS is indistinguishable from the true posterior after 10 iterations in the simple example.
 
 
 
@@ -386,16 +394,13 @@ true_log_post <- function(x) {true_log_post_mapped(qnorm((x - lower)/(upper - lo
 integrate(function(x) exp(true_log_post(x)), lower = 0, upper = 10)
 ```
 
-Apply BO:
+Let's run BOSS with the above log posterior function:
 
 ```{r}
 objective_func <- eval_once
-eval_num <- seq(5, 100, by = 5)
 ```
 
 ```{r eval=FALSE}
-BO_result_list <- list()
-BO_result_original_list <- list()
 result_ad <- BOSS(
   func = objective_func, initial_design = 5,
   update_step = 5, max_iter = (max(eval_num) - 5),
@@ -408,6 +413,8 @@ saveRDS(result_ad, file = paste0(data_path, "/result_ad_med.rds"))
 ```
 
 ```{r eval=FALSE}
+BO_result_list <- list()
+BO_result_original_list <- list()
 result_ad <- readRDS(file = paste0(data_path, "/result_ad_med.rds"))
 for (i in 1:length(eval_num)) {
   eval_number <- eval_num[i]
@@ -434,6 +441,8 @@ saveRDS(BO_result_original_list, file = paste0(data_path, "/BO_result_original_l
 ```
 
 ### Some illustrations{.tabset .tabset-pills}
+
+Here are some illustrations of the approximated posterior from BOSS with different numbers of BO iterations $B$ (red: approximated posterior, black: true posterior). 
 
 ```{r}
 BO_result_list <- readRDS(file = paste0(data_path, "/BO_result_list_med.rds"))
@@ -462,7 +471,7 @@ for(x_val in to_plot_data_obs$x_original) {
 
 plot(exp(to_plot_data$logpos) ~ to_plot_data$x, 
        type = "l", lty = "dashed", col = "red", lwd = 2,
-       ylab = "Post", xlab = expression(alpha), ylim = c(0,2), cex.lab = 1.5, cex.axis = 1.5)
+       ylab = "Post", xlab = expression(alpha), ylim = c(0, 2.5), cex.lab = 1.5, cex.axis = 1.5)
 lines(exp(true_log_post(x)) ~ x, lwd = 1)
 y_min <- -0.03
 y_offset <- 0.01 * (2) # adjust offset as needed
@@ -493,7 +502,7 @@ for(x_val in to_plot_data_obs$x_original) {
 
 plot(exp(to_plot_data$logpos) ~ to_plot_data$x, 
        type = "l", lty = "dashed", col = "red", lwd = 2,
-       ylab = "Post", xlab = expression(alpha), ylim = c(0,2), cex.lab = 1.5, cex.axis = 1.5)
+       ylab = "Post", xlab = expression(alpha), ylim = c(0, 2.5), cex.lab = 1.5, cex.axis = 1.5)
 lines(exp(true_log_post(x)) ~ x, lwd = 1)
 y_min <- -0.03
 y_offset <- 0.01 * (2) # adjust offset as needed
@@ -524,7 +533,7 @@ for(x_val in to_plot_data_obs$x_original) {
 
 plot(exp(to_plot_data$logpos) ~ to_plot_data$x, 
        type = "l", lty = "dashed", col = "red", lwd = 2,
-       ylab = "Post", xlab = expression(alpha), ylim = c(0,2), cex.lab = 1.5, cex.axis = 1.5)
+       ylab = "Post", xlab = expression(alpha), ylim = c(0, 2.5), cex.lab = 1.5, cex.axis = 1.5)
 lines(exp(true_log_post(x)) ~ x, lwd = 1)
 y_min <- -0.03
 y_offset <- 0.01 * (2) # adjust offset as needed
@@ -555,7 +564,7 @@ for(x_val in to_plot_data_obs$x_original) {
 
 plot(exp(to_plot_data$logpos) ~ to_plot_data$x, 
        type = "l", lty = "dashed", col = "red", lwd = 2,
-       ylab = "Post", xlab = expression(alpha), ylim = c(0,2), cex.lab = 1.5, cex.axis = 1.5)
+       ylab = "Post", xlab = expression(alpha), ylim = c(0, 2.5), cex.lab = 1.5, cex.axis = 1.5)
 lines(exp(true_log_post(x)) ~ x, lwd = 1)
 y_min <- -0.03
 y_offset <- 0.01 * (2) # adjust offset as needed
@@ -574,7 +583,7 @@ for (i in 1:length(eval_num)) {
   to_plot_data_obs <- BO_result_original_list[[i]]
   y_min <- -20
   y_max <- 5
-  png(filename = paste0(output_path, "/easy/", "BOSS_approxi_B_", eval_number, "_med.png"), width = 800, height = 800)
+  png(filename = paste0(output_path, "/medium/", "BOSS_approxi_B_", eval_number, "_med.png"), width = 800, height = 800)
   mar.default <- c(5,4,4,2)
   par(mar = mar.default + c(0, 1, 0, 0))
   plot(to_plot_data$logpos ~ to_plot_data$x, 
@@ -588,12 +597,12 @@ for (i in 1:length(eval_num)) {
   }
   dev.off()
   
-  png(filename = paste0(output_path, "/easy/", "pos_BOSS_approxi_B_", eval_number, "_med.png"), width = 800, height = 800)
+  png(filename = paste0(output_path, "/medium/", "pos_BOSS_approxi_B_", eval_number, "_med.png"), width = 800, height = 800)
   mar.default <- c(5,4,4,2)
   par(mar = mar.default + c(0, 1, 0, 0))
   plot(exp(to_plot_data$logpos) ~ to_plot_data$x, 
        type = "l", lty = "dashed", col = "red", lwd = 2,
-       ylab = "Post", xlab = expression(alpha), ylim = c(0,2), cex.lab = 2.5, cex.axis = 2.5)
+       ylab = "Post", xlab = expression(alpha), ylim = c(0, 2.5), cex.lab = 2.5, cex.axis = 2.5)
   lines(exp(true_log_post(x)) ~ x, lwd = 1)
   y_min <- -0.03
   y_offset <- 0.01 * (2) # adjust offset as needed
@@ -607,6 +616,9 @@ for (i in 1:length(eval_num)) {
 
 
 ### KL and KS:
+
+Let's visualize the KL and KS divergence between the true posterior and the approximated posterior from BOSS. 
+
 
 ```{r}
 KL_vec <- c()
@@ -626,13 +638,12 @@ par(mar = mar.default + c(0, 1, 0, 0))
 plot((KS_vec) ~ eval_num, type = "o", ylab = "KS", xlab = "eval number: B", ylim = c(0,1), cex.lab = 1.5, cex.axis = 1.5)
 ```
 
-
 ```{r eval=FALSE, include=FALSE}
 KL_vec <- c()
 for (i in 1:length(eval_num)) {
   KL_vec[i] <- Compute_KL(x = x, logpx = true_log_post(x), logqx = log(BO_result_list[[i]]$pos))
 }
-png(filename = paste0(output_path, "/easy/kl_compare_med.png"), height = 800, width = 800)
+png(filename = paste0(output_path, "/medium/kl_compare_med.png"), height = 800, width = 800)
 mar.default <- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0))
 plot((KL_vec) ~ eval_num, type = "o", ylab = "KL", xlab = "eval number: B", cex.lab = 2.5, cex.axis = 2.5)
@@ -642,19 +653,20 @@ KS_vec <- c()
 for (i in 1:length(eval_num)) {
   KS_vec[i] <- Compute_KS(x = x, px = exp(true_log_post(x)), qx = BO_result_list[[i]]$pos)
 }
-png(filename = paste0(output_path, "/easy/ks_compare_med.png"), height = 800, width = 800)
+png(filename = paste0(output_path, "/medium/ks_compare_med.png"), height = 800, width = 800)
 mar.default <- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0))
 plot((KS_vec) ~ eval_num, type = "o", ylab = "KS", xlab = "eval number: B", ylim = c(0,1), cex.lab = 2.5, cex.axis = 2.5)
 dev.off()
 
-png(filename = paste0(output_path, "/easy/log_ks_compare_med.png"), height = 800, width = 800)
+png(filename = paste0(output_path, "/medium/log_ks_compare_med.png"), height = 800, width = 800)
 mar.default <- c(5,4,4,2)
 par(mar = mar.default + c(0, 1, 0, 0))
 plot(log(KS_vec) ~ eval_num, type = "o", ylab = "Log KS", xlab = "eval number: B", ylim = c(-10,0), cex.lab = 2.5, cex.axis = 2.5)
 dev.off()
 ```
 
+Based on the KL and KS divergence, we can the approximated posterior from BOSS is indistinguishable from the true posterior after 20 iterations of BO in the medium example. 
 
 ## Hard Example:
 
@@ -683,11 +695,10 @@ true_log_post <- function(x) {true_log_post_mapped(qnorm((x - lower)/(upper - lo
 integrate(function(x) exp(true_log_post(x)), lower = 0, upper = 10)
 ```
 
-Apply BO:
+Let's run BOSS with the above log posterior function:
 
 ```{r}
 objective_func <- eval_once
-eval_num <- seq(5, 100, by = 5)
 ```
 
 ```{r eval=FALSE}
@@ -731,6 +742,8 @@ saveRDS(BO_result_original_list, file = paste0(data_path, "/BO_result_original_l
 ```
 
 ### Some illustrations{.tabset .tabset-pills}
+
+Here are some illustrations of the approximated posterior from BOSS with different numbers of BO iterations $B$ (red: approximated posterior, black: true posterior). 
 
 ```{r}
 BO_result_list <- readRDS(file = paste0(data_path, "/BO_result_list_hard.rds"))
@@ -903,6 +916,8 @@ for (i in 1:length(eval_num)) {
 
 ### Compute KL and KS:
 
+Let's visualize the KL and KS divergence between the true posterior and the approximated posterior from BOSS. 
+
 ```{r}
 KL_vec <- c()
 for (i in 1:length(eval_num)) {
@@ -953,7 +968,7 @@ plot(log(KS_vec) ~ eval_num, type = "o", ylab = "Log KS", xlab = "eval number: B
 dev.off()
 ```
 
-
+Based on the KL and KS divergence, we can the approximated posterior from BOSS is indistinguishable from the true posterior after around 20 iterations in this hard example.
 
 
 

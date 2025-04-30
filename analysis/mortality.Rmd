@@ -7,6 +7,33 @@ editor_options:
   chunk_output_type: console
 ---
 
+# Introduction
+
+In this example, we consider the analysis of the weekly all-cause mortality counts in the Netherlands and Bulgaria. 
+The all-cause mortality data is obtained from the \textit{World Mortality Dataset}, which contains the country-level weekly death counts from 2015 to 2022.
+
+To make inference of the change-point, we consider the following model for the weekly-mortality:
+\begin{equation}
+\begin{aligned}
+    y(t_i)|\mu(t_i) &\overset{ind}{\sim} \text{Poisson}(\mu(t_i)), \\
+    \log(\mu(t_i)) &= 
+\begin{cases} 
+    g_{tr,\text{pre}}(t_i) + g_{s,\text{pre}}(t_i) & \text{if } t_i \leq a, \\
+    g_{tr,\text{pos}}(t_i) + g_{s,\text{pos}}(t_i) & \text{if } t_i > a.
+\end{cases}\\
+g_{tr,\text{pre}}(t_i) \sim &\text{IWP}_2(\sigma_{tr,\text{pre}}), \ g_{tr,\text{pos}}(t_i) \sim \text{IWP}_2(\sigma_{tr,\text{pos}}), \\
+g_{s,\text{pre}}(t_i) \sim &\text{sGP}(\sigma_{s,\text{pre}}), \ g_{s,\text{pos}}(t_i) \sim \text{sGP}(\sigma_{s,\text{pos}}).
+\end{aligned}
+\end{equation}
+
+Here $Y(t_i)$ denotes the observed weekly mortality at time $t_i$, where the unit of $t_i$ is converted to year;
+the conditioning parameter $\alpha$ denotes the change-point of the mortality dynamic, and is assigned an uniform prior between the first week of the year 2019 and the first week of the year 2022.
+We decompose the dynamic of mortality rate into the smooth long-term trend ($g_{tr,\text{pre}}$ or $g_{tr,\text{pos}}$) and the seasonal component ($g_{s,\text{pre}}$ or $g_{s,\text{pos}}$) with yearly variation. 
+The trends are modeled using independent second order Integrated Wiener processes ($\text{IWP}_2$) and the seasonal components are modeled using independent seasonal Gaussian processes ($\text{sGP}) $ with yearly periodicity and four harmonic terms.
+The boundary conditions of IWP or sGP are fixed such that neither the mortality rate $\mu$ nor its derivative will have a discontinuity at the change point $\alpha$.
+For priors on the variance parameters, we put independent exponential priors on their corresponding five-year predictive standard deviations, with prior median $0.01$ for $g_{tr,\text{pre}}$ and $g_{s,\text{pre}}$, and median $1$ for $g_{tr,\text{pos}}$ and $g_{s,\text{pos}}$.
+
+
 # West Europe: Neitherlands
 
 ## Data
@@ -86,16 +113,17 @@ objective_func <- eval_once
 ```
 
 ```{r eval=FALSE}
-eval_number <- 50
-
+eval_number <- 100; optim.n = 50
 result_ad <- BOSS(eval_once,
   update_step = 5, max_iter = eval_number, delta = 0.01,
   lower = lower, upper = upper, 
   noise_var = noise_var,
-  initial_design = 5,
-  modal_iter_check = 5,  modal_check_warmup = 20, modal_k.nn = 5, modal_eps = 0, criterion = "modal",
-  opt.lengthscale.grid = 100, opt.grid = 1000
+  interpolation = "ss",
+  initial_design = 5, optim.n = optim.n,
+  # modal_iter_check = 1,  modal_check_warmup = 20, modal_k.nn = 5, modal_eps = 0, criterion = "modal",
+  criterion = "KL", KL.grid = 3000, KL_check_warmup = 5, KL_iter_check = 5, KL_eps = 0
 )
+save(result_ad, file = paste0(output_path, "/result_ad_NL.rda"))
 
 data_to_smooth <- result_ad$result
 data_to_smooth$x <- as.numeric(result_ad$result$x)[order(as.numeric(result_ad$result$x))]
@@ -130,6 +158,13 @@ BO_result_NL <- data.frame(x = (lower + x_vals * (upper - lower)),
                         pos = post_x$pos / (upper - lower))
 BO_result_NL$year <- as.Date((BO_result_NL$x + ref_val)*365.25)
 save(BO_result_NL, file = paste0(output_path, "/BO_result_NL.rda"))
+```
+
+Take a look at the diagnostic plot:
+
+```{r}
+load(paste0(output_path, "/result_ad_NL.rda"))
+plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = 'o', ylab = "KL", xlab = "Iteration")
 ```
 
 ```{r}
@@ -201,10 +236,23 @@ points(NL_death$deaths ~ as.Date((NL_death$x+ ref_val)*365.25), cex = 0.2, col =
 As the oracle method, we implement the exact grid approach with a equally spaced grid of 1000 points. 
 
 ```{r eval=FALSE}
-n_cores <- 12
+n_cores <- 5
 res_list  <- mclapply(x_vals, eval_once, mc.cores = n_cores)
 exact_vals <- unlist(res_list)
 exact_grid_result_NL <- data.frame(x = x_vals, exact_vals = exact_vals)
+save(exact_grid_result_NL, file = paste0(output_path, "/exact_grid_result_NL_unnormalized.rda"))
+```
+
+How much difference between the optimal alpha found by BOSS and the exact grid?
+
+```{r}
+load(paste0(output_path, "/exact_grid_result_NL_unnormalized.rda"))
+```
+
+The relative difference is `r abs(exact_grid_result_NL$x[which.max(exact_grid_result_NL$exact_vals)] - my_alpha_NL)/abs(exact_grid_result_NL$x[which.max(exact_grid_result_NL$exact_vals)])`.
+
+Take a look at the posterior distribution of the exact grid:
+```{r}
 exact_grid_result_NL$exact_vals <- exact_grid_result_NL$exact_vals - max(exact_grid_result_NL$exact_vals)
 exact_grid_result_NL$fx <- exp(exact_grid_result_NL$exact_vals)
 # Calculate the differences between adjacent x values
@@ -212,9 +260,51 @@ dx <- diff(exact_grid_result_NL$x)
 # Compute the trapezoidal areas and sum them up
 integral_approx <- sum(0.5 * (exact_grid_result_NL$fx[-1] + exact_grid_result_NL$fx[-length(exact_grid_result_NL$fx)]) * dx)
 exact_grid_result_NL$pos <- exact_grid_result_NL$fx / integral_approx
-save(exact_grid_result_NL, file = paste0(output_path, "/exact_grid_result_NL.rda"))
+exact_grid_result_NL$pos <- exact_grid_result_NL$pos
+# convert to time
+exact_grid_result_NL$year <- as.Date((exact_grid_result_NL$x + ref_val)*365.25)
 ```
 
+```{r}
+load(paste0(output_path, "/BO_result_NL.rda"))
+
+# Select needed columns and add Method labels
+BO_result_NL_sub <- BO_result_NL %>%
+  select(year, pos) %>%
+  mutate(Method = "BOSS")
+
+exact_grid_result_NL_sub <- exact_grid_result_NL %>%
+  select(year, pos) %>%
+  mutate(Method = "Exact Grid")
+
+# Combine
+plot_data <- bind_rows(BO_result_NL_sub, exact_grid_result_NL_sub)
+
+# Now plot
+ggplot(plot_data, aes(x = year, y = pos, color = Method, linetype = Method)) +
+  geom_line(size = 0.6) +
+  xlab("") +
+  ylab("Density") +
+  scale_x_date(
+    limits = as.Date(c("2019-12-01", "2021-01-01")),
+    date_labels = "%b %y", 
+    date_breaks = "3 month"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 15), 
+    axis.text = element_text(size = 15),
+    legend.position = c(0.8, 0.8),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 15)
+  ) +
+  scale_color_manual(values = c("BOSS" = "blue", "Exact Grid" = "red")) +
+  scale_linetype_manual(values = c("BOSS" = "solid", "Exact Grid" = "dashed"))
+```
+
+The BOSS surrogate posterior distribution is shown in blue, while the exact grid posterior distribution is shown in red. 
+The BOSS surrogate in this case is indistinguishable from the posterior distribution obtained from the exact grid, but only takes a fraction of the time to compute.
+ 
 
 # East Europe: Bulgaria
 
@@ -244,10 +334,12 @@ result_ad <- BOSS(eval_once,
   update_step = 5, max_iter = eval_number, delta = 0.01,
   lower = lower, upper = upper, 
   noise_var = noise_var,
-  initial_design = 5,
-  modal_iter_check = 5,  modal_check_warmup = 20, modal_k.nn = 5, modal_eps = 0, criterion = "modal",
-  opt.lengthscale.grid = 100, opt.grid = 1000
+  initial_design = 5, optim.n = optim.n,
+  # modal_iter_check = 1,  modal_check_warmup = 20, modal_k.nn = 5, modal_eps = 0, criterion = "modal",
+  interpolation = "ss",
+  criterion = "KL", KL.grid = 3000, KL_check_warmup = 5, KL_iter_check = 5, KL_eps = 0
 )
+save(result_ad, file = paste0(output_path, "/result_ad_BG.rda"))
 
 data_to_smooth <- result_ad$result
 data_to_smooth$x <- as.numeric(result_ad$result$x)[order(as.numeric(result_ad$result$x))]
@@ -282,6 +374,13 @@ BO_result_BG <- data.frame(x = (lower + x_vals * (upper - lower)),
                         pos = post_x$pos / (upper - lower))
 BO_result_BG$year <- as.Date((BO_result_BG$x + ref_val)*365.25)
 save(BO_result_BG, file = paste0(output_path, "/BO_result_BG.rda"))
+```
+
+Take a look at the diagnostic plot:
+
+```{r}
+load(paste0(output_path, "/result_ad_BG.rda"))
+plot(result_ad$KL_result$KL ~ result_ad$KL_result$i, type = 'o', ylab = "KL", xlab = "Iteration")
 ```
 
 ```{r}
@@ -348,11 +447,26 @@ points(BG_death$deaths ~ as.Date((BG_death$x+ ref_val)*365.25), cex = 0.2, col =
 
 ## Exact grid
 
+As the oracle method, we implement the exact grid approach with a equally spaced grid of 1000 points. 
+
 ```{r eval=FALSE}
-n_cores <- 12
+n_cores <- 5
 res_list  <- mclapply(x_vals, eval_once, mc.cores = n_cores)
 exact_vals <- unlist(res_list)
 exact_grid_result_BG <- data.frame(x = x_vals, exact_vals = exact_vals)
+save(exact_grid_result_BG, file = paste0(output_path, "/exact_grid_result_BG_unnormalized.rda"))
+```
+
+How much difference between the optimal alpha found by BOSS and the exact grid?
+
+```{r}
+load(paste0(output_path, "/exact_grid_result_BG_unnormalized.rda"))
+```
+
+The relative difference is `r abs(exact_grid_result_BG$x[which.max(exact_grid_result_BG$exact_vals)] - my_alpha_BG)/abs(exact_grid_result_BG$x[which.max(exact_grid_result_BG$exact_vals)])`.
+
+Take a look at the posterior distribution of the exact grid:
+```{r}
 exact_grid_result_BG$exact_vals <- exact_grid_result_BG$exact_vals - max(exact_grid_result_BG$exact_vals)
 exact_grid_result_BG$fx <- exp(exact_grid_result_BG$exact_vals)
 # Calculate the differences between adjacent x values
@@ -360,9 +474,47 @@ dx <- diff(exact_grid_result_BG$x)
 # Compute the trapezoidal areas and sum them up
 integral_approx <- sum(0.5 * (exact_grid_result_BG$fx[-1] + exact_grid_result_BG$fx[-length(exact_grid_result_BG$fx)]) * dx)
 exact_grid_result_BG$pos <- exact_grid_result_BG$fx / integral_approx
-save(exact_grid_result_BG, file = paste0(output_path, "/exact_grid_result_BG.rda"))
+exact_grid_result_BG$pos <- exact_grid_result_BG$pos
+# convert to time
+exact_grid_result_BG$year <- as.Date((exact_grid_result_BG$x + ref_val)*365.25)
 ```
 
+```{r}
+load(paste0(output_path, "/BO_result_BG.rda"))
+
+# Select needed columns and add Method labels
+BO_result_BG_sub <- BO_result_BG %>%
+  select(year, pos) %>%
+  mutate(Method = "BOSS")
+
+exact_grid_result_BG_sub <- exact_grid_result_BG %>%
+  select(year, pos) %>%
+  mutate(Method = "Exact Grid")
+
+# Combine
+plot_data <- bind_rows(BO_result_BG_sub, exact_grid_result_BG_sub)
+
+# Now plot
+ggplot(plot_data, aes(x = year, y = pos, color = Method, linetype = Method)) +
+  geom_line(size = 0.6) +
+  xlab("") +
+  ylab("Density") +
+  scale_x_date(
+    limits = as.Date(c("2019-12-01", "2021-01-01")),
+    date_labels = "%b %y", 
+    date_breaks = "3 month"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 15), 
+    axis.text = element_text(size = 15),
+    legend.position = c(0.2, 0.8),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 15)
+  ) +
+  scale_color_manual(values = c("BOSS" = "blue", "Exact Grid" = "red")) +
+  scale_linetype_manual(values = c("BOSS" = "solid", "Exact Grid" = "dashed"))
+```
 
 
 

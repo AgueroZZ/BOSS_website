@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Dayi Li" />
+
+<meta name="date" content="2025-04-19" />
+
+<title>Simulation 3: Two-dimensional Non-linear Regression</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">BOSS Tutorial</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/AgueroZZ/BOSS_website">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Simulation 3: Two-dimensional Non-linear
+Regression</h1>
+<h4 class="author">Dayi Li</h4>
+<h4 class="date">2025-04-19</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-04-20
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>BOSS_website/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20250415code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20250415)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20250415code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20250415)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree3478135680ecdac0e2f53cbf3fbe59f132931aeetargetblank3478135a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/3478135680ecdac0e2f53cbf3fbe59f132931aee" target="_blank">3478135</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree3478135680ecdac0e2f53cbf3fbe59f132931aeetargetblank3478135a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/3478135680ecdac0e2f53cbf3fbe59f132931aee" target="_blank">3478135</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    data/sim3/
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/sim3.Rmd</code>) and HTML
+(<code>docs/sim3.html</code>) files. If you’ve configured a remote Git
+repository (see <code>?wflow_git_remote</code>), click on the hyperlinks
+in the table below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/3478135680ecdac0e2f53cbf3fbe59f132931aee/docs/sim3.html" target="_blank">3478135</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/3f8195fec0baf6d6b55488d684b0e7763882b57f/analysis/sim3.Rmd" target="_blank">3f8195f</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+wflow_publish("analysis/sim3.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/6cea47c54e0a0ece2051688d6e6f56c556c3feb6/docs/sim3.html" target="_blank">6cea47c</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d9facf49d963aadeb6b0e8bc94d791197b59b73c/analysis/sim3.Rmd" target="_blank">d9facf4</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+wflow_publish("analysis/sim3.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/657dd74454ecd5e3870862cbe4edd292b6c53026/docs/sim3.html" target="_blank">657dd74</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/1026e5b103435343fa3295102c29c4a58e31303e/analysis/sim3.Rmd" target="_blank">1026e5b</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+wflow_publish("analysis/sim3.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/3528574ff40af53e22c2f7403c48df7fca3da3cd/docs/sim3.html" target="_blank">3528574</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/13358d2dfa51ec77b9aaf1c245192f596d2156c0/docs/sim3.html" target="_blank">13358d2</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/78186b1984069d42db555175efb86b271a8558b0/analysis/sim3.Rmd" target="_blank">78186b1</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+Simulation 3
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/78186b1984069d42db555175efb86b271a8558b0/docs/sim3.html" target="_blank">78186b1</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+Simulation 3
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/cc32863e1a006f5d953fbb0fc34546c619d68723/docs/sim3.html" target="_blank">cc32863</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-19
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/201169690b65444518315a1194b95b0be8fbd8dd/analysis/sim3.Rmd" target="_blank">2011696</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-19
+</td>
+<td>
+wflow_publish("analysis/sim3.Rmd")
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<pre class="r"><code>library(tidyverse)
+library(tikzDevice)
+library(rstan)
+library(INLA)
+library(inlabru)
+library(modeest)
+
+function_path &lt;- &quot;./code&quot;
+output_path &lt;- &quot;./output/sim3&quot;
+data_path &lt;- &quot;./data/sim3&quot;
+source(paste0(function_path, &quot;/00_BOSS.R&quot;))</code></pre>
+<p>Consider the following non-linear regression model:</p>
+<p><span class="math display">\[\begin{align*}
+y_i \mid \log(\rho_i) &amp;\overset{ind}{\sim}\mathcal{N}(\log\rho(r_i),
+\sigma^2), \\
+\log\rho(r_i) &amp;= \log\rho_0 - \gamma\log\left\{1 +
+(r_i/R)^\beta\right\}.
+\end{align*}\]</span></p>
+<p>We simulate <span class="math inline">\(n = 200\)</span> data points
+based on the above model with <span class="math inline">\(\rho_0 =
+10\)</span>, <span class="math inline">\(R = 2\)</span>, <span
+class="math inline">\(\beta = 2\)</span>, <span
+class="math inline">\(\gamma = -2.5\)</span>, and <span
+class="math inline">\(\sigma = 0.5\)</span>. The inferential goal is the
+nuisance parameters <span class="math inline">\(R\)</span> and <span
+class="math inline">\(\beta\)</span>.</p>
+<pre class="r"><code>r &lt;- seq(0, 20, length.out = 200)
+beta &lt;- 10
+a &lt;- 2
+b &lt;- 2
+c &lt;- -2.5
+
+set.seed(1234)
+Ir &lt;- beta*(1 + (r/a)^b)^c
+lr &lt;- log(Ir) + rnorm(length(r), 0, 0.5)
+
+data &lt;- data.frame(r, lr)
+
+ggplot(data, aes(r, lr)) + geom_point() + ylab(&#39;y&#39;)</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-2-1">
+Past versions of unnamed-chunk-2-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-2-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/cc32863e1a006f5d953fbb0fc34546c619d68723/docs/figure/sim3.Rmd/unnamed-chunk-2-1.png" target="_blank">cc32863</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-19
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="inlabru" class="section level2">
+<h2>inlabru</h2>
+<p>We first run <code>inlabru</code> to to fit the model. We set the
+following priors for the parameters:</p>
+<p><span class="math display">\[\begin{align*}
+\rho_0 \sim \mathcal{N}(0, 1000), \ &amp; R \sim \mathrm{Unif}(0.1, 5),
+\\
+\beta \sim \mathrm{Unif}(0.1, 4),  \ \gamma \sim \mathcal{N}(0, &amp;
+1000), \ \sigma^2 \sim \mathrm{Inv-Gamma}(1, 10^{-5}).
+\end{align*}\]</span></p>
+<pre class="r"><code>a_fun &lt;- function(u){
+  qunif(pnorm(u), 0.1, 5)
+}
+
+b_fun &lt;- function(u){
+  qunif(pnorm(u), 0.1, 4)
+}
+
+cmp &lt;- ~ a(1, model=&quot;linear&quot;, mean.linear=0, prec.linear=1) +
+  b(1, model=&quot;linear&quot;, mean.linear=0, prec.linear=1) + 
+  c(1) + Intercept(1)
+
+form &lt;- lr ~ Intercept + c*log(1 + (r/a_fun(a))^b_fun(b))
+
+fit &lt;- bru(cmp, formula = form, data = data, family = &#39;gaussian&#39;)</code></pre>
+</div>
+<div id="boss" class="section level2">
+<h2>BOSS</h2>
+<p>Now let’s run BOSS.</p>
+<div id="boss-modal" class="section level3">
+<h3>BOSS-modal</h3>
+<p>We first specify the (unnormalized) log-posterior for <span
+class="math inline">\((R,\beta)\)</span>. Note that for this specific
+problem, the unnormalized log-posterior has a closed-form
+expression:</p>
+<pre class="r"><code># specify the objective function for BOSS: unnormalized log posterior of (R, beta)
+eval_func &lt;- function(par, x = r, y = lr){
+  a &lt;- par[1]
+  b &lt;- par[2]
+  n &lt;- length(r)
+  
+  X &lt;- matrix(cbind(rep(1, n), log(1 + (r/a)^b)), ncol = 2)
+  Vb &lt;- solve(t(X) %*% X + diag(1/1000, 2))
+  P &lt;- diag(n) - X %*% Vb %*% t(X)
+  
+  mlik &lt;- log(det(Vb))/2 - log(1000) + lgamma((n+1)/2) - (n+1)/2*log(1e-5 + t(y) %*% P %*% y/2) - 
+    n/2*log(pi) -5*log(10)
+  
+  return(mlik)
+}</code></pre>
+</div>
+<div id="boss-aghq" class="section level3">
+<h3>BOSS-aghq</h3>
+<p>Next, we run the BOSS algorithm where the stopping criteria is based
+on the convergence of the posterior mode. Specifically, we check the
+modal convergence every <span class="math inline">\(5\)</span> BO
+iteration, and consider the convergence statistics of the average <span
+class="math inline">\(5\)</span> nearest neighbor distance around the
+current mode.</p>
+<pre class="r"><code>set.seed(123)
+res_opt_modal &lt;- BOSS(eval_func, criterion = &#39;modal&#39;, update_step = 5, max_iter = 100, D = 2,
+                        lower = rep(0.1, 2), upper = c(5, 4),
+                        noise_var = 1e-6,
+                        modal_iter_check = 5,  modal_check_warmup = 20, modal_k.nn = 5,
+                        modal_eps = 0.01,
+                        initial_design = 5, delta = 0.01^2,
+                        optim.n = 5, optim.max.iter = 100)
+
+save(res_opt_modal, file = paste0(output_path, &quot;/BOSS_modal_sim3.rda&quot;))</code></pre>
+<p>The above BOSS algorithm with <code>modal</code> convergence
+criterion converged in <span class="math inline">\(65\)</span>
+iterations.</p>
+<p>We then run BOSS using AGHQ as convergence statistics. Again, we
+check for convergence every <span class="math inline">\(5\)</span>
+iterations. The convergence criteria is relative difference in AGHQ
+statistics being less than <span
+class="math inline">\(0.05\)</span>.</p>
+<pre class="r"><code>set.seed(123)
+res_opt_aghq &lt;- BOSS(eval_func, criterion = &#39;aghq&#39;, update_step = 5, max_iter = 100, D = 2,
+                      lower = rep(0.1, 2), upper = c(5, 4),
+                      noise_var = 1e-6,
+                      AGHQ_k = 3, AGHQ_iter_check = 5,  AGHQ_check_warmup = 20, AGHQ_eps = 0.05, buffer = 1e-4,
+                      initial_design = 5, delta = 0.01^2,
+                      optim.n = 5, optim.max.iter = 100)
+
+save(res_opt_aghq, file = paste0(output_path, &quot;/BOSS_aghq_sim3.rda&quot;))</code></pre>
+<p>The above BOSS algorithm with <code>aghq</code> criterion converged
+with <span class="math inline">\(75\)</span> iterations.</p>
+</div>
+</div>
+<div id="mcmc" class="section level2">
+<h2>MCMC</h2>
+<p>Lastly, we implement the MCMC-based method using <code>stan</code> to
+obtain the oracle.</p>
+<pre class="r"><code>set.seed(1234)
+MCMC_fit &lt;- stan(
+    file = &quot;code/nlreg.stan&quot;,  # Stan program
+    data = list(x = r, y = lr, N = length(r)),    # named list of data
+    chains = 4,             # number of Markov chains
+    warmup = 1000,          # number of warmup iterations per chain
+    iter = 20000,            # total number of iterations per chain
+    cores = 4,              # number of cores (could use one per chain)
+    algorithm = &#39;NUTS&#39;)
+
+# thin the samples fo plotting
+MCMC_samp &lt;- as.data.frame(MCMC_fit)
+#MCMC_samp_thin &lt;- MCMC_samp[seq(1, 76000, by = 8),]
+save(MCMC_samp, file = paste0(output_path, &quot;/MCMC_sim3.rda&quot;))</code></pre>
+</div>
+<div id="results-comparison" class="section level2">
+<h2>Results Comparison</h2>
+<div id="marginal-posterior-distributions" class="section level3">
+<h3>Marginal Posterior Distributions</h3>
+<p>We first compare the marginal posterior distributions of <span
+class="math inline">\(R\)</span> and <span
+class="math inline">\(\beta\)</span> from <code>inlabru</code>,
+modal-based BOSS, and AGHQ-based BOSS, and MCMC.</p>
+<pre class="r"><code># inlabru marginal samples
+set.seed(1234)
+inla.samples.a &lt;- a_fun(inla.rmarginal(49500, fit$marginals.fixed$a))
+inla.samples.b &lt;- b_fun(inla.rmarginal(49500, fit$marginals.fixed$b))
+
+# BOSS-modal marginal samples
+
+load(paste0(output_path, &quot;/BOSS_modal_sim3.rda&quot;))
+
+data_to_smooth &lt;- list()
+unique_data &lt;- unique(data.frame(x = res_opt_modal$result$x, y = res_opt_modal$result$y))
+data_to_smooth$x &lt;- as.matrix(dplyr::select(unique_data, -y))
+data_to_smooth$y &lt;- (unique_data$y - mean(unique_data$y))
+
+square_exp_cov &lt;- square_exp_cov_generator_nd(length_scale = res_opt_modal$length_scale, signal_var = res_opt_modal$signal_var)
+
+surrogate &lt;- function(xvalue, data_to_smooth, cov){
+  predict_gp(data_to_smooth, x_pred = xvalue, choice_cov = cov, noise_var = 1e-6)$mean
+}
+
+ff &lt;- list()
+ff$fn &lt;- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, cov = square_exp_cov))
+
+x.1 &lt;- (seq(from = 0.1, to = 5, length.out = 300) - 0.1)/4.9
+x.2 &lt;- (seq(from = 0.1, to = 4, length.out = 300) - 0.1)/3.9
+x_vals &lt;- expand.grid(x.1, x.2)
+names(x_vals) &lt;- c(&#39;x.1&#39;,&#39;x.2&#39;)
+x_original &lt;- t(t(x_vals)*(c(5, 4) - c(0.1, 0.1)) + c(0.1, 0.1)) 
+
+fn_vals &lt;- apply(x_vals, 1, function(x) ff$fn(x = matrix(x, ncol = 2))) + mean(unique_data$y)
+# normalize
+lognormal_const &lt;- log(sum(exp(fn_vals))*0.0098*0.0078*25/9)
+post_x_modal &lt;- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
+
+dx &lt;- unique(post_x_modal$x.1)[2] - unique(post_x_modal$x.1)[1]
+dy &lt;- unique(post_x_modal$x.2)[2] - unique(post_x_modal$x.2)[1]
+set.seed(123456)
+sample_idx &lt;- rmultinom(1:250000, size = 49500, prob = post_x_modal$pos)
+sample_x_modal &lt;- data.frame(post_x_modal, n = sample_idx)
+
+samples_BOSS_modal &lt;- data.frame(do.call(rbind, apply(sample_x_modal, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
+
+# BOSS-aghq marginal samples
+
+load(paste0(output_path, &quot;/BOSS_aghq_sim3.rda&quot;))
+
+data_to_smooth &lt;- list()
+unique_data &lt;- unique(data.frame(x = res_opt_aghq$result$x, y = res_opt_aghq$result$y))
+data_to_smooth$x &lt;- as.matrix(dplyr::select(unique_data, -y))
+data_to_smooth$y &lt;- (unique_data$y - mean(unique_data$y))
+
+square_exp_cov &lt;- square_exp_cov_generator_nd(length_scale = res_opt_aghq$length_scale, signal_var = res_opt_aghq$signal_var)
+
+surrogate &lt;- function(xvalue, data_to_smooth, cov){
+  predict_gp(data_to_smooth, x_pred = xvalue, choice_cov = cov, noise_var = 1e-6)$mean
+}
+
+ff &lt;- list()
+ff$fn &lt;- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, cov = square_exp_cov))
+
+x.1 &lt;- (seq(from = 0.1, to = 5, length.out = 300) - 0.1)/4.9
+x.2 &lt;- (seq(from = 0.1, to = 4, length.out = 300) - 0.1)/3.9
+x_vals &lt;- expand.grid(x.1, x.2)
+names(x_vals) &lt;- c(&#39;x.1&#39;,&#39;x.2&#39;)
+x_original &lt;- t(t(x_vals)*(c(5, 4) - c(0.1, 0.1)) + c(0.1, 0.1)) 
+
+fn_vals &lt;- apply(x_vals, 1, function(x) ff$fn(x = matrix(x, ncol = 2))) + mean(unique_data$y)
+# normalize
+lognormal_const &lt;- log(sum(exp(fn_vals))*0.0098*0.0078*25/9)
+post_x_aghq &lt;- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
+
+dx &lt;- unique(post_x_aghq$x.1)[2] - unique(post_x_aghq$x.1)[1]
+dy &lt;- unique(post_x_aghq$x.2)[2] - unique(post_x_aghq$x.2)[1]
+set.seed(123456)
+sample_idx &lt;- rmultinom(1:250000, size = 49500, prob = post_x_aghq$pos)
+sample_x_aghq &lt;- data.frame(post_x_aghq, n = sample_idx)
+
+samples_BOSS_aghq &lt;- data.frame(do.call(rbind, apply(sample_x_aghq, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
+
+# MCMC marginal samples
+load(paste0(output_path, &quot;/MCMC_sim3.rda&quot;))
+
+# Combine all samples together
+
+R_marginal &lt;- data.frame(R = c(inla.samples.a, samples_BOSS_modal[,1], 
+                               samples_BOSS_aghq[,1], MCMC_samp$a), 
+                         method = rep(c(&#39;inlabru&#39;, &#39;BOSS-modal&#39;, &#39;BOSS-aghq&#39;, &#39;MCMC&#39;),  
+                                      c(length(inla.samples.a), 
+                                        length(samples_BOSS_modal[,1]), 
+                                        length(samples_BOSS_aghq[,1]), 
+                                        length(MCMC_samp$a))))
+
+beta_marginal &lt;- data.frame(beta = c(inla.samples.b, samples_BOSS_modal[,2],
+                                     samples_BOSS_aghq[,2], MCMC_samp$b), 
+                            method = rep(c(&#39;inlabru&#39;, &#39;BOSS-modal&#39;, &#39;BOSS-aghq&#39;, &#39;MCMC&#39;),  
+                                         c(length(inla.samples.b),
+                                           length(samples_BOSS_modal[,2]), 
+                                           length(samples_BOSS_aghq[,2]), 
+                                           length(MCMC_samp$b))))</code></pre>
+<p>Plot the marginal posterior densities</p>
+<pre class="r"><code>ggplot(R_marginal, aes(R)) + geom_density(aes(color = method)) + theme_minimal() + xlab(&#39;$R$&#39;)</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
+Past versions of unnamed-chunk-9-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-9-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/3478135680ecdac0e2f53cbf3fbe59f132931aee/docs/figure/sim3.Rmd/unnamed-chunk-9-1.png" target="_blank">3478135</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/cc32863e1a006f5d953fbb0fc34546c619d68723/docs/figure/sim3.Rmd/unnamed-chunk-9-1.png" target="_blank">cc32863</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-19
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<pre class="r"><code>ggplot(beta_marginal, aes(beta)) + geom_density(aes(color = method)) + theme_minimal() + xlab(&#39;$\\beta$&#39;)</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
+Past versions of unnamed-chunk-10-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-10-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/3478135680ecdac0e2f53cbf3fbe59f132931aee/docs/figure/sim3.Rmd/unnamed-chunk-10-1.png" target="_blank">3478135</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/cc32863e1a006f5d953fbb0fc34546c619d68723/docs/figure/sim3.Rmd/unnamed-chunk-10-1.png" target="_blank">cc32863</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-19
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="joint-posterior-distribution" class="section level3">
+<h3>Joint Posterior Distribution</h3>
+<p>We now compare the results of the posterior distributions from
+<code>inlabru</code>, modal-based BOSS, and AGHQ-based BOSS, and
+MCMC.</p>
+<div id="inlabru-joint-posterior-distribution" class="section level4">
+<h4><code>inlabru</code> joint posterior distribution:</h4>
+<pre class="r"><code># get joint posterior of (R, beta) from inlabru
+joint_samp &lt;- inla.posterior.sample(10000, fit, selection = list(a = 1, b = 1), seed = 12345)
+joint_samp &lt;- do.call(&#39;rbind&#39;, lapply(joint_samp, function(x) matrix(x$latent, ncol = 2)))
+
+inla.joint.samps &lt;- data.frame(a = a_fun(joint_samp[,1]), b = b_fun(joint_samp[,2]))
+
+# plot joint posterior of (R, beta) from inlabru
+ggplot(inla.joint.samps, aes(a, b)) + stat_density_2d(
+  geom = &quot;raster&quot;,
+  aes(fill = after_stat(density)), n = 500,
+  contour = FALSE) +
+  geom_point(data = data.frame(a = a_fun(fit$summary.fixed$mode[1]), b = b_fun(fit$summary.fixed$mode[2])), color = &#39;red&#39;, shape = 1, size =0.5) + 
+  geom_point(data = data.frame(a = 2, b = 2), color = &#39;orange&#39;, size =0.5) +
+  coord_fixed() + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$\\beta$&#39;) + xlim(c(0.1, 5)) + ylim(c(0.1, 4))</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-11-1">
+Past versions of unnamed-chunk-11-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-11-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/3478135680ecdac0e2f53cbf3fbe59f132931aee/docs/figure/sim3.Rmd/unnamed-chunk-11-1.png" target="_blank">3478135</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/78186b1984069d42db555175efb86b271a8558b0/docs/figure/sim3.Rmd/unnamed-chunk-11-1.png" target="_blank">78186b1</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/cc32863e1a006f5d953fbb0fc34546c619d68723/docs/figure/sim3.Rmd/unnamed-chunk-11-1.png" target="_blank">cc32863</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-19
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="boss-modal-joint-posterior-distribution"
+class="section level4">
+<h4>BOSS-modal joint posterior distribution:</h4>
+<pre class="r"><code># plot joint posterior of (R, beta) from BOSS
+ggplot(post_x_modal, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) + 
+  geom_point(data = data.frame(x.1 = post_x_modal$x.1[which.max(post_x_modal$pos)], x.2 = post_x_modal$x.2[which.max(post_x_modal$pos)]), color = &#39;red&#39;, shape = 1, size =0.5) +
+  geom_point(data = data.frame(x.1 = 2, x.2 = 2), color = &#39;orange&#39;, size =0.5) + coord_fixed() + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$\\beta$&#39;)</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-12-1">
+Past versions of unnamed-chunk-12-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-12-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/3478135680ecdac0e2f53cbf3fbe59f132931aee/docs/figure/sim3.Rmd/unnamed-chunk-12-1.png" target="_blank">3478135</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="boss-aghq-joint-posterior-distribuiton" class="section level4">
+<h4>BOSS-AGHQ joint posterior distribuiton:</h4>
+<pre class="r"><code># plot joint posterior of (R, beta) from BOSS
+ggplot(post_x_aghq, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) + 
+  geom_point(data = data.frame(x.1 = post_x_aghq$x.1[which.max(post_x_aghq$pos)], x.2 = post_x_aghq$x.2[which.max(post_x_aghq$pos)]), color = &#39;red&#39;, shape = 1, size =0.5) +
+  geom_point(data = data.frame(x.1 = 2, x.2 = 2), color = &#39;orange&#39;, size =0.5) + coord_fixed() + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$\\beta$&#39;)</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-13-1">
+Past versions of unnamed-chunk-13-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-13-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/3478135680ecdac0e2f53cbf3fbe59f132931aee/docs/figure/sim3.Rmd/unnamed-chunk-13-1.png" target="_blank">3478135</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="mcmc-joint-posterior-distribution" class="section level4">
+<h4>MCMC joint posterior distribution:</h4>
+<pre class="r"><code>ggplot(MCMC_samp, aes(a, b)) + stat_density_2d(
+  geom = &quot;raster&quot;,
+  aes(fill = after_stat(density)), n = 300,
+  contour = FALSE) + 
+  geom_point(data = data.frame(a = post_x_aghq$x.1[which.max(post_x_aghq$pos)], b = post_x_aghq$x.2[which.max(post_x_aghq$pos)]), color = &#39;red&#39;, shape = 1, size =0.5) +
+  geom_point(data = data.frame(a = 2, b = 2), color = &#39;orange&#39;, size =0.5) + coord_fixed() + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$\\beta$&#39;) + xlim(c(0.1, 5)) + ylim(c(0.1, 4))</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-14-1">
+Past versions of unnamed-chunk-14-1.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-14-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/3478135680ecdac0e2f53cbf3fbe59f132931aee/docs/figure/sim3.Rmd/unnamed-chunk-14-1.png" target="_blank">3478135</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>From the above results, it is clear that BOSS is much better at
+depicting the joint posterior distribution than <code>inlabru</code>.
+The joint distribution from <code>inlabru</code> is simply the product
+of the marginal distribution, which completely ignores the more complex
+structures in the joint posterior.</p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.4.1 (2024-06-14)
+Platform: aarch64-apple-darwin20
+Running under: macOS 15.0
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+time zone: America/Toronto
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] modeest_2.4.0       inlabru_2.11.1      fmesher_0.1.7      
+ [4] INLA_24.06.27       sp_2.1-4            Matrix_1.7-0       
+ [7] rstan_2.32.6        StanHeaders_2.32.10 tikzDevice_0.12.6  
+[10] lubridate_1.9.3     forcats_1.0.0       stringr_1.5.1      
+[13] dplyr_1.1.4         purrr_1.0.2         readr_2.1.5        
+[16] tidyr_1.3.1         tibble_3.2.1        ggplot2_3.5.1      
+[19] tidyverse_2.0.0     workflowr_1.7.1    
+
+loaded via a namespace (and not attached):
+ [1] mnormt_2.1.1        DBI_1.2.3           gridExtra_2.3      
+ [4] inline_0.3.19       rlang_1.1.4         magrittr_2.0.3     
+ [7] clue_0.3-65         git2r_0.33.0        matrixStats_1.4.1  
+[10] e1071_1.7-16        compiler_4.4.1      getPass_0.2-4      
+[13] loo_2.8.0           callr_3.7.6         vctrs_0.6.5        
+[16] rmutil_1.1.10       pkgconfig_2.0.3     fastmap_1.2.0      
+[19] labeling_0.4.3      utf8_1.2.4          promises_1.3.0     
+[22] rmarkdown_2.28      tzdb_0.4.0          ps_1.8.0           
+[25] MatrixModels_0.5-3  xfun_0.47           cachem_1.1.0       
+[28] jsonlite_1.8.9      highr_0.11          later_1.3.2        
+[31] parallel_4.4.1      cluster_2.1.6       R6_2.5.1           
+[34] bslib_0.8.0         stringi_1.8.4       rpart_4.1.23       
+[37] numDeriv_2016.8-1.1 jquerylib_0.1.4     Rcpp_1.0.13        
+[40] knitr_1.48          filehash_2.4-6      httpuv_1.6.15      
+[43] splines_4.4.1       timechange_0.3.0    tidyselect_1.2.1   
+[46] rstudioapi_0.16.0   yaml_2.3.10         timeDate_4041.110  
+[49] codetools_0.2-20    processx_3.8.4      pkgbuild_1.4.4     
+[52] lattice_0.22-6      plyr_1.8.9          withr_3.0.1        
+[55] evaluate_1.0.0      stable_1.1.6        sf_1.0-19          
+[58] units_0.8-5         proxy_0.4-27        RcppParallel_5.1.10
+[61] pillar_1.9.0        whisker_0.4.1       KernSmooth_2.23-24 
+[64] stats4_4.4.1        sn_2.1.1            generics_0.1.3     
+[67] rprojroot_2.0.4     hms_1.1.3           munsell_0.5.1      
+[70] scales_1.3.0        timeSeries_4041.111 class_7.3-22       
+[73] glue_1.7.0          statip_0.2.3        tools_4.4.1        
+[76] spatial_7.3-17      fBasics_4041.97     fs_1.6.4           
+[79] grid_4.4.1          QuickJSR_1.6.0      colorspace_2.1-1   
+[82] cli_3.6.3           fansi_1.0.6         viridisLite_0.4.2  
+[85] gtable_0.3.5        stabledist_0.7-2    sass_0.4.9         
+[88] digest_0.6.37       classInt_0.4-10     farver_2.1.2       
+[91] htmltools_0.5.8.1   lifecycle_1.0.4     httr_1.4.7         
+[94] MASS_7.3-61        </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

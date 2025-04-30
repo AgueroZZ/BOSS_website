@@ -469,6 +469,3 @@ ggplot(U_dat, aes(coords.x1, coords.x2)) +
 
 The final results in terms of the UDG detection is quite similar between `inlabru` and BOSS.
 
-
-
-
