@@ -81,7 +81,7 @@ surrogate <- function(xvalue, data_to_smooth, choice_cov) {
 
 ## Exact Grid Implementation
 
-First, as an oracle approach, we set up a dense grid on $\[0.5,4.5\]$:
+First, as an oracle approach, we set up a dense grid on $[0.5,4.5]$:
 
 ```{r message=FALSE, warning=FALSE}
 x_vals <- seq(lower, upper, by = 0.005)

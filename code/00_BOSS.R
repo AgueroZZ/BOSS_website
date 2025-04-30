@@ -104,6 +104,41 @@ compute_like <- function(length_scale, x, y, signal_var, noise_var){
   }
 }
 
+# Optimize likelihood for hyperparameters
+opt_hyperparameters <- function(result, noise_var = 1e-6, optim.max.iter = 1000, opt.lengthscale.grid = NULL, optim.n = 5){
+  result$y <- result$y - mean(result$y)
+  signal_var <- var(result$y)
+  if(is.null(opt.lengthscale.grid)){
+    initial_length_scale <- matrix(runif(optim.n, 0.01, 0.99), nrow = optim.n, ncol = 1)
+    # run multistart L-BFGS-B on compute_like
+    opt_ms <- optimx::multistart(
+      initial_length_scale,
+      fn      = function(l)
+        compute_like(length_scale = l,
+                     y            = result$y,
+                     x            = result$x,
+                     signal_var   = signal_var,
+                     noise_var    = noise_var),
+      lower   = 0.01, upper   = 0.99, method  = "L-BFGS-B",
+      control = list(maxit = optim.max.iter, trace = 0)
+    )
+    # pick the best run (minimal value)
+    best_idx      <- which.min(opt_ms$value)
+    length_scale  <- as.numeric(opt_ms[best_idx, 1])
+    lik           <- as.numeric(opt_ms$value[best_idx])
+  }else{
+    length_scale_vec <- seq(0.01, 0.99, length.out = opt.lengthscale.grid)
+    like_vec <- sapply(length_scale_vec, function(l)
+      -compute_like(length_scale = l, y = result$y, x = result$x,
+                    signal_var = signal_var, noise_var = noise_var))
+    max_idx <- which.max(like_vec)
+    length_scale <- length_scale_vec[max_idx]
+    lik <- like_vec[max_idx]
+  }
+  return(list(lik = lik, length_scale = length_scale, signal_var = signal_var))
+
+}
+
 
 UCB <- function(x, data, cov, nv, D, d){
   fnew <- predict_gp(data, x, choice_cov = cov, noise_var = nv)
@@ -173,6 +208,7 @@ BOSS <- function(func,
                  KL_check_warmup      = 20,
                  KL_eps               = 0.1,
                  KL.grid              = NULL,
+                 interpolation        = "gp",
                  # KS-specific
                  KS_iter_check        = 10,
                  KS_check_warmup      = 20,
@@ -229,7 +265,8 @@ BOSS <- function(func,
       KL_iter_check   = KL_iter_check,
       KL_check_warmup = KL_check_warmup,
       KL_eps          = KL_eps,
-      KL.grid        = KL.grid
+      KL.grid        = KL.grid,
+      interpolation  = interpolation
     ))
     return(do.call(BOSS_KL, args))
   }
@@ -257,7 +294,6 @@ BOSS <- function(func,
     return(do.call(BOSS_aghq, args))
   }
 }
-
 
 BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
                        lower = rep(0, D), upper = rep(1, D),
@@ -515,7 +551,6 @@ BOSS_modal <- function(func, update_step = 5, max_iter = 100, D = 1,
               modal_result = modal_result))
 }
 
-
 BOSS_aghq <- function(func, update_step = 5, max_iter = 100, D = 1,
                       lower = rep(0, D), upper = rep(1, D),
                       noise_var = 1e-6,
@@ -585,12 +620,29 @@ BOSS_aghq <- function(func, update_step = 5, max_iter = 100, D = 1,
     length_scale <- length_scale_vec[max_idx]
     lik <- like_vec[max_idx]
   } else {
-    opt <- optim(runif(1, 0.01, 0.99), function(l)
-      compute_like(length_scale = l, y = yvec, x = xmat_trans,
-                   signal_var = signal_var, noise_var = noise_var),
-      control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
-    length_scale <- opt$par
-    lik <- opt$value
+    # opt <- optim(runif(1, 0.01, 0.99), function(l)
+    #   compute_like(length_scale = l, y = yvec, x = xmat_trans,
+    #                signal_var = signal_var, noise_var = noise_var),
+    #   control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
+    # length_scale <- opt$par
+    # lik <- opt$value
+    initial_length_scale <- matrix(runif(optim.n, 0.01, 0.99), nrow = optim.n, ncol = 1)
+    # run multistart L-BFGS-B on compute_like
+    opt_ms <- optimx::multistart(
+      initial_length_scale,
+      fn      = function(l)
+        compute_like(length_scale = l,
+                     y            = yvec,
+                     x            = xmat_trans,
+                     signal_var   = signal_var,
+                     noise_var    = noise_var),
+      lower   = 0.01, upper   = 0.99, method  = "L-BFGS-B",
+      control = list(maxit = optim.max.iter, trace = 0)
+    )
+    # pick the best run (minimal value)
+    best_idx      <- which.min(opt_ms$value)
+    length_scale  <- as.numeric(opt_ms[best_idx, 1])
+    lik           <- as.numeric(opt_ms$value[best_idx])
   }
   vprint(3, paste("The new length.scale:", length_scale))
   vprint(3, paste("The new signal_var:", signal_var))
@@ -632,12 +684,29 @@ BOSS_aghq <- function(func, update_step = 5, max_iter = 100, D = 1,
         length_scale <- length_scale_vec[max_idx]
         lik <- like_vec[max_idx]
       } else {
-        opt <- optim(runif(1, 0.01, 0.99), function(l)
-          compute_like(length_scale = l, y = newdata$y, x = newdata$x,
-                       signal_var = signal_var, noise_var = noise_var),
-          control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
-        length_scale <- opt$par
-        lik <- opt$value
+        # opt <- optim(runif(1, 0.01, 0.99), function(l)
+        #   compute_like(length_scale = l, y = newdata$y, x = newdata$x,
+        #                signal_var = signal_var, noise_var = noise_var),
+        #   control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
+        # length_scale <- opt$par
+        # lik <- opt$value
+        initial_length_scale <- matrix(runif(optim.n, 0.01, 0.99), nrow = optim.n, ncol = 1)
+        # run multistart L-BFGS-B on compute_like
+        opt_ms <- optimx::multistart(
+          initial_length_scale,
+          fn      = function(l)
+            compute_like(length_scale = l,
+                         y            = yvec,
+                         x            = xmat_trans,
+                         signal_var   = signal_var,
+                         noise_var    = noise_var),
+          lower   = 0.01, upper   = 0.99, method  = "L-BFGS-B",
+          control = list(maxit = optim.max.iter, trace = 0)
+        )
+        # pick the best run (minimal value)
+        best_idx      <- which.min(opt_ms$value)
+        length_scale  <- as.numeric(opt_ms[best_idx, 1])
+        lik           <- as.numeric(opt_ms$value[best_idx])
       }
       if(verbose == 3) {
         print(paste("The new length.scale:", length_scale))
@@ -757,6 +826,7 @@ BOSS_aghq <- function(func, update_step = 5, max_iter = 100, D = 1,
 BOSS_KS <- function(func, update_step = 5, max_iter = 100, D = 1,
                        lower = rep(0, D), upper = rep(1, D),
                        noise_var = 1e-6,
+                       interpolation = "gp",
                        KS_iter_check = 10,  KS_check_warmup = 20,
                        KS_eps = 0.1, KS.grid = NULL,
                        initial_design = 5, delta = 0.01,
@@ -815,18 +885,35 @@ BOSS_KS <- function(func, update_step = 5, max_iter = 100, D = 1,
   if (!is.null(opt.lengthscale.grid)) {
     length_scale_vec <- seq(0.01, 0.99, length.out = opt.lengthscale.grid)
     like_vec <- sapply(length_scale_vec, function(l)
-      compute_like(length_scale = l, y = yvec, x = xmat_trans,
+      -compute_like(length_scale = l, y = yvec, x = xmat_trans,
                    signal_var = signal_var, noise_var = noise_var))
     max_idx <- which.max(like_vec)
     length_scale <- length_scale_vec[max_idx]
     lik <- like_vec[max_idx]
   } else {
-    opt <- optim(runif(1, 0.01, 0.99), function(l)
-      compute_like(length_scale = l, y = yvec, x = xmat_trans,
-                   signal_var = signal_var, noise_var = noise_var),
-      control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
-    length_scale <- opt$par
-    lik <- opt$value
+    # opt <- optim(runif(1, 0.01, 0.99), function(l)
+    #   compute_like(length_scale = l, y = yvec, x = xmat_trans,
+    #                signal_var = signal_var, noise_var = noise_var),
+    #   control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
+    # length_scale <- opt$par
+    # lik <- opt$value
+    initial_length_scale <- matrix(runif(optim.n, 0.01, 0.99), nrow = optim.n, ncol = 1)
+    # run multistart L-BFGS-B on compute_like
+    opt_ms <- optimx::multistart(
+      initial_length_scale,
+      fn      = function(l)
+        compute_like(length_scale = l,
+                     y            = yvec,
+                     x            = xmat_trans,
+                     signal_var   = signal_var,
+                     noise_var    = noise_var),
+      lower   = 0.01, upper   = 0.99, method  = "L-BFGS-B",
+      control = list(maxit = optim.max.iter, trace = 0)
+    )
+    # pick the best run (minimal value)
+    best_idx      <- which.min(opt_ms$value)
+    length_scale  <- as.numeric(opt_ms[best_idx, 1])
+    lik           <- as.numeric(opt_ms$value[best_idx])
   }
   vprint(3, paste("The new length.scale:", length_scale))
   vprint(3, paste("The new signal_var:", signal_var))
@@ -870,12 +957,29 @@ BOSS_KS <- function(func, update_step = 5, max_iter = 100, D = 1,
         length_scale <- length_scale_vec[max_idx]
         lik <- like_vec[max_idx]
       } else {
-        opt <- optim(runif(1, 0.01, 0.99), function(l)
-          compute_like(length_scale = l, y = newdata$y, x = newdata$x,
-                       signal_var = signal_var, noise_var = noise_var),
-          control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
-        length_scale <- opt$par
-        lik <- opt$value
+        # opt <- optim(runif(1, 0.01, 0.99), function(l)
+        #   compute_like(length_scale = l, y = newdata$y, x = newdata$x,
+        #                signal_var = signal_var, noise_var = noise_var),
+        #   control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
+        # length_scale <- opt$par
+        # lik <- opt$value
+        initial_length_scale <- matrix(runif(optim.n, 0.01, 0.99), nrow = optim.n, ncol = 1)
+        # run multistart L-BFGS-B on compute_like
+        opt_ms <- optimx::multistart(
+          initial_length_scale,
+          fn      = function(l)
+            compute_like(length_scale = l,
+                         y            = yvec,
+                         x            = xmat_trans,
+                         signal_var   = signal_var,
+                         noise_var    = noise_var),
+          lower   = 0.01, upper   = 0.99, method  = "L-BFGS-B",
+          control = list(maxit = optim.max.iter, trace = 0)
+        )
+        # pick the best run (minimal value)
+        best_idx      <- which.min(opt_ms$value)
+        length_scale  <- as.numeric(opt_ms[best_idx, 1])
+        lik           <- as.numeric(opt_ms$value[best_idx])
       }
       if(verbose == 3) {
         print(paste("The new length.scale:", length_scale))
@@ -939,9 +1043,18 @@ BOSS_KS <- function(func, update_step = 5, max_iter = 100, D = 1,
     # Check convergence with KS every KS_iter_check iterations.
     if(i %% KS_iter_check == 0  && i >= KS_check_warmup){
       if(verbose == 3) print("Time to check KS difference!")
-      surrogate <- function(xvalue, data_to_smooth) {
-        predict_gp(data = data_to_smooth, x_pred = matrix(xvalue, ncol = D),
-                   choice_cov = choice_cov, noise_var = noise_var)$mean
+      if(interpolation == "gp"){
+        surrogate <- function(xvalue, data_to_smooth) {
+          predict_gp(data = data_to_smooth, x_pred = matrix(xvalue, ncol = D),
+                     choice_cov = choice_cov, noise_var = noise_var)$mean
+        }
+      }else if(interpolation == "ss"){
+        surrogate <- function(xvalue, data_to_smooth){
+          data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
+          predict(ss(x = as.numeric(data_to_smooth$x), y = data_to_smooth$y, df = length(unique(as.numeric(data_to_smooth$x))), m = 2, all.knots = TRUE), x = xvalue)$y
+        }
+      }else{
+        stop("Interpolation method is not recognized!")
       }
 
       lf_design <- list(x = xmat_trans, y = yvec)
@@ -1001,6 +1114,7 @@ BOSS_KL <- function(func, update_step = 5, max_iter = 100, D = 1,
                     KL_iter_check = 10,  KL_check_warmup = 20,
                     KL_eps = 0.1, KL.grid = NULL,
                     initial_design = 5, delta = 0.01,
+                    interpolation = "gp",
                     optim.n = 5, optim.max.iter = 1000,
                     opt.lengthscale.grid = NULL,  # Grid-based option for lengthscale optimization.
                     opt.grid = NULL,              # Grid-based option for AF optimization.
@@ -1056,18 +1170,35 @@ BOSS_KL <- function(func, update_step = 5, max_iter = 100, D = 1,
   if (!is.null(opt.lengthscale.grid)) {
     length_scale_vec <- seq(0.01, 0.99, length.out = opt.lengthscale.grid)
     like_vec <- sapply(length_scale_vec, function(l)
-      compute_like(length_scale = l, y = yvec, x = xmat_trans,
+      -compute_like(length_scale = l, y = yvec, x = xmat_trans,
                    signal_var = signal_var, noise_var = noise_var))
     max_idx <- which.max(like_vec)
     length_scale <- length_scale_vec[max_idx]
     lik <- like_vec[max_idx]
   } else {
-    opt <- optim(runif(1, 0.01, 0.99), function(l)
-      compute_like(length_scale = l, y = yvec, x = xmat_trans,
-                   signal_var = signal_var, noise_var = noise_var),
-      control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
-    length_scale <- opt$par
-    lik <- opt$value
+    # opt <- optim(runif(1, 0.01, 0.99), function(l)
+    #   compute_like(length_scale = l, y = yvec, x = xmat_trans,
+    #                signal_var = signal_var, noise_var = noise_var),
+    #   control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
+    # length_scale <- opt$par
+    # lik <- opt$value
+    initial_length_scale <- matrix(runif(optim.n, 0.01, 0.99), nrow = optim.n, ncol = 1)
+    # run multistart L-BFGS-B on compute_like
+    opt_ms <- optimx::multistart(
+      initial_length_scale,
+      fn      = function(l)
+        compute_like(length_scale = l,
+                     y            = yvec,
+                     x            = xmat_trans,
+                     signal_var   = signal_var,
+                     noise_var    = noise_var),
+      lower   = 0.01, upper   = 0.99, method  = "L-BFGS-B",
+      control = list(maxit = optim.max.iter, trace = 0)
+    )
+    # pick the best run (minimal value)
+    best_idx      <- which.min(opt_ms$value)
+    length_scale  <- as.numeric(opt_ms[best_idx, 1])
+    lik           <- as.numeric(opt_ms$value[best_idx])
   }
   vprint(3, paste("The new length.scale:", length_scale))
   vprint(3, paste("The new signal_var:", signal_var))
@@ -1111,12 +1242,29 @@ BOSS_KL <- function(func, update_step = 5, max_iter = 100, D = 1,
         length_scale <- length_scale_vec[max_idx]
         lik <- like_vec[max_idx]
       } else {
-        opt <- optim(runif(1, 0.01, 0.99), function(l)
-          compute_like(length_scale = l, y = newdata$y, x = newdata$x,
-                       signal_var = signal_var, noise_var = noise_var),
-          control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
-        length_scale <- opt$par
-        lik <- opt$value
+        # opt <- optim(runif(1, 0.01, 0.99), function(l)
+        #   compute_like(length_scale = l, y = newdata$y, x = newdata$x,
+        #                signal_var = signal_var, noise_var = noise_var),
+        #   control = list(maxit = optim.max.iter), lower = 0.01, upper = 0.99, method = 'L-BFGS-B')
+        # length_scale <- opt$par
+        # lik <- opt$value
+        initial_length_scale <- matrix(runif(optim.n, 0.01, 0.99), nrow = optim.n, ncol = 1)
+        # run multistart L-BFGS-B on compute_like
+        opt_ms <- optimx::multistart(
+          initial_length_scale,
+          fn      = function(l)
+            compute_like(length_scale = l,
+                         y            = yvec,
+                         x            = xmat_trans,
+                         signal_var   = signal_var,
+                         noise_var    = noise_var),
+          lower   = 0.01, upper   = 0.99, method  = "L-BFGS-B",
+          control = list(maxit = optim.max.iter, trace = 0)
+        )
+        # pick the best run (minimal value)
+        best_idx      <- which.min(opt_ms$value)
+        length_scale  <- as.numeric(opt_ms[best_idx, 1])
+        lik           <- as.numeric(opt_ms$value[best_idx])
       }
       if(verbose == 3) {
         print(paste("The new length.scale:", length_scale))
@@ -1181,9 +1329,21 @@ BOSS_KL <- function(func, update_step = 5, max_iter = 100, D = 1,
     # Check convergence with KL every KL_iter_check iterations.
     if(i %% KL_iter_check == 0  && i >= KL_check_warmup){
       if(verbose == 3) print("Time to check KL difference!")
-      surrogate <- function(xvalue, data_to_smooth) {
-        predict_gp(data = data_to_smooth, x_pred = matrix(xvalue, ncol = D),
-                   choice_cov = choice_cov, noise_var = noise_var)$mean
+
+      if(interpolation == "gp"){
+        surrogate <- function(xvalue, data_to_smooth) {
+          predict_gp(data = data_to_smooth, x_pred = matrix(xvalue, ncol = D),
+                     choice_cov = choice_cov, noise_var = noise_var)$mean
+        }
+      }
+      else if(interpolation == "ss"){
+        surrogate <- function(xvalue, data_to_smooth){
+          data_to_smooth$y <- data_to_smooth$y - mean(data_to_smooth$y)
+          predict(ss(x = as.numeric(data_to_smooth$x), y = data_to_smooth$y, df = length(unique(as.numeric(data_to_smooth$x))), m = 2, all.knots = TRUE), x = xvalue)$y
+        }
+      }
+      else{
+        stop("Interpolation method is not recognized!")
       }
 
       lf_design <- list(x = xmat_trans, y = yvec)
