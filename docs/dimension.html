@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree28db27f5f6e32f96f8e181460c488651400dbf08targetblank28db27fa">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree13edcf79db04354ff00e8a27ac04edd59d102720targetblank13edcf7a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/28db27f5f6e32f96f8e181460c488651400dbf08" target="_blank">28db27f</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/13edcf79db04354ff00e8a27ac04edd59d102720" target="_blank">13edcf7</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree28db27f5f6e32f96f8e181460c488651400dbf08targetblank28db27fa"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree13edcf79db04354ff00e8a27ac04edd59d102720targetblank13edcf7a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/28db27f5f6e32f96f8e181460c488651400dbf08" target="_blank">28db27f</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/13edcf79db04354ff00e8a27ac04edd59d102720" target="_blank">13edcf7</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -571,6 +571,7 @@ Ignored files:
     Ignored:    data/.DS_Store
     Ignored:    data/dimension/
     Ignored:    data/sim3/
+    Ignored:    output/.DS_Store
 
 </code></pre>
 <p>
@@ -615,6 +616,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/13edcf79db04354ff00e8a27ac04edd59d102720/analysis/dimension.Rmd" target="_blank">13edcf7</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-30
+</td>
+<td>
+wflow_publish("analysis/dimension.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/37dfc1fd0ad1e7b91713edab2a2fc71bcd84317f/docs/dimension.html" target="_blank">37dfc1f</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-30
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -688,6 +723,9 @@ sim_id &lt;- 1:20
 res_list &lt;- vector(&quot;list&quot;, length(d))
 for (i in d) 
   res_list[[i]] &lt;- vector(&quot;list&quot;, length(sim_id))</code></pre>
+</div>
+<div id="run-boss" class="section level1">
+<h1>Run BOSS</h1>
 <pre class="r"><code>for (i in d) {
   for (j in sim_id) {
     success &lt;- FALSE
@@ -797,11 +835,12 @@ david.li
 convergence roughly grows exponentially, which is expected based on the
 existing theoretical analysis of BO convergence performance.</p>
 <p>We also need to note that the above test only showcases the
-performance of BO when the true posterior is a multivariate Gaussian. We
-have observed that if there is deviation from normality, then
-convergence would take even longer for, especially for higher dimension.
+performance of BOSS when the true posterior is a multivariate Gaussian.
+We have observed that if there is deviation from normality, then
+convergence would take even longer, especially for higher dimension.
 Under the most extreme cases where certain parameters are almost
-degenerate with respect to each other, BO can almost entirely fail.</p>
+degenerate with respect to each other, BOSS can almost entirely
+fail.</p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
