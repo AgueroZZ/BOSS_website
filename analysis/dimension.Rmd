@@ -43,7 +43,7 @@ for (i in d)
   res_list[[i]] <- vector("list", length(sim_id))
 ```
 
-# Run BOSS
+## Run BOSS
 
 ```{r eval = F}
 
