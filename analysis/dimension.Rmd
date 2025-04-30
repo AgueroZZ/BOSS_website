@@ -43,6 +43,7 @@ for (i in d)
   res_list[[i]] <- vector("list", length(sim_id))
 ```
 
+# Run BOSS
 
 ```{r eval = F}
 
@@ -120,7 +121,7 @@ ggplot(iter.data, aes(d, Iteration)) + geom_point() + geom_line(aes(d, med))
 
 We can see pretty clearly that the number of iterations required for convergence roughly grows exponentially, which is expected based on the existing theoretical analysis of BO convergence performance.
 
-We also need to note that the above test only showcases the performance of BO when the true posterior is a multivariate Gaussian. We have observed that if there is deviation from normality, then convergence would take even longer for, especially for higher dimension. Under the most extreme cases where certain parameters are almost degenerate with respect to each other, BO can almost entirely fail.
+We also need to note that the above test only showcases the performance of BOSS when the true posterior is a multivariate Gaussian. We have observed that if there is deviation from normality, then convergence would take even longer, especially for higher dimension. Under the most extreme cases where certain parameters are almost degenerate with respect to each other, BOSS can almost entirely fail.
 
 
 
