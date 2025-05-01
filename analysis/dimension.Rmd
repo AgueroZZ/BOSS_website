@@ -12,7 +12,7 @@ editor_options:
 
 ## Introduction
 
-In this vignette, we analyze how the convergence performance of BOSS changes with the dimension of parameter space.
+In this vignette, we analyze how the convergence performance of BOSS changes with the dimension of parameter space as well as the hyper-parameters.
 
 For simplicity, we set the objective posterior as $d$-dimensional multivariate Gaussian for $d = \{1, 2, 3, 4, 5\}$ with mean vector $\mu_d = \mathbf{0}$ and randomly generated covariance matrices $\Sigma_d$. 
 
@@ -123,7 +123,198 @@ We can see pretty clearly that the number of iterations required for convergence
 
 We also need to note that the above test only showcases the performance of BOSS when the true posterior is a multivariate Gaussian. We have observed that if there is deviation from normality, then convergence would take even longer, especially for higher dimension. Under the most extreme cases where certain parameters are almost degenerate with respect to each other, BOSS can almost entirely fail.
 
+## Changes with Sample Size $n$
 
+We have seen previously how the number of iterations change with the dimension of the parameter space. We now check how the number of iterations required changes with the sample size $n$. It is important to check this since by Bernstein von-Mises (BvM) theorem, the vast majority of the posterior distribution will converge to a Gaussian as the sample size $n$ increases. This would potentially mean that the posterior mode may be harder to locate.
+
+```{r}
+# objective
+eval_func <- function(x, sigma){
+  return(dnorm(x, 0, sigma, log = T))
+}
+
+n      <- 10^(0:5)
+sim_id <- 1:20
+
+# pre-allocate result container
+res_list <- vector("list", length(n))
+for (i in 1:length(n)) 
+  res_list[[i]] <- vector("list", length(sim_id))
+```
+
+## Run BOSS
+
+```{r eval = F}
+
+for (i in 1:length(n)) {
+  for (j in sim_id) {
+    success <- FALSE
+    attempt <- 0
+
+    while (!success) {
+      # each attempt: new seed -> new Sigma
+      seed_val <- j + attempt
+      set.seed(seed_val)
+      
+      # regenerate sigma
+      sigma <- exp(rnorm(1))/sqrt(n[i])
+      
+      # define objective with the new Sigma
+      obj_func <- function(x) eval_func(x, sigma = sigma)
+      lower    <- -4
+      upper    <- 4
+      
+      # try BOSS on this Sigma
+      out <- try(
+        BOSS(obj_func,
+             criterion          = "modal",
+             update_step        = 5,
+             max_iter           = 300,
+             D                  = 1,
+             lower              = lower,
+             upper              = upper,
+             noise_var          = 1e-6,
+             modal_iter_check   = 5,
+             modal_check_warmup = 5,
+             modal_k.nn         = 5,
+             modal_eps          = 0.25,
+             initial_design     = 4,
+             delta              = 0.01,
+             optim.n            = 1,
+             optim.max.iter     = 100),
+        silent = TRUE
+      )
+      
+      if (!inherits(out, "try-error")) {
+        # success: save and break out of retry loop
+        res_list[[i]][[j]] <- out
+        success <- TRUE
+      } else {
+        message(sprintf(
+          "BOSS failed for d=%d, sim=%d (attempt %d, seed=%d). Retrying with new Sigma…",
+          i, j, attempt, seed_val
+        ))
+        attempt <- attempt + 1
+      }
+    }
+  }
+}
+
+save(res_list, file = paste0(output_path, "/sample_size_test.rda"))
+```
+
+```{r}
+load(paste0(output_path, "/sample_size_test.rda"))
+
+n <- rep(log10(n), each = 20)
+iter <- unlist(lapply(res_list, function(x) lapply(x, function(y) max(y$modal_result$i))))
+
+iter.data <- data.frame(n = n, Iteration = iter) %>%
+  group_by(n) %>%
+  mutate(mean = mean(Iteration))
+
+ggplot(iter.data, aes(n, mean)) + geom_line(aes(n, mean)) + ylab('Average iterations') + xlab('log10(n)')
+```
+
+We can see that based on 1d Gaussian posterior, it does not seem that the number of iterations changes with the sample size $n$.
+
+## Effect of $\delta$
+
+One important hyper-parameter that will also affect convergence is the UCB parameter $\delta$. Previously in the dimension test, we have set $\delta = 0.01^d$. That is, as the dimension increases, we exponentially decrease $\delta$ as a function of $d$. This strategy embodies the idea that as the dimension grows, it is exponentially more likely for there to be additional structure in the posterior distribution for BOSS to explore, hence, decreasing $\delta$ exponentially forces BOSS to spend more time exploring. 
+
+However, for majority of the uni-modal posterior, it should not matter much what $\delta$ is. In fact, forcing $\delta$ to be too small may negatively impact convergence in terms of finding the posterior mode. We here check how would convergence behave if we instead fix $\delta = 0.01$ under the previous multivariate Gaussian example.
+
+```{r}
+# objective
+eval_func <- function(x, d, Sigma){
+  return(mvtnorm::dmvnorm(x, mean = rep(0, d), sigma = Sigma, log = T))
+}
+
+d      <- 1:5
+sim_id <- 1:20
+
+# pre-allocate result container
+res_list <- vector("list", length(d))
+for (i in d) 
+  res_list[[i]] <- vector("list", length(sim_id))
+```
+
+## Run BOSS
+
+```{r eval = F}
+
+for (i in d) {
+  for (j in sim_id) {
+    success <- FALSE
+    attempt <- 0
+
+    while (!success) {
+      # each attempt: new seed -> new Sigma
+      seed_val <- j + attempt
+      set.seed(seed_val)
+      
+      # regenerate A and Sigma
+      A     <- matrix(rnorm(i^2), nrow = i)
+      Sigma <- crossprod(A)
+      
+      # define objective with the new Sigma
+      obj_func <- function(x) eval_func(x, d = i, Sigma = Sigma)
+      lower    <- rep(-4 * max(Sigma), i)
+      upper    <- rep( 4 * max(Sigma), i)
+      
+      # try BOSS on this Sigma
+      out <- try(
+        BOSS(obj_func,
+             criterion          = "modal",
+             update_step        = 5,
+             max_iter           = 300,
+             D                  = i,
+             lower              = lower,
+             upper              = upper,
+             noise_var          = 1e-6,
+             modal_iter_check   = 5,
+             modal_check_warmup = 20,
+             modal_k.nn         = 5,
+             modal_eps          = 0.25,
+             initial_design     = 5 * i,
+             delta              = 0.01,
+             optim.n            = 1,
+             optim.max.iter     = 100),
+        silent = TRUE
+      )
+      
+      if (!inherits(out, "try-error")) {
+        # success: save and break out of retry loop
+        res_list[[i]][[j]] <- out
+        success <- TRUE
+      } else {
+        message(sprintf(
+          "BOSS failed for d=%d, sim=%d (attempt %d, seed=%d). Retrying with new Sigma…",
+          i, j, attempt, seed_val
+        ))
+        attempt <- attempt + 1
+      }
+    }
+  }
+}
+
+save(res_list, file = paste0(output_path, "/delta_test.rda"))
+```
+
+```{r}
+load(paste0(output_path, "/delta_test.rda"))
+
+dim <- rep(d, each = 20)
+iter <- unlist(lapply(res_list, function(x) lapply(x, function(y) max(y$modal_result$i)))) + 5*dim
+
+iter.data <- data.frame(d= dim, Iteration = iter) %>%
+  group_by(d) %>%
+  mutate(med = median(Iteration))
+
+ggplot(iter.data, aes(d, Iteration)) + geom_point() + geom_line(aes(d, med))
+```
+
+Compare the above figure to the previous figure with varying $\delta$, we do see that the number of iterations till convergence decreases. However, the magnitude of the decrease is not significant.
 
 
 
