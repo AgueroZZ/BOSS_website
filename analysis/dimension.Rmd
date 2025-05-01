@@ -314,7 +314,7 @@ iter.data <- data.frame(d= dim, Iteration = iter) %>%
 ggplot(iter.data, aes(d, Iteration)) + geom_point() + geom_line(aes(d, med))
 ```
 
-Compare the above figure to the previous figure with varying $\delta$, we do see that the number of iterations till convergence decreases. However, the magnitude of the decrease is not significant.
+Compare the above figure to the previous figure with varying $\delta$, we see that the number of iterations till convergence clearly decreases. Although the magnitude of the decrease does not seem to be significant.
 
 
 
