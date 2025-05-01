@@ -400,7 +400,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-30
+<strong>Last updated:</strong> 2025-05-01
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree62716cd74ff37c9f356fb611e6e65027d517054btargetblank62716cda">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2cf333be559e8b7a8e3c2d6c0225a75ff7b43f2dtargetblank2cf333ba">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/62716cd74ff37c9f356fb611e6e65027d517054b" target="_blank">62716cd</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/2cf333be559e8b7a8e3c2d6c0225a75ff7b43f2d" target="_blank">2cf333b</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree62716cd74ff37c9f356fb611e6e65027d517054btargetblank62716cda"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2cf333be559e8b7a8e3c2d6c0225a75ff7b43f2dtargetblank2cf333ba"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/62716cd74ff37c9f356fb611e6e65027d517054b" target="_blank">62716cd</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/2cf333be559e8b7a8e3c2d6c0225a75ff7b43f2d" target="_blank">2cf333b</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -568,17 +568,33 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
+    Ignored:    analysis/.Rhistory
+    Ignored:    code/.DS_Store
     Ignored:    data/.DS_Store
-    Ignored:    data/dimension/
-    Ignored:    data/sim3/
+    Ignored:    data/sim1/
     Ignored:    output/.DS_Store
+    Ignored:    output/sim2/.DS_Store
 
 Untracked files:
-    Untracked:  output/dimension/delta_test.rda
-    Untracked:  output/dimension/sample_size_test.rda
+    Untracked:  code/mortality_BG_grid.R
+    Untracked:  code/mortality_NL_grid.R
+    Untracked:  data/co2/
+    Untracked:  data/mortality/
+    Untracked:  data/simA1/
+    Untracked:  output/co2/
+    Untracked:  output/mortality/BOSS_result.rds
+    Untracked:  output/mortality/BO_result_BG.rda
+    Untracked:  output/mortality/BO_result_NL.rda
+    Untracked:  output/mortality/mod_BG.rda
+    Untracked:  output/mortality/mod_NL.rda
+    Untracked:  output/sim2/quad_sparse_list.rda
+    Untracked:  output/simA1/
 
 Unstaged changes:
-    Modified:   output/dimension/dimension_test.rda
+    Modified:   BOSS_website.Rproj
+    Modified:   output/sim2/BO_data_to_smooth.rda
+    Modified:   output/sim2/BO_result_list.rda
+    Modified:   output/sim2/rel_runtime.rda
 
 </code></pre>
 <p>
@@ -623,6 +639,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/2cf333be559e8b7a8e3c2d6c0225a75ff7b43f2d/analysis/dimension.Rmd" target="_blank">2cf333b</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-05-01
+</td>
+<td>
+workflowr::wflow_publish("analysis/dimension.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/d9702bff9136e1c20da5367b20440078c89ab6e9/docs/dimension.html" target="_blank">d9702bf</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-30
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -802,14 +852,16 @@ Update dimension analysis.
 </div>
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>In this vignette, we analyze how the convergence performance of BOSS
-changes with the dimension of parameter space as well as the
-hyper-parameters.</p>
-<p>For simplicity, we set the objective posterior as <span
-class="math inline">\(d\)</span>-dimensional multivariate Gaussian for
-<span class="math inline">\(d = \{1, 2, 3, 4, 5\}\)</span> with mean
-vector <span class="math inline">\(\mu_d = \mathbf{0}\)</span> and
-randomly generated covariance matrices <span
+<p>In this example, we analyze how the convergence performance of BOSS
+changes with the dimension of the conditioning parameter <span
+class="math inline">\(\boldsymbol{\alpha}\)</span>, as well as the
+choice of the hyperparameter <span
+class="math inline">\(\delta\)</span>.</p>
+<p>For simplicity, we set the objective posterior of the conditioning
+parameter as <span class="math inline">\(d\)</span>-dimensional
+multivariate Gaussian for <span class="math inline">\(d = \{1, 2, 3, 4,
+5\}\)</span> with mean vector <span class="math inline">\(\mu_d =
+\mathbf{0}\)</span> and randomly generated covariance matrices <span
 class="math inline">\(\Sigma_d\)</span>.</p>
 <pre class="r"><code>library(tidyverse)
 library(tikzDevice)
@@ -833,9 +885,8 @@ sim_id &lt;- 1:20
 res_list &lt;- vector(&quot;list&quot;, length(d))
 for (i in d) 
   res_list[[i]] &lt;- vector(&quot;list&quot;, length(sim_id))</code></pre>
-</div>
-<div id="run-boss" class="section level2">
-<h2>Run BOSS</h2>
+<div id="run-boss" class="section level3">
+<h3>Run BOSS</h3>
 <pre class="r"><code>for (i in d) {
   for (j in sim_id) {
     success &lt;- FALSE
@@ -942,168 +993,114 @@ david.li
 </div>
 </div>
 <p>We can see pretty clearly that the number of iterations required for
-convergence roughly grows exponentially, which is expected based on the
-existing theoretical analysis of BO convergence performance.</p>
-<p>We also need to note that the above test only showcases the
-performance of BOSS when the true posterior is a multivariate Gaussian.
-We have observed that if there is deviation from normality, then
-convergence would take even longer, especially for higher dimension.
-Under the most extreme cases where certain parameters are almost
-degenerate with respect to each other, BOSS can almost entirely
-fail.</p>
+convergence roughly grows exponentially, which is consistent with the
+existing theoretical analysis of BO convergence.</p>
+<p>We also note that the above test only showcases the performance of
+BOSS when the true posterior is a multivariate Gaussian. We have
+observed that if there is deviation from normality, then convergence
+could take even longer, especially for higher dimension. For example, as
+the dimension increases, the conditioning parameters could very likely
+become close to degenerate, which makes the convergence of BOSS
+extremely difficult.</p>
+<!-- ## Changes with Sample Size $n$ -->
+<!-- We have seen previously how the number of iterations change with the dimension of the parameter space. We now check how the number of iterations required changes with the sample size $n$. It is important to check this since by Bernstein von-Mises (BvM) theorem, the vast majority of the posterior distribution will converge to a Gaussian as the sample size $n$ increases. This would potentially mean that the posterior mode may be harder to locate. -->
+<!-- ```{r} -->
+<!-- # objective -->
+<!-- eval_func <- function(x, sigma){ -->
+<!--   return(dnorm(x, 0, sigma, log = T)) -->
+<!-- } -->
+<!-- n      <- 10^(0:5) -->
+<!-- sim_id <- 1:20 -->
+<!-- # pre-allocate result container -->
+<!-- res_list <- vector("list", length(n)) -->
+<!-- for (i in 1:length(n))  -->
+<!--   res_list[[i]] <- vector("list", length(sim_id)) -->
+<!-- ``` -->
+<!-- ### Run BOSS -->
+<!-- ```{r eval = F} -->
+<!-- for (i in 1:length(n)) { -->
+<!--   for (j in sim_id) { -->
+<!--     success <- FALSE -->
+<!--     attempt <- 0 -->
+<!--     while (!success) { -->
+<!--       # each attempt: new seed -> new Sigma -->
+<!--       seed_val <- j + attempt -->
+<!--       set.seed(seed_val) -->
+<!--       # regenerate sigma -->
+<!--       sigma <- exp(rnorm(1))/sqrt(n[i]) -->
+<!--       # define objective with the new Sigma -->
+<!--       obj_func <- function(x) eval_func(x, sigma = sigma) -->
+<!--       lower    <- -4 -->
+<!--       upper    <- 4 -->
+<!--       # try BOSS on this Sigma -->
+<!--       out <- try( -->
+<!--         BOSS(obj_func, -->
+<!--              criterion          = "modal", -->
+<!--              update_step        = 5, -->
+<!--              max_iter           = 300, -->
+<!--              D                  = 1, -->
+<!--              lower              = lower, -->
+<!--              upper              = upper, -->
+<!--              noise_var          = 1e-6, -->
+<!--              modal_iter_check   = 5, -->
+<!--              modal_check_warmup = 5, -->
+<!--              modal_k.nn         = 5, -->
+<!--              modal_eps          = 0.25, -->
+<!--              initial_design     = 4, -->
+<!--              delta              = 0.01, -->
+<!--              optim.n            = 1, -->
+<!--              optim.max.iter     = 100), -->
+<!--         silent = TRUE -->
+<!--       ) -->
+<!--       if (!inherits(out, "try-error")) { -->
+<!--         # success: save and break out of retry loop -->
+<!--         res_list[[i]][[j]] <- out -->
+<!--         success <- TRUE -->
+<!--       } else { -->
+<!--         message(sprintf( -->
+<!--           "BOSS failed for d=%d, sim=%d (attempt %d, seed=%d). Retrying with new Sigma…", -->
+<!--           i, j, attempt, seed_val -->
+<!--         )) -->
+<!--         attempt <- attempt + 1 -->
+<!--       } -->
+<!--     } -->
+<!--   } -->
+<!-- } -->
+<!-- save(res_list, file = paste0(output_path, "/sample_size_test.rda")) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- load(paste0(output_path, "/sample_size_test.rda")) -->
+<!-- n <- rep(log10(n), each = 20) -->
+<!-- iter <- unlist(lapply(res_list, function(x) lapply(x, function(y) max(y$modal_result$i)))) -->
+<!-- iter.data <- data.frame(n = n, Iteration = iter) %>% -->
+<!--   group_by(n) %>% -->
+<!--   mutate(mean = mean(Iteration)) -->
+<!-- ggplot(iter.data, aes(n, mean)) + geom_line(aes(n, mean)) + ylab('Average iterations') + xlab('log10(n)') -->
+<!-- ``` -->
+<!-- We can see that based on 1d Gaussian posterior, it does not seem that the number of iterations changes with the sample size $n$. -->
 </div>
-<div id="changes-with-sample-size-n" class="section level2">
-<h2>Changes with Sample Size <span class="math inline">\(n\)</span></h2>
-<p>We have seen previously how the number of iterations change with the
-dimension of the parameter space. We now check how the number of
-iterations required changes with the sample size <span
-class="math inline">\(n\)</span>. It is important to check this since by
-Bernstein von-Mises (BvM) theorem, the vast majority of the posterior
-distribution will converge to a Gaussian as the sample size <span
-class="math inline">\(n\)</span> increases. This would potentially mean
-that the posterior mode may be harder to locate.</p>
-<pre class="r"><code># objective
-eval_func &lt;- function(x, sigma){
-  return(dnorm(x, 0, sigma, log = T))
-}
-
-n      &lt;- 10^(0:5)
-sim_id &lt;- 1:20
-
-# pre-allocate result container
-res_list &lt;- vector(&quot;list&quot;, length(n))
-for (i in 1:length(n)) 
-  res_list[[i]] &lt;- vector(&quot;list&quot;, length(sim_id))</code></pre>
-</div>
-<div id="run-boss-1" class="section level2">
-<h2>Run BOSS</h2>
-<pre class="r"><code>for (i in 1:length(n)) {
-  for (j in sim_id) {
-    success &lt;- FALSE
-    attempt &lt;- 0
-
-    while (!success) {
-      # each attempt: new seed -&gt; new Sigma
-      seed_val &lt;- j + attempt
-      set.seed(seed_val)
-      
-      # regenerate sigma
-      sigma &lt;- exp(rnorm(1))/sqrt(n[i])
-      
-      # define objective with the new Sigma
-      obj_func &lt;- function(x) eval_func(x, sigma = sigma)
-      lower    &lt;- -4
-      upper    &lt;- 4
-      
-      # try BOSS on this Sigma
-      out &lt;- try(
-        BOSS(obj_func,
-             criterion          = &quot;modal&quot;,
-             update_step        = 5,
-             max_iter           = 300,
-             D                  = 1,
-             lower              = lower,
-             upper              = upper,
-             noise_var          = 1e-6,
-             modal_iter_check   = 5,
-             modal_check_warmup = 5,
-             modal_k.nn         = 5,
-             modal_eps          = 0.25,
-             initial_design     = 4,
-             delta              = 0.01,
-             optim.n            = 1,
-             optim.max.iter     = 100),
-        silent = TRUE
-      )
-      
-      if (!inherits(out, &quot;try-error&quot;)) {
-        # success: save and break out of retry loop
-        res_list[[i]][[j]] &lt;- out
-        success &lt;- TRUE
-      } else {
-        message(sprintf(
-          &quot;BOSS failed for d=%d, sim=%d (attempt %d, seed=%d). Retrying with new Sigma…&quot;,
-          i, j, attempt, seed_val
-        ))
-        attempt &lt;- attempt + 1
-      }
-    }
-  }
-}
-
-save(res_list, file = paste0(output_path, &quot;/sample_size_test.rda&quot;))</code></pre>
-<pre class="r"><code>load(paste0(output_path, &quot;/sample_size_test.rda&quot;))
-
-n &lt;- rep(log10(n), each = 20)
-iter &lt;- unlist(lapply(res_list, function(x) lapply(x, function(y) max(y$modal_result$i))))
-
-iter.data &lt;- data.frame(n = n, Iteration = iter) %&gt;%
-  group_by(n) %&gt;%
-  mutate(mean = mean(Iteration))
-
-ggplot(iter.data, aes(n, mean)) + geom_line(aes(n, mean)) + ylab(&#39;Average iterations&#39;) + xlab(&#39;log10(n)&#39;)</code></pre>
-<p><img src="figure/dimension.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
-Past versions of unnamed-chunk-7-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-7-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/dea74cdddf31088ff9fbd1ee8b8a458e88a3f1ed/docs/figure/dimension.Rmd/unnamed-chunk-7-1.png" target="_blank">dea74cd</a>
-</td>
-<td>
-david.li
-</td>
-<td>
-2025-04-30
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<p>We can see that based on 1d Gaussian posterior, it does not seem that
-the number of iterations changes with the sample size <span
-class="math inline">\(n\)</span>.</p>
 </div>
 <div id="effect-of-delta" class="section level2">
 <h2>Effect of <span class="math inline">\(\delta\)</span></h2>
 <p>One important hyper-parameter that will also affect convergence is
 the UCB parameter <span class="math inline">\(\delta\)</span>.
-Previously in the dimension test, we have set <span
-class="math inline">\(\delta = 0.01^d\)</span>. That is, as the
-dimension increases, we exponentially decrease <span
+Previously when we explore the effect of increasing the dimension of
+<span class="math inline">\(\boldsymbol{\alpha}\)</span>, we have set
+<span class="math inline">\(\delta = 0.01^d\)</span>. That is, as the
+dimension increases, we adaptively decrease <span
 class="math inline">\(\delta\)</span> as a function of <span
 class="math inline">\(d\)</span>. This strategy embodies the idea that
 as the dimension grows, it is exponentially more likely for there to be
-additional structure in the posterior distribution for BOSS to explore,
-hence, decreasing <span class="math inline">\(\delta\)</span>
-exponentially forces BOSS to spend more time exploring.</p>
-<p>However, for majority of the uni-modal posterior, it should not
-matter much what <span class="math inline">\(\delta\)</span> is. In
-fact, forcing <span class="math inline">\(\delta\)</span> to be too
-small may negatively impact convergence in terms of finding the
-posterior mode. We here check how would convergence behave if we instead
-fix <span class="math inline">\(\delta = 0.01\)</span> under the
-previous multivariate Gaussian example.</p>
+additional structure in the posterior distribution for BOSS to explore.
+As a result, it decreases <span class="math inline">\(\delta\)</span>
+exponentially to force BOSS to spend more time exploring the entire
+parameter space.</p>
+<p>When the posterior is close to uni-modal, the influence of <span
+class="math inline">\(\delta\)</span> is typically small. In fact,
+forcing <span class="math inline">\(\delta\)</span> to be too small may
+slow down BOSS from finding the posterior mode. We here check how would
+convergence behave if we instead fix <span class="math inline">\(\delta
+= 0.01\)</span> under the previous multivariate Gaussian example.</p>
 <pre class="r"><code># objective
 eval_func &lt;- function(x, d, Sigma){
   return(mvtnorm::dmvnorm(x, mean = rep(0, d), sigma = Sigma, log = T))
@@ -1117,7 +1114,7 @@ res_list &lt;- vector(&quot;list&quot;, length(d))
 for (i in d) 
   res_list[[i]] &lt;- vector(&quot;list&quot;, length(sim_id))</code></pre>
 </div>
-<div id="run-boss-2" class="section level2">
+<div id="run-boss-1" class="section level2">
 <h2>Run BOSS</h2>
 <pre class="r"><code>for (i in d) {
   for (j in sim_id) {
@@ -1185,13 +1182,13 @@ iter.data &lt;- data.frame(d= dim, Iteration = iter) %&gt;%
   mutate(med = median(Iteration))
 
 ggplot(iter.data, aes(d, Iteration)) + geom_point() + geom_line(aes(d, med))</code></pre>
-<p><img src="figure/dimension.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/dimension.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
-Past versions of unnamed-chunk-10-1.png
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-7-1">
+Past versions of unnamed-chunk-7-1.png
 </button>
 </p>
-<div id="fig-unnamed-chunk-10-1" class="collapse">
+<div id="fig-unnamed-chunk-7-1" class="collapse">
 <div class="table-responsive">
 <table class="table table-condensed table-hover">
 <thead>
@@ -1210,7 +1207,7 @@ Date
 <tbody>
 <tr>
 <td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/dea74cdddf31088ff9fbd1ee8b8a458e88a3f1ed/docs/figure/dimension.Rmd/unnamed-chunk-10-1.png" target="_blank">dea74cd</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/dea74cdddf31088ff9fbd1ee8b8a458e88a3f1ed/docs/figure/dimension.Rmd/unnamed-chunk-7-1.png" target="_blank">dea74cd</a>
 </td>
 <td>
 david.li
@@ -1223,10 +1220,11 @@ david.li
 </table>
 </div>
 </div>
-<p>Compare the above figure to the previous figure with varying <span
+<p>Compare the above figure to the previous figure with adaptive <span
 class="math inline">\(\delta\)</span>, we see that the number of
-iterations till convergence clearly decreases. Although the magnitude of
-the decrease does not seem to be significant.</p>
+iterations until convergence decreases slightly. Although the
+exponential growth with respect to <span
+class="math inline">\(d\)</span> is still clear.</p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1236,13 +1234,13 @@ Session information
 </p>
 <div id="workflowr-sessioninfo" class="collapse">
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>R version 4.4.1 (2024-06-14)
-Platform: aarch64-apple-darwin20
-Running under: macOS 15.0
+<pre><code>R version 4.3.1 (2023-06-16)
+Platform: aarch64-apple-darwin20 (64-bit)
+Running under: macOS Monterey 12.7.4
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
-LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
+BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -1261,18 +1259,18 @@ other attached packages:
 loaded via a namespace (and not attached):
  [1] sass_0.4.9        utf8_1.2.4        generics_0.1.3    stringi_1.8.4    
  [5] hms_1.1.3         digest_0.6.37     magrittr_2.0.3    timechange_0.3.0 
- [9] evaluate_1.0.0    grid_4.4.1        fastmap_1.2.0     filehash_2.4-6   
+ [9] evaluate_1.0.1    grid_4.3.1        fastmap_1.2.0     filehash_2.4-6   
 [13] rprojroot_2.0.4   jsonlite_1.8.9    processx_3.8.4    whisker_0.4.1    
 [17] ps_1.8.0          promises_1.3.0    httr_1.4.7        fansi_1.0.6      
 [21] scales_1.3.0      jquerylib_0.1.4   cli_3.6.3         rlang_1.1.4      
-[25] munsell_0.5.1     withr_3.0.1       cachem_1.1.0      yaml_2.3.10      
-[29] tools_4.4.1       tzdb_0.4.0        colorspace_2.1-1  httpuv_1.6.15    
+[25] munsell_0.5.1     withr_3.0.2       cachem_1.1.0      yaml_2.3.10      
+[29] tools_4.3.1       tzdb_0.4.0        colorspace_2.1-1  httpuv_1.6.15    
 [33] vctrs_0.6.5       R6_2.5.1          lifecycle_1.0.4   git2r_0.33.0     
 [37] fs_1.6.4          pkgconfig_2.0.3   callr_3.7.6       pillar_1.9.0     
-[41] bslib_0.8.0       later_1.3.2       gtable_0.3.5      glue_1.7.0       
-[45] Rcpp_1.0.13       highr_0.11        xfun_0.47         tidyselect_1.2.1 
+[41] bslib_0.8.0       later_1.3.2       gtable_0.3.6      glue_1.8.0       
+[45] Rcpp_1.0.13-1     highr_0.11        xfun_0.48         tidyselect_1.2.1 
 [49] rstudioapi_0.16.0 knitr_1.48        farver_2.1.2      htmltools_0.5.8.1
-[53] labeling_0.4.3    rmarkdown_2.28    compiler_4.4.1    getPass_0.2-4    </code></pre>
+[53] labeling_0.4.3    rmarkdown_2.28    compiler_4.3.1    getPass_0.2-4    </code></pre>
 </div>
 </div>
 </div>
