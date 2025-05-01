@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree0a285a316028c0dcb612bf7a01e3b45ced0c3187targetblank0a285a3a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreed26910dc871cbaa673e8051862f73d6b790303cctargetblankd26910da">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/0a285a316028c0dcb612bf7a01e3b45ced0c3187" target="_blank">0a285a3</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/d26910dc871cbaa673e8051862f73d6b790303cc" target="_blank">d26910d</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree0a285a316028c0dcb612bf7a01e3b45ced0c3187targetblank0a285a3a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreed26910dc871cbaa673e8051862f73d6b790303cctargetblankd26910da"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/0a285a316028c0dcb612bf7a01e3b45ced0c3187" target="_blank">0a285a3</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/d26910dc871cbaa673e8051862f73d6b790303cc" target="_blank">d26910d</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -572,6 +572,13 @@ Ignored files:
     Ignored:    data/dimension/
     Ignored:    data/sim3/
     Ignored:    output/.DS_Store
+
+Untracked files:
+    Untracked:  output/dimension/delta_test.rda
+    Untracked:  output/dimension/sample_size_test.rda
+
+Unstaged changes:
+    Modified:   output/dimension/dimension_test.rda
 
 </code></pre>
 <p>
@@ -616,6 +623,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d26910dc871cbaa673e8051862f73d6b790303cc/analysis/dimension.Rmd" target="_blank">d26910d</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-30
+</td>
+<td>
+wflow_publish("analysis/dimension.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/d62d9ab367b39456258b6ae0c576039576393adb/docs/dimension.html" target="_blank">d62d9ab</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-30
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -728,7 +769,8 @@ Update dimension analysis.
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
 <p>In this vignette, we analyze how the convergence performance of BOSS
-changes with the dimension of parameter space.</p>
+changes with the dimension of parameter space as well as the
+hyper-parameters.</p>
 <p>For simplicity, we set the objective posterior as <span
 class="math inline">\(d\)</span>-dimensional multivariate Gaussian for
 <span class="math inline">\(d = \{1, 2, 3, 4, 5\}\)</span> with mean
@@ -875,6 +917,208 @@ convergence would take even longer, especially for higher dimension.
 Under the most extreme cases where certain parameters are almost
 degenerate with respect to each other, BOSS can almost entirely
 fail.</p>
+</div>
+<div id="changes-with-sample-size-n" class="section level2">
+<h2>Changes with Sample Size <span class="math inline">\(n\)</span></h2>
+<p>We have seen previously how the number of iterations change with the
+dimension of the parameter space. We now check how the number of
+iterations required changes with the sample size <span
+class="math inline">\(n\)</span>. It is important to check this since by
+Bernstein von-Mises (BvM) theorem, the vast majority of the posterior
+distribution will converge to a Gaussian as the sample size <span
+class="math inline">\(n\)</span> increases. This would potentially mean
+that the posterior mode may be harder to locate.</p>
+<pre class="r"><code># objective
+eval_func &lt;- function(x, sigma){
+  return(dnorm(x, 0, sigma, log = T))
+}
+
+n      &lt;- 10^(0:5)
+sim_id &lt;- 1:20
+
+# pre-allocate result container
+res_list &lt;- vector(&quot;list&quot;, length(n))
+for (i in 1:length(n)) 
+  res_list[[i]] &lt;- vector(&quot;list&quot;, length(sim_id))</code></pre>
+</div>
+<div id="run-boss-1" class="section level2">
+<h2>Run BOSS</h2>
+<pre class="r"><code>for (i in 1:length(n)) {
+  for (j in sim_id) {
+    success &lt;- FALSE
+    attempt &lt;- 0
+
+    while (!success) {
+      # each attempt: new seed -&gt; new Sigma
+      seed_val &lt;- j + attempt
+      set.seed(seed_val)
+      
+      # regenerate sigma
+      sigma &lt;- exp(rnorm(1))/sqrt(n[i])
+      
+      # define objective with the new Sigma
+      obj_func &lt;- function(x) eval_func(x, sigma = sigma)
+      lower    &lt;- -4
+      upper    &lt;- 4
+      
+      # try BOSS on this Sigma
+      out &lt;- try(
+        BOSS(obj_func,
+             criterion          = &quot;modal&quot;,
+             update_step        = 5,
+             max_iter           = 300,
+             D                  = 1,
+             lower              = lower,
+             upper              = upper,
+             noise_var          = 1e-6,
+             modal_iter_check   = 5,
+             modal_check_warmup = 5,
+             modal_k.nn         = 5,
+             modal_eps          = 0.25,
+             initial_design     = 4,
+             delta              = 0.01,
+             optim.n            = 1,
+             optim.max.iter     = 100),
+        silent = TRUE
+      )
+      
+      if (!inherits(out, &quot;try-error&quot;)) {
+        # success: save and break out of retry loop
+        res_list[[i]][[j]] &lt;- out
+        success &lt;- TRUE
+      } else {
+        message(sprintf(
+          &quot;BOSS failed for d=%d, sim=%d (attempt %d, seed=%d). Retrying with new Sigma…&quot;,
+          i, j, attempt, seed_val
+        ))
+        attempt &lt;- attempt + 1
+      }
+    }
+  }
+}
+
+save(res_list, file = paste0(output_path, &quot;/sample_size_test.rda&quot;))</code></pre>
+<pre class="r"><code>load(paste0(output_path, &quot;/sample_size_test.rda&quot;))
+
+n &lt;- rep(log10(n), each = 20)
+iter &lt;- unlist(lapply(res_list, function(x) lapply(x, function(y) max(y$modal_result$i))))
+
+iter.data &lt;- data.frame(n = n, Iteration = iter) %&gt;%
+  group_by(n) %&gt;%
+  mutate(mean = mean(Iteration))
+
+ggplot(iter.data, aes(n, mean)) + geom_line(aes(n, mean)) + ylab(&#39;Average iterations&#39;) + xlab(&#39;log10(n)&#39;)</code></pre>
+<p><img src="figure/dimension.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>We can see that based on 1d Gaussian posterior, it does not seem that
+the number of iterations changes with the sample size <span
+class="math inline">\(n\)</span>.</p>
+</div>
+<div id="effect-of-delta" class="section level2">
+<h2>Effect of <span class="math inline">\(\delta\)</span></h2>
+<p>One important hyper-parameter that will also affect convergence is
+the UCB parameter <span class="math inline">\(\delta\)</span>.
+Previously in the dimension test, we have set <span
+class="math inline">\(\delta = 0.01^d\)</span>. That is, as the
+dimension increases, we exponentially decrease <span
+class="math inline">\(\delta\)</span> as a function of <span
+class="math inline">\(d\)</span>. This strategy embodies the idea that
+as the dimension grows, it is exponentially more likely for there to be
+additional structure in the posterior distribution for BOSS to explore,
+hence, decreasing <span class="math inline">\(\delta\)</span>
+exponentially forces BOSS to spend more time exploring.</p>
+<p>However, for majority of the uni-modal posterior, it should not
+matter much what <span class="math inline">\(\delta\)</span> is. In
+fact, forcing <span class="math inline">\(\delta\)</span> to be too
+small may negatively impact convergence in terms of finding the
+posterior mode. We here check how would convergence behave if we instead
+fix <span class="math inline">\(\delta = 0.01\)</span> under the
+previous multivariate Gaussian example.</p>
+<pre class="r"><code># objective
+eval_func &lt;- function(x, d, Sigma){
+  return(mvtnorm::dmvnorm(x, mean = rep(0, d), sigma = Sigma, log = T))
+}
+
+d      &lt;- 1:5
+sim_id &lt;- 1:20
+
+# pre-allocate result container
+res_list &lt;- vector(&quot;list&quot;, length(d))
+for (i in d) 
+  res_list[[i]] &lt;- vector(&quot;list&quot;, length(sim_id))</code></pre>
+</div>
+<div id="run-boss-2" class="section level2">
+<h2>Run BOSS</h2>
+<pre class="r"><code>for (i in d) {
+  for (j in sim_id) {
+    success &lt;- FALSE
+    attempt &lt;- 0
+
+    while (!success) {
+      # each attempt: new seed -&gt; new Sigma
+      seed_val &lt;- j + attempt
+      set.seed(seed_val)
+      
+      # regenerate A and Sigma
+      A     &lt;- matrix(rnorm(i^2), nrow = i)
+      Sigma &lt;- crossprod(A)
+      
+      # define objective with the new Sigma
+      obj_func &lt;- function(x) eval_func(x, d = i, Sigma = Sigma)
+      lower    &lt;- rep(-4 * max(Sigma), i)
+      upper    &lt;- rep( 4 * max(Sigma), i)
+      
+      # try BOSS on this Sigma
+      out &lt;- try(
+        BOSS(obj_func,
+             criterion          = &quot;modal&quot;,
+             update_step        = 5,
+             max_iter           = 300,
+             D                  = i,
+             lower              = lower,
+             upper              = upper,
+             noise_var          = 1e-6,
+             modal_iter_check   = 5,
+             modal_check_warmup = 20,
+             modal_k.nn         = 5,
+             modal_eps          = 0.25,
+             initial_design     = 5 * i,
+             delta              = 0.01,
+             optim.n            = 1,
+             optim.max.iter     = 100),
+        silent = TRUE
+      )
+      
+      if (!inherits(out, &quot;try-error&quot;)) {
+        # success: save and break out of retry loop
+        res_list[[i]][[j]] &lt;- out
+        success &lt;- TRUE
+      } else {
+        message(sprintf(
+          &quot;BOSS failed for d=%d, sim=%d (attempt %d, seed=%d). Retrying with new Sigma…&quot;,
+          i, j, attempt, seed_val
+        ))
+        attempt &lt;- attempt + 1
+      }
+    }
+  }
+}
+
+save(res_list, file = paste0(output_path, &quot;/delta_test.rda&quot;))</code></pre>
+<pre class="r"><code>load(paste0(output_path, &quot;/delta_test.rda&quot;))
+
+dim &lt;- rep(d, each = 20)
+iter &lt;- unlist(lapply(res_list, function(x) lapply(x, function(y) max(y$modal_result$i)))) + 5*dim
+
+iter.data &lt;- data.frame(d= dim, Iteration = iter) %&gt;%
+  group_by(d) %&gt;%
+  mutate(med = median(Iteration))
+
+ggplot(iter.data, aes(d, Iteration)) + geom_point() + geom_line(aes(d, med))</code></pre>
+<p><img src="figure/dimension.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Compare the above figure to the previous figure with varying <span
+class="math inline">\(\delta\)</span>, we do see that the number of
+iterations till convergence decreases. However, the magnitude of the
+decrease is not significant.</p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
