@@ -37,7 +37,7 @@ To guide the readers with the practical implementation of the BOSS algorithm, we
 
 + [Convergence Diagnostic](diagnostic.html)
 
-In addition, we also provide readers with some intuition in terms of the convergence performance of BOSS with respect to the dimension of the parameter space as well as hyper-parameters of the BOSS algorithm.
+In addition, we also provide readers with some intuition in terms of the convergence performance of BOSS with respect to the dimension of the conditioning parameter as well as hyper-parameter $\delta$ of the BOSS algorithm.
 
 + [Dimension and Hyper-parameter Analysis](dimension.html)
 
