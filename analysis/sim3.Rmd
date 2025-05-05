@@ -104,16 +104,16 @@ eval_func <- function(par, x = r, y = lr){
 
 ```
 
-### BOSS-aghq
+### BOSS-modal
 
 Next, we run the BOSS algorithm where the stopping criteria is based on the convergence of the posterior mode. Specifically, we check the modal convergence every $5$ BO iteration, and consider the convergence statistics of the average $5$ nearest neighbor distance around the current mode.
 
 ```{r, eval = F}
-set.seed(123)
+set.seed(1234)
 res_opt_modal <- BOSS(eval_func, criterion = 'modal', update_step = 5, max_iter = 100, D = 2,
                         lower = rep(0.1, 2), upper = c(5, 4),
                         noise_var = 1e-6,
-                        modal_iter_check = 5,  modal_check_warmup = 20, modal_k.nn = 5,
+                        modal_iter_check = 1,  modal_check_warmup = 20, modal_k.nn = 5,
                         modal_eps = 0.01,
                         initial_design = 5, delta = 0.01^2,
                         optim.n = 5, optim.max.iter = 100)
@@ -123,21 +123,12 @@ save(res_opt_modal, file = paste0(output_path, "/BOSS_modal_sim3.rda"))
 
 The above BOSS algorithm with `modal` convergence criterion converged in $65$ iterations.
 
-We then run BOSS using AGHQ as convergence statistics. Again, we check for convergence every $5$ iterations. The convergence criteria is relative difference in AGHQ statistics being less than $0.05$.
+Let's check the convergence diagnostic plot:
 
-```{r, eval = F}
-set.seed(123)
-res_opt_aghq <- BOSS(eval_func, criterion = 'aghq', update_step = 5, max_iter = 100, D = 2,
-                      lower = rep(0.1, 2), upper = c(5, 4),
-                      noise_var = 1e-6,
-                      AGHQ_k = 3, AGHQ_iter_check = 5,  AGHQ_check_warmup = 20, AGHQ_eps = 0.05, buffer = 1e-4,
-                      initial_design = 5, delta = 0.01^2,
-                      optim.n = 5, optim.max.iter = 100)
-
-save(res_opt_aghq, file = paste0(output_path, "/BOSS_aghq_sim3.rda"))
+```{r}
+plot(res_opt_modal$modal_result$modal_max_diff ~ res_opt_modal$modal_result$i, type = 'o', xlab = 'Iteration', ylab = 'Modal Stats')
 ```
 
-The above BOSS algorithm with `aghq` criterion converged with $75$ iterations.
 
 ## MCMC
 
