@@ -399,7 +399,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-23
+<strong>Last updated:</strong> 2025-05-07
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -530,15 +530,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreec944a81517702b557cf947cf96c1a3286993109btargetblankc944a81a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2fecbea0a21482416976fdc8bf2f3d771c11e37ctargetblank2fecbeaa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/c944a81517702b557cf947cf96c1a3286993109b" target="_blank">c944a81</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/2fecbea0a21482416976fdc8bf2f3d771c11e37c" target="_blank">2fecbea</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreec944a81517702b557cf947cf96c1a3286993109btargetblankc944a81a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2fecbea0a21482416976fdc8bf2f3d771c11e37ctargetblank2fecbeaa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -548,7 +548,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/c944a81517702b557cf947cf96c1a3286993109b" target="_blank">c944a81</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/2fecbea0a21482416976fdc8bf2f3d771c11e37c" target="_blank">2fecbea</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -568,7 +568,24 @@ Ignored files:
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
     Ignored:    data/.DS_Store
+    Ignored:    data/dimension/
     Ignored:    data/sim3/
+    Ignored:    output/.DS_Store
+
+Untracked files:
+    Untracked:  output/sim3/BOSS_robust_sim3.rda
+    Untracked:  output/sim3/BOSS_sample_robust_sim3.rda
+    Untracked:  output/sim3/BOSS_sample_small_n_sim3.rda
+    Untracked:  output/sim3/BOSS_small_n_sim3.rda
+    Untracked:  output/sim3/MCMC_small_n_sim3.rda
+
+Unstaged changes:
+    Modified:   output/UDG/UDG_BOSS.rda
+    Modified:   output/UDG/UDG_BOSS_AGHQ.rda
+    Modified:   output/UDG/UDG_inlabru.rda
+    Deleted:    output/sim3/BOSS_aghq_sim3.rda
+    Modified:   output/sim3/BOSS_modal_sim3.rda
+    Modified:   output/sim3/MCMC_sim3.rda
 
 </code></pre>
 <p>
@@ -612,6 +629,57 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/2fecbea0a21482416976fdc8bf2f3d771c11e37c/analysis/UDG.Rmd" target="_blank">2fecbea</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-07
+</td>
+<td>
+wflow_publish("analysis/UDG.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/28db27f5f6e32f96f8e181460c488651400dbf08/analysis/UDG.Rmd" target="_blank">28db27f</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-30
+</td>
+<td>
+Update dimension analysis.
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/f5fd224dd4685e12508697dc51475e1ee6d193fb/docs/UDG.html" target="_blank">f5fd224</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-23
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -845,10 +913,10 @@ upper = c(12, 4)
 res_opt &lt;- BOSS(eval_func, criterion = &#39;modal&#39;, update_step = 5, max_iter = 100, D = 2,
                         lower = lower, upper = upper,
                         noise_var = 1e-6,
-                        modal_iter_check = 10, modal_check_warmup = 20, modal_k.nn = 5,
+                        modal_iter_check = 1, modal_check_warmup = 20, modal_k.nn = 5,
                         modal_eps = 0.01,
                         initial_design = 5, delta = 0.01^2,
-                        optim.n = 5, optim.max.iter = 100)
+                        optim.n = 1, optim.max.iter = 100)
 
 save(res_opt, file = paste0(output_path, &quot;/UDG_BOSS.rda&quot;))</code></pre>
 <p>The above BOSS algorithm converged in <span
@@ -945,6 +1013,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/f5fd224dd4685e12508697dc51475e1ee6d193fb/docs/figure/UDG.Rmd/unnamed-chunk-7-1.png" target="_blank">f5fd224</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-23
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/380a5300b5af4911147bc75d7f51fe2ec353fd1f/docs/figure/UDG.Rmd/unnamed-chunk-7-1.png" target="_blank">380a530</a>
 </td>
 <td>
@@ -995,6 +1074,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/f5fd224dd4685e12508697dc51475e1ee6d193fb/docs/figure/UDG.Rmd/unnamed-chunk-8-1.png" target="_blank">f5fd224</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-23
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/380a5300b5af4911147bc75d7f51fe2ec353fd1f/docs/figure/UDG.Rmd/unnamed-chunk-8-1.png" target="_blank">380a530</a>
@@ -1151,7 +1241,7 @@ set.seed(1108)
 sigma &lt;- inla.hyperpar.sample(500000, fit)[,2]
 Q &lt;- rnorm(500000, 0, sigma)
 
-q &lt;- quantile(Q, 0.995)
+q &lt;- quantile(Q, 0.9)
 
 # get exceedance probability through inlabru
 exc_q &lt;- excursions.inla(fit, u = q, type = &#39;&gt;&#39;, name = &#39;field&#39;, F.limit = 0.6)</code></pre>
@@ -1216,7 +1306,7 @@ get_post_U &lt;- function(st){
   sigma &lt;- inla.hyperpar.sample(500000, fit_inner)[,2]
   Q &lt;- rnorm(500000, 0, sigma)
   
-  q &lt;- quantile(Q, 0.995)
+  q &lt;- quantile(Q, 0.9)
   
   exc_0.5 &lt;- excursions.inla(fit_inner, u = q, type = &#39;&gt;&#39;, name = &#39;field&#39;, F.limit = 0.6)
   sets_0.5 &lt;- continuous(exc_0.5, v_mesh, 0.05)
@@ -1299,6 +1389,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/f5fd224dd4685e12508697dc51475e1ee6d193fb/docs/figure/UDG.Rmd/unnamed-chunk-15-1.png" target="_blank">f5fd224</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-23
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/380a5300b5af4911147bc75d7f51fe2ec353fd1f/docs/figure/UDG.Rmd/unnamed-chunk-15-1.png" target="_blank">380a530</a>
 </td>
 <td>
@@ -1366,6 +1467,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/f5fd224dd4685e12508697dc51475e1ee6d193fb/docs/figure/UDG.Rmd/unnamed-chunk-16-1.png" target="_blank">f5fd224</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-23
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/380a5300b5af4911147bc75d7f51fe2ec353fd1f/docs/figure/UDG.Rmd/unnamed-chunk-16-1.png" target="_blank">380a530</a>
