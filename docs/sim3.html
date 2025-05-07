@@ -400,7 +400,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-20
+<strong>Last updated:</strong> 2025-05-07
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree3478135680ecdac0e2f53cbf3fbe59f132931aeetargetblank3478135a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreea1140908272d69a698c973ba1cd65da29a474a9btargetblanka114090a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/3478135680ecdac0e2f53cbf3fbe59f132931aee" target="_blank">3478135</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/a1140908272d69a698c973ba1cd65da29a474a9b" target="_blank">a114090</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree3478135680ecdac0e2f53cbf3fbe59f132931aeetargetblank3478135a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreea1140908272d69a698c973ba1cd65da29a474a9btargetblanka114090a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/3478135680ecdac0e2f53cbf3fbe59f132931aee" target="_blank">3478135</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/a1140908272d69a698c973ba1cd65da29a474a9b" target="_blank">a114090</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -565,9 +565,25 @@ were generated:
 <pre><code>
 Ignored files:
     Ignored:    .DS_Store
+    Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
+    Ignored:    data/.DS_Store
+    Ignored:    data/dimension/
     Ignored:    data/sim3/
+    Ignored:    output/.DS_Store
+
+Untracked files:
+    Untracked:  output/sim3/BOSS_robust_sim3.rda
+    Untracked:  output/sim3/BOSS_sample_robust_sim3.rda
+    Untracked:  output/sim3/BOSS_sample_small_n_sim3.rda
+    Untracked:  output/sim3/BOSS_small_n_sim3.rda
+    Untracked:  output/sim3/MCMC_small_n_sim3.rda
+
+Unstaged changes:
+    Deleted:    output/sim3/BOSS_aghq_sim3.rda
+    Modified:   output/sim3/BOSS_modal_sim3.rda
+    Modified:   output/sim3/MCMC_sim3.rda
 
 </code></pre>
 <p>
@@ -611,6 +627,57 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/a1140908272d69a698c973ba1cd65da29a474a9b/analysis/sim3.Rmd" target="_blank">a114090</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-07
+</td>
+<td>
+wflow_publish("analysis/sim3.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/304b28dcf9da42d3476e73403c7deac60df246ee/analysis/sim3.Rmd" target="_blank">304b28d</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-05-05
+</td>
+<td>
+update
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/a07691d49455691f2fe87c2aa84a0862129c8fc4/docs/sim3.html" target="_blank">a07691d</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 html
@@ -953,43 +1020,31 @@ eval_func &lt;- function(par, x = r, y = lr){
   return(mlik)
 }</code></pre>
 </div>
-<div id="boss-aghq" class="section level3">
-<h3>BOSS-aghq</h3>
+<div id="boss-modal-1" class="section level3">
+<h3>BOSS-modal</h3>
 <p>Next, we run the BOSS algorithm where the stopping criteria is based
 on the convergence of the posterior mode. Specifically, we check the
-modal convergence every <span class="math inline">\(5\)</span> BO
-iteration, and consider the convergence statistics of the average <span
-class="math inline">\(5\)</span> nearest neighbor distance around the
-current mode.</p>
+modal convergence every BO iteration, and consider the convergence
+statistics of the average <span class="math inline">\(5\)</span> nearest
+neighbor distance around the current mode.</p>
 <pre class="r"><code>set.seed(123)
 res_opt_modal &lt;- BOSS(eval_func, criterion = &#39;modal&#39;, update_step = 5, max_iter = 100, D = 2,
-                        lower = rep(0.1, 2), upper = c(5, 4),
-                        noise_var = 1e-6,
-                        modal_iter_check = 5,  modal_check_warmup = 20, modal_k.nn = 5,
-                        modal_eps = 0.01,
-                        initial_design = 5, delta = 0.01^2,
-                        optim.n = 5, optim.max.iter = 100)
-
-save(res_opt_modal, file = paste0(output_path, &quot;/BOSS_modal_sim3.rda&quot;))</code></pre>
-<p>The above BOSS algorithm with <code>modal</code> convergence
-criterion converged in <span class="math inline">\(65\)</span>
-iterations.</p>
-<p>We then run BOSS using AGHQ as convergence statistics. Again, we
-check for convergence every <span class="math inline">\(5\)</span>
-iterations. The convergence criteria is relative difference in AGHQ
-statistics being less than <span
-class="math inline">\(0.05\)</span>.</p>
-<pre class="r"><code>set.seed(123)
-res_opt_aghq &lt;- BOSS(eval_func, criterion = &#39;aghq&#39;, update_step = 5, max_iter = 100, D = 2,
                       lower = rep(0.1, 2), upper = c(5, 4),
                       noise_var = 1e-6,
-                      AGHQ_k = 3, AGHQ_iter_check = 5,  AGHQ_check_warmup = 20, AGHQ_eps = 0.05, buffer = 1e-4,
+                      modal_iter_check = 1,  modal_check_warmup = 20, modal_k.nn = 5,
+                      modal_eps = 0.01,
                       initial_design = 5, delta = 0.01^2,
                       optim.n = 5, optim.max.iter = 100)
 
-save(res_opt_aghq, file = paste0(output_path, &quot;/BOSS_aghq_sim3.rda&quot;))</code></pre>
-<p>The above BOSS algorithm with <code>aghq</code> criterion converged
-with <span class="math inline">\(75\)</span> iterations.</p>
+save(res_opt_modal, file = paste0(output_path, &quot;/BOSS_modal_sim3.rda&quot;))</code></pre>
+<p>The above BOSS algorithm with <code>modal</code> convergence
+criterion converged in <span class="math inline">\(55\)</span>
+iterations.</p>
+<p>Let’s check the convergence diagnostic plot:</p>
+<pre class="r"><code>load(paste0(output_path, &quot;/BOSS_modal_sim3.rda&quot;))
+
+plot(res_opt_modal$modal_result$modal_max_diff ~ res_opt_modal$modal_result$i, type = &#39;o&#39;, xlab = &#39;Iteration&#39;, ylab = &#39;Modal Stats&#39;)</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="mcmc" class="section level2">
@@ -998,13 +1053,13 @@ with <span class="math inline">\(75\)</span> iterations.</p>
 obtain the oracle.</p>
 <pre class="r"><code>set.seed(1234)
 MCMC_fit &lt;- stan(
-    file = &quot;code/nlreg.stan&quot;,  # Stan program
-    data = list(x = r, y = lr, N = length(r)),    # named list of data
-    chains = 4,             # number of Markov chains
-    warmup = 1000,          # number of warmup iterations per chain
-    iter = 20000,            # total number of iterations per chain
-    cores = 4,              # number of cores (could use one per chain)
-    algorithm = &#39;NUTS&#39;)
+  file = &quot;code/nlreg.stan&quot;,  # Stan program
+  data = list(x = r, y = lr, N = length(r)),    # named list of data
+  chains = 4,             # number of Markov chains
+  warmup = 1000,          # number of warmup iterations per chain
+  iter = 20000,            # total number of iterations per chain
+  cores = 4,              # number of cores (could use one per chain)
+  algorithm = &#39;NUTS&#39;)
 
 # thin the samples fo plotting
 MCMC_samp &lt;- as.data.frame(MCMC_fit)
@@ -1017,17 +1072,14 @@ save(MCMC_samp, file = paste0(output_path, &quot;/MCMC_sim3.rda&quot;))</code></
 <h3>Marginal Posterior Distributions</h3>
 <p>We first compare the marginal posterior distributions of <span
 class="math inline">\(R\)</span> and <span
-class="math inline">\(\beta\)</span> from <code>inlabru</code>,
-modal-based BOSS, and AGHQ-based BOSS, and MCMC.</p>
+class="math inline">\(\beta\)</span> from <code>inlabru</code>, BOSS,
+and MCMC.</p>
 <pre class="r"><code># inlabru marginal samples
 set.seed(1234)
 inla.samples.a &lt;- a_fun(inla.rmarginal(49500, fit$marginals.fixed$a))
 inla.samples.b &lt;- b_fun(inla.rmarginal(49500, fit$marginals.fixed$b))
 
 # BOSS-modal marginal samples
-
-load(paste0(output_path, &quot;/BOSS_modal_sim3.rda&quot;))
-
 data_to_smooth &lt;- list()
 unique_data &lt;- unique(data.frame(x = res_opt_modal$result$x, y = res_opt_modal$result$y))
 data_to_smooth$x &lt;- as.matrix(dplyr::select(unique_data, -y))
@@ -1056,67 +1108,26 @@ post_x_modal &lt;- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
 dx &lt;- unique(post_x_modal$x.1)[2] - unique(post_x_modal$x.1)[1]
 dy &lt;- unique(post_x_modal$x.2)[2] - unique(post_x_modal$x.2)[1]
 set.seed(123456)
-sample_idx &lt;- rmultinom(1:250000, size = 49500, prob = post_x_modal$pos)
+sample_idx &lt;- rmultinom(1:90000, size = 49500, prob = post_x_modal$pos)
 sample_x_modal &lt;- data.frame(post_x_modal, n = sample_idx)
 
 samples_BOSS_modal &lt;- data.frame(do.call(rbind, apply(sample_x_modal, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
-
-# BOSS-aghq marginal samples
-
-load(paste0(output_path, &quot;/BOSS_aghq_sim3.rda&quot;))
-
-data_to_smooth &lt;- list()
-unique_data &lt;- unique(data.frame(x = res_opt_aghq$result$x, y = res_opt_aghq$result$y))
-data_to_smooth$x &lt;- as.matrix(dplyr::select(unique_data, -y))
-data_to_smooth$y &lt;- (unique_data$y - mean(unique_data$y))
-
-square_exp_cov &lt;- square_exp_cov_generator_nd(length_scale = res_opt_aghq$length_scale, signal_var = res_opt_aghq$signal_var)
-
-surrogate &lt;- function(xvalue, data_to_smooth, cov){
-  predict_gp(data_to_smooth, x_pred = xvalue, choice_cov = cov, noise_var = 1e-6)$mean
-}
-
-ff &lt;- list()
-ff$fn &lt;- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, cov = square_exp_cov))
-
-x.1 &lt;- (seq(from = 0.1, to = 5, length.out = 300) - 0.1)/4.9
-x.2 &lt;- (seq(from = 0.1, to = 4, length.out = 300) - 0.1)/3.9
-x_vals &lt;- expand.grid(x.1, x.2)
-names(x_vals) &lt;- c(&#39;x.1&#39;,&#39;x.2&#39;)
-x_original &lt;- t(t(x_vals)*(c(5, 4) - c(0.1, 0.1)) + c(0.1, 0.1)) 
-
-fn_vals &lt;- apply(x_vals, 1, function(x) ff$fn(x = matrix(x, ncol = 2))) + mean(unique_data$y)
-# normalize
-lognormal_const &lt;- log(sum(exp(fn_vals))*0.0098*0.0078*25/9)
-post_x_aghq &lt;- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
-
-dx &lt;- unique(post_x_aghq$x.1)[2] - unique(post_x_aghq$x.1)[1]
-dy &lt;- unique(post_x_aghq$x.2)[2] - unique(post_x_aghq$x.2)[1]
-set.seed(123456)
-sample_idx &lt;- rmultinom(1:250000, size = 49500, prob = post_x_aghq$pos)
-sample_x_aghq &lt;- data.frame(post_x_aghq, n = sample_idx)
-
-samples_BOSS_aghq &lt;- data.frame(do.call(rbind, apply(sample_x_aghq, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
 
 # MCMC marginal samples
 load(paste0(output_path, &quot;/MCMC_sim3.rda&quot;))
 
 # Combine all samples together
 
-R_marginal &lt;- data.frame(R = c(inla.samples.a, samples_BOSS_modal[,1], 
-                               samples_BOSS_aghq[,1], MCMC_samp$a), 
-                         method = rep(c(&#39;inlabru&#39;, &#39;BOSS-modal&#39;, &#39;BOSS-aghq&#39;, &#39;MCMC&#39;),  
+R_marginal &lt;- data.frame(R = c(inla.samples.a, samples_BOSS_modal[,1], MCMC_samp$a), 
+                         method = rep(c(&#39;inlabru&#39;, &#39;BOSS&#39;,  &#39;MCMC&#39;),  
                                       c(length(inla.samples.a), 
                                         length(samples_BOSS_modal[,1]), 
-                                        length(samples_BOSS_aghq[,1]), 
                                         length(MCMC_samp$a))))
 
-beta_marginal &lt;- data.frame(beta = c(inla.samples.b, samples_BOSS_modal[,2],
-                                     samples_BOSS_aghq[,2], MCMC_samp$b), 
-                            method = rep(c(&#39;inlabru&#39;, &#39;BOSS-modal&#39;, &#39;BOSS-aghq&#39;, &#39;MCMC&#39;),  
+beta_marginal &lt;- data.frame(beta = c(inla.samples.b, samples_BOSS_modal[,2], MCMC_samp$b), 
+                            method = rep(c(&#39;inlabru&#39;, &#39;BOSS&#39;, &#39;MCMC&#39;),  
                                          c(length(inla.samples.b),
-                                           length(samples_BOSS_modal[,2]), 
-                                           length(samples_BOSS_aghq[,2]), 
+                                           length(samples_BOSS_modal[,2]),  
                                            length(MCMC_samp$b))))</code></pre>
 <p>Plot the marginal posterior densities</p>
 <pre class="r"><code>ggplot(R_marginal, aes(R)) + geom_density(aes(color = method)) + theme_minimal() + xlab(&#39;$R$&#39;)</code></pre>
@@ -1143,6 +1154,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/a07691d49455691f2fe87c2aa84a0862129c8fc4/docs/figure/sim3.Rmd/unnamed-chunk-9-1.png" target="_blank">a07691d</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/3478135680ecdac0e2f53cbf3fbe59f132931aee/docs/figure/sim3.Rmd/unnamed-chunk-9-1.png" target="_blank">3478135</a>
@@ -1195,6 +1217,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/a07691d49455691f2fe87c2aa84a0862129c8fc4/docs/figure/sim3.Rmd/unnamed-chunk-10-1.png" target="_blank">a07691d</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-04-20
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/3478135680ecdac0e2f53cbf3fbe59f132931aee/docs/figure/sim3.Rmd/unnamed-chunk-10-1.png" target="_blank">3478135</a>
 </td>
 <td>
@@ -1236,7 +1269,7 @@ inla.joint.samps &lt;- data.frame(a = a_fun(joint_samp[,1]), b = b_fun(joint_sam
 # plot joint posterior of (R, beta) from inlabru
 ggplot(inla.joint.samps, aes(a, b)) + stat_density_2d(
   geom = &quot;raster&quot;,
-  aes(fill = after_stat(density)), n = 500,
+  aes(fill = after_stat(density)), n = 300,
   contour = FALSE) +
   geom_point(data = data.frame(a = a_fun(fit$summary.fixed$mode[1]), b = b_fun(fit$summary.fixed$mode[2])), color = &#39;red&#39;, shape = 1, size =0.5) + 
   geom_point(data = data.frame(a = 2, b = 2), color = &#39;orange&#39;, size =0.5) +
@@ -1302,9 +1335,8 @@ david.li
 </div>
 </div>
 </div>
-<div id="boss-modal-joint-posterior-distribution"
-class="section level4">
-<h4>BOSS-modal joint posterior distribution:</h4>
+<div id="boss-joint-posterior-distribution" class="section level4">
+<h4>BOSS joint posterior distribution:</h4>
 <pre class="r"><code># plot joint posterior of (R, beta) from BOSS
 ggplot(post_x_modal, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) + 
   geom_point(data = data.frame(x.1 = post_x_modal$x.1[which.max(post_x_modal$pos)], x.2 = post_x_modal$x.2[which.max(post_x_modal$pos)]), color = &#39;red&#39;, shape = 1, size =0.5) +
@@ -1348,12 +1380,14 @@ david.li
 </div>
 </div>
 </div>
-<div id="boss-aghq-joint-posterior-distribuiton" class="section level4">
-<h4>BOSS-AGHQ joint posterior distribuiton:</h4>
-<pre class="r"><code># plot joint posterior of (R, beta) from BOSS
-ggplot(post_x_aghq, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) + 
-  geom_point(data = data.frame(x.1 = post_x_aghq$x.1[which.max(post_x_aghq$pos)], x.2 = post_x_aghq$x.2[which.max(post_x_aghq$pos)]), color = &#39;red&#39;, shape = 1, size =0.5) +
-  geom_point(data = data.frame(x.1 = 2, x.2 = 2), color = &#39;orange&#39;, size =0.5) + coord_fixed() + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$\\beta$&#39;)</code></pre>
+<div id="mcmc-joint-posterior-distribution" class="section level4">
+<h4>MCMC joint posterior distribution:</h4>
+<pre class="r"><code>ggplot(MCMC_samp, aes(a, b)) + stat_density_2d(
+  geom = &quot;raster&quot;,
+  aes(fill = after_stat(density)), n = 300,
+  contour = FALSE) + 
+  geom_point(data = data.frame(a = post_x_modal$x.1[which.max(post_x_modal$pos)], b = post_x_modal$x.2[which.max(post_x_modal$pos)]), color = &#39;red&#39;, shape = 1, size =0.5) +
+  geom_point(data = data.frame(a = 2, b = 2), color = &#39;orange&#39;, size =0.5) + coord_fixed() + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$\\beta$&#39;) + xlim(c(0.1, 5)) + ylim(c(0.1, 4))</code></pre>
 <p><img src="figure/sim3.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-13-1">
@@ -1392,58 +1426,227 @@ david.li
 </table>
 </div>
 </div>
-</div>
-<div id="mcmc-joint-posterior-distribution" class="section level4">
-<h4>MCMC joint posterior distribution:</h4>
-<pre class="r"><code>ggplot(MCMC_samp, aes(a, b)) + stat_density_2d(
-  geom = &quot;raster&quot;,
-  aes(fill = after_stat(density)), n = 300,
-  contour = FALSE) + 
-  geom_point(data = data.frame(a = post_x_aghq$x.1[which.max(post_x_aghq$pos)], b = post_x_aghq$x.2[which.max(post_x_aghq$pos)]), color = &#39;red&#39;, shape = 1, size =0.5) +
-  geom_point(data = data.frame(a = 2, b = 2), color = &#39;orange&#39;, size =0.5) + coord_fixed() + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$\\beta$&#39;) + xlim(c(0.1, 5)) + ylim(c(0.1, 4))</code></pre>
-<p><img src="figure/sim3.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>
-<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-14-1">
-Past versions of unnamed-chunk-14-1.png
-</button>
-</p>
-<div id="fig-unnamed-chunk-14-1" class="collapse">
-<div class="table-responsive">
-<table class="table table-condensed table-hover">
-<thead>
-<tr>
-<th>
-Version
-</th>
-<th>
-Author
-</th>
-<th>
-Date
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<a href="https://github.com/AgueroZZ/BOSS_website/blob/3478135680ecdac0e2f53cbf3fbe59f132931aee/docs/figure/sim3.Rmd/unnamed-chunk-14-1.png" target="_blank">3478135</a>
-</td>
-<td>
-david.li
-</td>
-<td>
-2025-04-20
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
 <p>From the above results, it is clear that BOSS is much better at
 depicting the joint posterior distribution than <code>inlabru</code>.
 The joint distribution from <code>inlabru</code> is simply the product
 of the marginal distribution, which completely ignores the more complex
 structures in the joint posterior.</p>
+</div>
+</div>
+</div>
+<div id="does-starting-design-points-matter" class="section level2">
+<h2>Does Starting Design Points Matter?</h2>
+<p>We here check if BOSS is robust towards the starting design points.
+We run BOSS for <span class="math inline">\(20\)</span> times with
+different initial design points and run until the modal statistics have
+reached below <span class="math inline">\(\epsilon =0.01\)</span>.</p>
+<pre class="r"><code>res_list &lt;- vector(&#39;list&#39;, 20)
+
+for (i in 1:20) {
+  set.seed(i)
+  res_list[[i]] &lt;- BOSS(eval_func, criterion = &#39;modal&#39;, update_step = 5, max_iter = 100, D = 2,
+                        lower = rep(0.1, 2), upper = c(5, 4),
+                        noise_var = 1e-6,
+                        modal_iter_check = 1,  modal_check_warmup = 20, modal_k.nn = 5,
+                        modal_eps = 0.01,
+                        initial_design = 5, delta = 0.01^2,
+                        optim.n = 5, optim.max.iter = 100)
+}
+
+save(res_list, file = paste0(output_path, &quot;/BOSS_robust_sim3.rda&quot;))</code></pre>
+<pre class="r"><code>load(paste0(output_path, &quot;/BOSS_robust_sim3.rda&quot;))
+
+sample_list &lt;- vector(&#39;list&#39;, 20)
+
+for(i in 1:20){
+  # BOSS-modal marginal samples
+  data_to_smooth &lt;- list()
+  unique_data &lt;- unique(data.frame(x = res_list[[i]]$result$x, y = res_list[[i]]$result$y))
+  data_to_smooth$x &lt;- as.matrix(dplyr::select(unique_data, -y))
+  data_to_smooth$y &lt;- (unique_data$y - mean(unique_data$y))
+  
+  square_exp_cov &lt;- square_exp_cov_generator_nd(length_scale = res_list[[i]]$length_scale, signal_var = res_list[[i]]$signal_var)
+  
+  surrogate &lt;- function(xvalue, data_to_smooth, cov){
+    predict_gp(data_to_smooth, x_pred = xvalue, choice_cov = cov, noise_var = 1e-6)$mean
+  }
+  
+  ff &lt;- list()
+  ff$fn &lt;- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, cov = square_exp_cov))
+  
+  x.1 &lt;- (seq(from = 0.1, to = 5, length.out = 300) - 0.1)/4.9
+  x.2 &lt;- (seq(from = 0.1, to = 4, length.out = 300) - 0.1)/3.9
+  x_vals &lt;- expand.grid(x.1, x.2)
+  names(x_vals) &lt;- c(&#39;x.1&#39;,&#39;x.2&#39;)
+  x_original &lt;- t(t(x_vals)*(c(5, 4) - c(0.1, 0.1)) + c(0.1, 0.1)) 
+  
+  fn_vals &lt;- apply(x_vals, 1, function(x) ff$fn(x = matrix(x, ncol = 2))) + mean(unique_data$y)
+  # normalize
+  lognormal_const &lt;- log(sum(exp(fn_vals))*0.0098*0.0078*25/9)
+  post_x_modal &lt;- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
+  
+  dx &lt;- unique(post_x_modal$x.1)[2] - unique(post_x_modal$x.1)[1]
+  dy &lt;- unique(post_x_modal$x.2)[2] - unique(post_x_modal$x.2)[1]
+  set.seed(123456)
+  sample_idx &lt;- rmultinom(1:90000, size = 49500, prob = post_x_modal$pos)
+  sample_x_modal &lt;- data.frame(post_x_modal, n = sample_idx)
+  
+  sample_list[[i]] &lt;- data.frame(do.call(rbind, apply(sample_x_modal, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
+  
+}
+
+save(sample_list, file = paste0(output_path, &quot;/BOSS_sample_robust_sim3.rda&quot;))</code></pre>
+<pre class="r"><code>load(paste0(output_path, &quot;/BOSS_sample_robust_sim3.rda&quot;))
+load(paste0(output_path, &quot;/MCMC_sim3.rda&quot;))
+
+
+p_R &lt;- ggplot(MCMC_samp, aes(x = a)) + theme_minimal() + xlab(&#39;$R$&#39;)
+
+for (i in 1:20) {
+  p_R &lt;- p_R + geom_density(data = sample_list[[i]], aes(x = X1), color = &#39;red&#39;, alpha = 0.1)
+}
+
+p_R &lt;- p_R + geom_density(color = &#39;violet&#39;) 
+
+p_R</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>p_b &lt;- ggplot(MCMC_samp, aes(x = b)) + theme_minimal() + xlab(&#39;$beta$&#39;)
+
+for (i in 1:20) {
+  p_b &lt;- p_b + geom_density(data = sample_list[[i]], aes(x = X2), color = &#39;red&#39;, alpha = 0.1)
+}
+
+p_b &lt;- p_b + geom_density(color = &#39;violet&#39;) 
+
+p_b</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-16-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>In the above, violet density comes from MCMC while red ones come from
+BOSS. We can see that BOSS is highly robust to the initial design points
+selection.</p>
+</div>
+<div id="what-happens-with-smaller-sample-size" class="section level2">
+<h2>What Happens with Smaller Sample Size?</h2>
+<p>We now test the performance of BOSS when the sample size is small.
+This is interesting since small sample size typically translates to a
+posterior distribution that may have highly complex and distorted
+geometry that deviates significantly from a normal distribution.</p>
+<p>Here we use the same simulation example but with <span
+class="math inline">\(n = 50\)</span>.</p>
+<pre class="r"><code>r &lt;- seq(0, 20, length.out = 50)
+beta &lt;- 10
+a &lt;- 2
+b &lt;- 2
+c &lt;- -2.5
+
+set.seed(1234)
+Ir &lt;- beta*(1 + (r/a)^b)^c
+lr &lt;- log(Ir) + rnorm(length(r), 0, 0.5)</code></pre>
+<p>We run BOSS for <span class="math inline">\(20\)</span> times with
+different initial design points while turning off the stopping criteria.
+We want to check what the BOSS posterior looks like.</p>
+<pre class="r"><code>res_list &lt;- vector(&#39;list&#39;, 20)
+
+for (i in 1:20) {
+  set.seed(i)
+  res_list[[i]] &lt;- BOSS(eval_func, criterion = &#39;modal&#39;, update_step = 5, max_iter = 100, D = 2,
+                        lower = rep(0.1, 2), upper = c(5, 4),
+                        noise_var = 1e-6,
+                        modal_iter_check = 1,  modal_check_warmup = 20, modal_k.nn = 5,
+                        modal_eps = 0,
+                        initial_design = 5, delta = 0.01^2,
+                        optim.n = 5, optim.max.iter = 100)
+}
+
+save(res_list, file = paste0(output_path, &quot;/BOSS_small_n_sim3.rda&quot;))</code></pre>
+<pre class="r"><code>set.seed(1234)
+MCMC_fit &lt;- stan(
+  file = &quot;code/nlreg.stan&quot;,  # Stan program
+  data = list(x = r, y = lr, N = length(r)),    # named list of data
+  chains = 4,             # number of Markov chains
+  warmup = 1000,          # number of warmup iterations per chain
+  iter = 20000,            # total number of iterations per chain
+  cores = 4,              # number of cores (could use one per chain)
+  algorithm = &#39;NUTS&#39;)
+
+# thin the samples fo plotting
+MCMC_samp &lt;- as.data.frame(MCMC_fit)
+#MCMC_samp_thin &lt;- MCMC_samp[seq(1, 76000, by = 8),]
+save(MCMC_samp, file = paste0(output_path, &quot;/MCMC_small_n_sim3.rda&quot;))</code></pre>
+<pre class="r"><code>load(paste0(output_path, &quot;/BOSS_small_n_sim3.rda&quot;))
+
+sample_list &lt;- vector(&#39;list&#39;, 20)
+
+for(i in 1:20){
+  # BOSS-modal marginal samples
+  data_to_smooth &lt;- list()
+  unique_data &lt;- unique(data.frame(x = res_list[[i]]$result$x, y = res_list[[i]]$result$y))
+  data_to_smooth$x &lt;- as.matrix(dplyr::select(unique_data, -y))
+  data_to_smooth$y &lt;- (unique_data$y - mean(unique_data$y))
+  
+  square_exp_cov &lt;- square_exp_cov_generator_nd(length_scale = res_list[[i]]$length_scale, signal_var = res_list[[i]]$signal_var)
+  
+  surrogate &lt;- function(xvalue, data_to_smooth, cov){
+    predict_gp(data_to_smooth, x_pred = xvalue, choice_cov = cov, noise_var = 1e-6)$mean
+  }
+  
+  ff &lt;- list()
+  ff$fn &lt;- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, cov = square_exp_cov))
+  
+  x.1 &lt;- (seq(from = 0.1, to = 5, length.out = 300) - 0.1)/4.9
+  x.2 &lt;- (seq(from = 0.1, to = 4, length.out = 300) - 0.1)/3.9
+  x_vals &lt;- expand.grid(x.1, x.2)
+  names(x_vals) &lt;- c(&#39;x.1&#39;,&#39;x.2&#39;)
+  x_original &lt;- t(t(x_vals)*(c(5, 4) - c(0.1, 0.1)) + c(0.1, 0.1)) 
+  
+  fn_vals &lt;- apply(x_vals, 1, function(x) ff$fn(x = matrix(x, ncol = 2))) + mean(unique_data$y)
+  # normalize
+  lognormal_const &lt;- log(sum(exp(fn_vals))*0.0098*0.0078*25/9)
+  post_x_modal &lt;- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
+  
+  dx &lt;- unique(post_x_modal$x.1)[2] - unique(post_x_modal$x.1)[1]
+  dy &lt;- unique(post_x_modal$x.2)[2] - unique(post_x_modal$x.2)[1]
+  set.seed(123456)
+  sample_idx &lt;- rmultinom(1:90000, size = 49500, prob = post_x_modal$pos)
+  sample_x_modal &lt;- data.frame(post_x_modal, n = sample_idx)
+  
+  sample_list[[i]] &lt;- data.frame(do.call(rbind, apply(sample_x_modal, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
+  
+}
+
+save(sample_list, file = paste0(output_path, &quot;/BOSS_sample_small_n_sim3.rda&quot;))</code></pre>
+<pre class="r"><code>load(paste0(output_path, &quot;/BOSS_sample_small_n_sim3.rda&quot;))
+load(paste0(output_path, &quot;/MCMC_small_n_sim3.rda&quot;))
+
+
+p_R &lt;- ggplot(MCMC_samp, aes(x = a)) + theme_minimal() + xlab(&#39;$R$&#39;)
+
+for (i in 1:20) {
+  p_R &lt;- p_R + geom_density(data = sample_list[[i]], aes(x = X1), color = &#39;red&#39;, alpha = 0.1)
+}
+
+p_R &lt;- p_R + geom_density(color = &#39;violet&#39;) 
+
+p_R</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>p_b &lt;- ggplot(MCMC_samp, aes(x = b)) + theme_minimal() + xlab(&#39;$beta$&#39;)
+
+for (i in 1:20) {
+  p_b &lt;- p_b + geom_density(data = sample_list[[i]], aes(x = X2), color = &#39;red&#39;, alpha = 0.1)
+}
+
+p_b &lt;- p_b + geom_density(color = &#39;violet&#39;) 
+
+p_b</code></pre>
+<p><img src="figure/sim3.Rmd/unnamed-chunk-21-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Compared to the case when <span class="math inline">\(n =
+200\)</span>, having a smaller sample size causes BOSS to have inferior
+accuracy. Specifically, surrogate posterior from BOSS (red densities) is
+lighter-tailed compared to the true posterior (violet densities). The
+reason here is that BvM theorem does not apply when sample size is
+small. Under such scenarios, the tail region of the posterior is likely
+underestimated since the design points used for interpolation for the
+tail regions are ostly near the boundaries of the search domain and of
+very low values.</p>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1512,8 +1715,6 @@ loaded via a namespace (and not attached):
 [88] digest_0.6.37       classInt_0.4-10     farver_2.1.2       
 [91] htmltools_0.5.8.1   lifecycle_1.0.4     httr_1.4.7         
 [94] MASS_7.3-61        </code></pre>
-</div>
-</div>
 </div>
 </div>
 </div>
