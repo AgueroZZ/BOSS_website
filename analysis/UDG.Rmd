@@ -126,7 +126,7 @@ save(fit, file = paste0(output_path, "/UDG_inlabru.rda"))
 
 ## BOSS
 
-```{r eval = F}
+```{r}
 # specify objective function: unnormalized pi(R,n|y)
 eval_func <- function(par){
   R1 <- par[1]
@@ -156,10 +156,10 @@ upper = c(12, 4)
 res_opt <- BOSS(eval_func, criterion = 'modal', update_step = 5, max_iter = 100, D = 2,
                         lower = lower, upper = upper,
                         noise_var = 1e-6,
-                        modal_iter_check = 10, modal_check_warmup = 20, modal_k.nn = 5,
+                        modal_iter_check = 1, modal_check_warmup = 20, modal_k.nn = 5,
                         modal_eps = 0.01,
                         initial_design = 5, delta = 0.01^2,
-                        optim.n = 5, optim.max.iter = 100)
+                        optim.n = 1, optim.max.iter = 100)
 
 save(res_opt, file = paste0(output_path, "/UDG_BOSS.rda"))
 ```
@@ -301,7 +301,7 @@ set.seed(1108)
 sigma <- inla.hyperpar.sample(500000, fit)[,2]
 Q <- rnorm(500000, 0, sigma)
 
-q <- quantile(Q, 0.995)
+q <- quantile(Q, 0.9)
 
 # get exceedance probability through inlabru
 exc_q <- excursions.inla(fit, u = q, type = '>', name = 'field', F.limit = 0.6)
@@ -367,7 +367,7 @@ get_post_U <- function(st){
   sigma <- inla.hyperpar.sample(500000, fit_inner)[,2]
   Q <- rnorm(500000, 0, sigma)
   
-  q <- quantile(Q, 0.995)
+  q <- quantile(Q, 0.9)
   
   exc_0.5 <- excursions.inla(fit_inner, u = q, type = '>', name = 'field', F.limit = 0.6)
   sets_0.5 <- continuous(exc_0.5, v_mesh, 0.05)
