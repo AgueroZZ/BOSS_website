@@ -101,31 +101,32 @@ eval_func <- function(par, x = r, y = lr){
   
   return(mlik)
 }
-
 ```
 
 ### BOSS-modal
 
-Next, we run the BOSS algorithm where the stopping criteria is based on the convergence of the posterior mode. Specifically, we check the modal convergence every $5$ BO iteration, and consider the convergence statistics of the average $5$ nearest neighbor distance around the current mode.
+Next, we run the BOSS algorithm where the stopping criteria is based on the convergence of the posterior mode. Specifically, we check the modal convergence every BO iteration, and consider the convergence statistics of the average $5$ nearest neighbor distance around the current mode.
 
 ```{r, eval = F}
-set.seed(1234)
+set.seed(123)
 res_opt_modal <- BOSS(eval_func, criterion = 'modal', update_step = 5, max_iter = 100, D = 2,
-                        lower = rep(0.1, 2), upper = c(5, 4),
-                        noise_var = 1e-6,
-                        modal_iter_check = 1,  modal_check_warmup = 20, modal_k.nn = 5,
-                        modal_eps = 0.01,
-                        initial_design = 5, delta = 0.01^2,
-                        optim.n = 5, optim.max.iter = 100)
+                      lower = rep(0.1, 2), upper = c(5, 4),
+                      noise_var = 1e-6,
+                      modal_iter_check = 1,  modal_check_warmup = 20, modal_k.nn = 5,
+                      modal_eps = 0.01,
+                      initial_design = 5, delta = 0.01^2,
+                      optim.n = 5, optim.max.iter = 100)
 
 save(res_opt_modal, file = paste0(output_path, "/BOSS_modal_sim3.rda"))
 ```
 
-The above BOSS algorithm with `modal` convergence criterion converged in $65$ iterations.
+The above BOSS algorithm with `modal` convergence criterion converged in $55$ iterations.
 
 Let's check the convergence diagnostic plot:
 
 ```{r}
+load(paste0(output_path, "/BOSS_modal_sim3.rda"))
+
 plot(res_opt_modal$modal_result$modal_max_diff ~ res_opt_modal$modal_result$i, type = 'o', xlab = 'Iteration', ylab = 'Modal Stats')
 ```
 
@@ -137,13 +138,13 @@ Lastly, we implement the MCMC-based method using `stan` to obtain the oracle.
 ```{r, eval = F}
 set.seed(1234)
 MCMC_fit <- stan(
-    file = "code/nlreg.stan",  # Stan program
-    data = list(x = r, y = lr, N = length(r)),    # named list of data
-    chains = 4,             # number of Markov chains
-    warmup = 1000,          # number of warmup iterations per chain
-    iter = 20000,            # total number of iterations per chain
-    cores = 4,              # number of cores (could use one per chain)
-    algorithm = 'NUTS')
+  file = "code/nlreg.stan",  # Stan program
+  data = list(x = r, y = lr, N = length(r)),    # named list of data
+  chains = 4,             # number of Markov chains
+  warmup = 1000,          # number of warmup iterations per chain
+  iter = 20000,            # total number of iterations per chain
+  cores = 4,              # number of cores (could use one per chain)
+  algorithm = 'NUTS')
 
 # thin the samples fo plotting
 MCMC_samp <- as.data.frame(MCMC_fit)
@@ -155,7 +156,7 @@ save(MCMC_samp, file = paste0(output_path, "/MCMC_sim3.rda"))
 
 ### Marginal Posterior Distributions
 
-We first compare the marginal posterior distributions of $R$ and $\beta$ from `inlabru`, modal-based BOSS, and AGHQ-based BOSS, and MCMC.
+We first compare the marginal posterior distributions of $R$ and $\beta$ from `inlabru`, BOSS, and MCMC.
 
 ```{r}
 # inlabru marginal samples
@@ -164,9 +165,6 @@ inla.samples.a <- a_fun(inla.rmarginal(49500, fit$marginals.fixed$a))
 inla.samples.b <- b_fun(inla.rmarginal(49500, fit$marginals.fixed$b))
 
 # BOSS-modal marginal samples
-
-load(paste0(output_path, "/BOSS_modal_sim3.rda"))
-
 data_to_smooth <- list()
 unique_data <- unique(data.frame(x = res_opt_modal$result$x, y = res_opt_modal$result$y))
 data_to_smooth$x <- as.matrix(dplyr::select(unique_data, -y))
@@ -195,67 +193,26 @@ post_x_modal <- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
 dx <- unique(post_x_modal$x.1)[2] - unique(post_x_modal$x.1)[1]
 dy <- unique(post_x_modal$x.2)[2] - unique(post_x_modal$x.2)[1]
 set.seed(123456)
-sample_idx <- rmultinom(1:250000, size = 49500, prob = post_x_modal$pos)
+sample_idx <- rmultinom(1:90000, size = 49500, prob = post_x_modal$pos)
 sample_x_modal <- data.frame(post_x_modal, n = sample_idx)
 
 samples_BOSS_modal <- data.frame(do.call(rbind, apply(sample_x_modal, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
-
-# BOSS-aghq marginal samples
-
-load(paste0(output_path, "/BOSS_aghq_sim3.rda"))
-
-data_to_smooth <- list()
-unique_data <- unique(data.frame(x = res_opt_aghq$result$x, y = res_opt_aghq$result$y))
-data_to_smooth$x <- as.matrix(dplyr::select(unique_data, -y))
-data_to_smooth$y <- (unique_data$y - mean(unique_data$y))
-
-square_exp_cov <- square_exp_cov_generator_nd(length_scale = res_opt_aghq$length_scale, signal_var = res_opt_aghq$signal_var)
-
-surrogate <- function(xvalue, data_to_smooth, cov){
-  predict_gp(data_to_smooth, x_pred = xvalue, choice_cov = cov, noise_var = 1e-6)$mean
-}
-
-ff <- list()
-ff$fn <- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, cov = square_exp_cov))
-
-x.1 <- (seq(from = 0.1, to = 5, length.out = 300) - 0.1)/4.9
-x.2 <- (seq(from = 0.1, to = 4, length.out = 300) - 0.1)/3.9
-x_vals <- expand.grid(x.1, x.2)
-names(x_vals) <- c('x.1','x.2')
-x_original <- t(t(x_vals)*(c(5, 4) - c(0.1, 0.1)) + c(0.1, 0.1)) 
-
-fn_vals <- apply(x_vals, 1, function(x) ff$fn(x = matrix(x, ncol = 2))) + mean(unique_data$y)
-# normalize
-lognormal_const <- log(sum(exp(fn_vals))*0.0098*0.0078*25/9)
-post_x_aghq <- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
-
-dx <- unique(post_x_aghq$x.1)[2] - unique(post_x_aghq$x.1)[1]
-dy <- unique(post_x_aghq$x.2)[2] - unique(post_x_aghq$x.2)[1]
-set.seed(123456)
-sample_idx <- rmultinom(1:250000, size = 49500, prob = post_x_aghq$pos)
-sample_x_aghq <- data.frame(post_x_aghq, n = sample_idx)
-
-samples_BOSS_aghq <- data.frame(do.call(rbind, apply(sample_x_aghq, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
 
 # MCMC marginal samples
 load(paste0(output_path, "/MCMC_sim3.rda"))
 
 # Combine all samples together
 
-R_marginal <- data.frame(R = c(inla.samples.a, samples_BOSS_modal[,1], 
-                               samples_BOSS_aghq[,1], MCMC_samp$a), 
-                         method = rep(c('inlabru', 'BOSS-modal', 'BOSS-aghq', 'MCMC'),  
+R_marginal <- data.frame(R = c(inla.samples.a, samples_BOSS_modal[,1], MCMC_samp$a), 
+                         method = rep(c('inlabru', 'BOSS',  'MCMC'),  
                                       c(length(inla.samples.a), 
                                         length(samples_BOSS_modal[,1]), 
-                                        length(samples_BOSS_aghq[,1]), 
                                         length(MCMC_samp$a))))
 
-beta_marginal <- data.frame(beta = c(inla.samples.b, samples_BOSS_modal[,2],
-                                     samples_BOSS_aghq[,2], MCMC_samp$b), 
-                            method = rep(c('inlabru', 'BOSS-modal', 'BOSS-aghq', 'MCMC'),  
+beta_marginal <- data.frame(beta = c(inla.samples.b, samples_BOSS_modal[,2], MCMC_samp$b), 
+                            method = rep(c('inlabru', 'BOSS', 'MCMC'),  
                                          c(length(inla.samples.b),
-                                           length(samples_BOSS_modal[,2]), 
-                                           length(samples_BOSS_aghq[,2]), 
+                                           length(samples_BOSS_modal[,2]),  
                                            length(MCMC_samp$b))))
 ```
 
@@ -285,28 +242,19 @@ inla.joint.samps <- data.frame(a = a_fun(joint_samp[,1]), b = b_fun(joint_samp[,
 # plot joint posterior of (R, beta) from inlabru
 ggplot(inla.joint.samps, aes(a, b)) + stat_density_2d(
   geom = "raster",
-  aes(fill = after_stat(density)), n = 500,
+  aes(fill = after_stat(density)), n = 300,
   contour = FALSE) +
   geom_point(data = data.frame(a = a_fun(fit$summary.fixed$mode[1]), b = b_fun(fit$summary.fixed$mode[2])), color = 'red', shape = 1, size =0.5) + 
   geom_point(data = data.frame(a = 2, b = 2), color = 'orange', size =0.5) +
   coord_fixed() + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$\\beta$') + xlim(c(0.1, 5)) + ylim(c(0.1, 4))
 ```
 
-#### BOSS-modal joint posterior distribution:
+#### BOSS joint posterior distribution:
 
 ```{r}
 # plot joint posterior of (R, beta) from BOSS
 ggplot(post_x_modal, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) + 
   geom_point(data = data.frame(x.1 = post_x_modal$x.1[which.max(post_x_modal$pos)], x.2 = post_x_modal$x.2[which.max(post_x_modal$pos)]), color = 'red', shape = 1, size =0.5) +
-  geom_point(data = data.frame(x.1 = 2, x.2 = 2), color = 'orange', size =0.5) + coord_fixed() + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$\\beta$')
-```
-
-#### BOSS-AGHQ joint posterior distribuiton:
-
-```{r}
-# plot joint posterior of (R, beta) from BOSS
-ggplot(post_x_aghq, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) + 
-  geom_point(data = data.frame(x.1 = post_x_aghq$x.1[which.max(post_x_aghq$pos)], x.2 = post_x_aghq$x.2[which.max(post_x_aghq$pos)]), color = 'red', shape = 1, size =0.5) +
   geom_point(data = data.frame(x.1 = 2, x.2 = 2), color = 'orange', size =0.5) + coord_fixed() + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$\\beta$')
 ```
 
@@ -317,8 +265,237 @@ ggplot(MCMC_samp, aes(a, b)) + stat_density_2d(
   geom = "raster",
   aes(fill = after_stat(density)), n = 300,
   contour = FALSE) + 
-  geom_point(data = data.frame(a = post_x_aghq$x.1[which.max(post_x_aghq$pos)], b = post_x_aghq$x.2[which.max(post_x_aghq$pos)]), color = 'red', shape = 1, size =0.5) +
+  geom_point(data = data.frame(a = post_x_modal$x.1[which.max(post_x_modal$pos)], b = post_x_modal$x.2[which.max(post_x_modal$pos)]), color = 'red', shape = 1, size =0.5) +
   geom_point(data = data.frame(a = 2, b = 2), color = 'orange', size =0.5) + coord_fixed() + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$\\beta$') + xlim(c(0.1, 5)) + ylim(c(0.1, 4))
 ```
 
 From the above results, it is clear that BOSS is much better at depicting the joint posterior distribution than `inlabru`. The joint distribution from `inlabru` is simply the product of the marginal distribution, which completely ignores the more complex structures in the joint posterior.
+
+
+## Does Starting Design Points Matter?
+
+We here check if BOSS is robust towards the starting design points. We run BOSS for $20$ times with different initial design points and run until the modal statistics have reached below $\epsilon =0.01$. 
+
+```{r, eval = F}
+res_list <- vector('list', 20)
+
+for (i in 1:20) {
+  set.seed(i)
+  res_list[[i]] <- BOSS(eval_func, criterion = 'modal', update_step = 5, max_iter = 100, D = 2,
+                        lower = rep(0.1, 2), upper = c(5, 4),
+                        noise_var = 1e-6,
+                        modal_iter_check = 1,  modal_check_warmup = 20, modal_k.nn = 5,
+                        modal_eps = 0.01,
+                        initial_design = 5, delta = 0.01^2,
+                        optim.n = 5, optim.max.iter = 100)
+}
+
+save(res_list, file = paste0(output_path, "/BOSS_robust_sim3.rda"))
+```
+
+
+```{r, eval = F}
+load(paste0(output_path, "/BOSS_robust_sim3.rda"))
+
+sample_list <- vector('list', 20)
+
+for(i in 1:20){
+  # BOSS-modal marginal samples
+  data_to_smooth <- list()
+  unique_data <- unique(data.frame(x = res_list[[i]]$result$x, y = res_list[[i]]$result$y))
+  data_to_smooth$x <- as.matrix(dplyr::select(unique_data, -y))
+  data_to_smooth$y <- (unique_data$y - mean(unique_data$y))
+  
+  square_exp_cov <- square_exp_cov_generator_nd(length_scale = res_list[[i]]$length_scale, signal_var = res_list[[i]]$signal_var)
+  
+  surrogate <- function(xvalue, data_to_smooth, cov){
+    predict_gp(data_to_smooth, x_pred = xvalue, choice_cov = cov, noise_var = 1e-6)$mean
+  }
+  
+  ff <- list()
+  ff$fn <- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, cov = square_exp_cov))
+  
+  x.1 <- (seq(from = 0.1, to = 5, length.out = 300) - 0.1)/4.9
+  x.2 <- (seq(from = 0.1, to = 4, length.out = 300) - 0.1)/3.9
+  x_vals <- expand.grid(x.1, x.2)
+  names(x_vals) <- c('x.1','x.2')
+  x_original <- t(t(x_vals)*(c(5, 4) - c(0.1, 0.1)) + c(0.1, 0.1)) 
+  
+  fn_vals <- apply(x_vals, 1, function(x) ff$fn(x = matrix(x, ncol = 2))) + mean(unique_data$y)
+  # normalize
+  lognormal_const <- log(sum(exp(fn_vals))*0.0098*0.0078*25/9)
+  post_x_modal <- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
+  
+  dx <- unique(post_x_modal$x.1)[2] - unique(post_x_modal$x.1)[1]
+  dy <- unique(post_x_modal$x.2)[2] - unique(post_x_modal$x.2)[1]
+  set.seed(123456)
+  sample_idx <- rmultinom(1:90000, size = 49500, prob = post_x_modal$pos)
+  sample_x_modal <- data.frame(post_x_modal, n = sample_idx)
+  
+  sample_list[[i]] <- data.frame(do.call(rbind, apply(sample_x_modal, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
+  
+}
+
+save(sample_list, file = paste0(output_path, "/BOSS_sample_robust_sim3.rda"))
+```
+
+```{r}
+load(paste0(output_path, "/BOSS_sample_robust_sim3.rda"))
+load(paste0(output_path, "/MCMC_sim3.rda"))
+
+
+p_R <- ggplot(MCMC_samp, aes(x = a)) + theme_minimal() + xlab('$R$')
+
+for (i in 1:20) {
+  p_R <- p_R + geom_density(data = sample_list[[i]], aes(x = X1), color = 'red', alpha = 0.1)
+}
+
+p_R <- p_R + geom_density(color = 'violet') 
+
+p_R
+
+p_b <- ggplot(MCMC_samp, aes(x = b)) + theme_minimal() + xlab('$beta$')
+
+for (i in 1:20) {
+  p_b <- p_b + geom_density(data = sample_list[[i]], aes(x = X2), color = 'red', alpha = 0.1)
+}
+
+p_b <- p_b + geom_density(color = 'violet') 
+
+p_b
+```
+
+In the above, violet density comes from MCMC while red ones come from BOSS. We can see that BOSS is highly robust to the initial design points selection.
+
+## What Happens with Smaller Sample Size?
+
+We now test the performance of BOSS when the sample size is small. This is interesting since small sample size typically translates to a posterior distribution that may have highly complex and distorted geometry that deviates significantly from a normal distribution. 
+
+Here we use the same simulation example but with $n = 50$.
+
+```{r}
+r <- seq(0, 20, length.out = 50)
+beta <- 10
+a <- 2
+b <- 2
+c <- -2.5
+
+set.seed(1234)
+Ir <- beta*(1 + (r/a)^b)^c
+lr <- log(Ir) + rnorm(length(r), 0, 0.5)
+```
+
+
+We run BOSS for $20$ times with different initial design points while turning off the stopping criteria. We want to check what the BOSS posterior looks like.
+
+```{r, eval = F}
+res_list <- vector('list', 20)
+
+for (i in 1:20) {
+  set.seed(i)
+  res_list[[i]] <- BOSS(eval_func, criterion = 'modal', update_step = 5, max_iter = 100, D = 2,
+                        lower = rep(0.1, 2), upper = c(5, 4),
+                        noise_var = 1e-6,
+                        modal_iter_check = 1,  modal_check_warmup = 20, modal_k.nn = 5,
+                        modal_eps = 0,
+                        initial_design = 5, delta = 0.01^2,
+                        optim.n = 5, optim.max.iter = 100)
+}
+
+save(res_list, file = paste0(output_path, "/BOSS_small_n_sim3.rda"))
+```
+
+
+```{r, eval = F}
+set.seed(1234)
+MCMC_fit <- stan(
+  file = "code/nlreg.stan",  # Stan program
+  data = list(x = r, y = lr, N = length(r)),    # named list of data
+  chains = 4,             # number of Markov chains
+  warmup = 1000,          # number of warmup iterations per chain
+  iter = 20000,            # total number of iterations per chain
+  cores = 4,              # number of cores (could use one per chain)
+  algorithm = 'NUTS')
+
+# thin the samples fo plotting
+MCMC_samp <- as.data.frame(MCMC_fit)
+#MCMC_samp_thin <- MCMC_samp[seq(1, 76000, by = 8),]
+save(MCMC_samp, file = paste0(output_path, "/MCMC_small_n_sim3.rda"))
+```
+
+
+```{r, eval = F}
+load(paste0(output_path, "/BOSS_small_n_sim3.rda"))
+
+sample_list <- vector('list', 20)
+
+for(i in 1:20){
+  # BOSS-modal marginal samples
+  data_to_smooth <- list()
+  unique_data <- unique(data.frame(x = res_list[[i]]$result$x, y = res_list[[i]]$result$y))
+  data_to_smooth$x <- as.matrix(dplyr::select(unique_data, -y))
+  data_to_smooth$y <- (unique_data$y - mean(unique_data$y))
+  
+  square_exp_cov <- square_exp_cov_generator_nd(length_scale = res_list[[i]]$length_scale, signal_var = res_list[[i]]$signal_var)
+  
+  surrogate <- function(xvalue, data_to_smooth, cov){
+    predict_gp(data_to_smooth, x_pred = xvalue, choice_cov = cov, noise_var = 1e-6)$mean
+  }
+  
+  ff <- list()
+  ff$fn <- function(x) as.numeric(surrogate(x, data_to_smooth = data_to_smooth, cov = square_exp_cov))
+  
+  x.1 <- (seq(from = 0.1, to = 5, length.out = 300) - 0.1)/4.9
+  x.2 <- (seq(from = 0.1, to = 4, length.out = 300) - 0.1)/3.9
+  x_vals <- expand.grid(x.1, x.2)
+  names(x_vals) <- c('x.1','x.2')
+  x_original <- t(t(x_vals)*(c(5, 4) - c(0.1, 0.1)) + c(0.1, 0.1)) 
+  
+  fn_vals <- apply(x_vals, 1, function(x) ff$fn(x = matrix(x, ncol = 2))) + mean(unique_data$y)
+  # normalize
+  lognormal_const <- log(sum(exp(fn_vals))*0.0098*0.0078*25/9)
+  post_x_modal <- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
+  
+  dx <- unique(post_x_modal$x.1)[2] - unique(post_x_modal$x.1)[1]
+  dy <- unique(post_x_modal$x.2)[2] - unique(post_x_modal$x.2)[1]
+  set.seed(123456)
+  sample_idx <- rmultinom(1:90000, size = 49500, prob = post_x_modal$pos)
+  sample_x_modal <- data.frame(post_x_modal, n = sample_idx)
+  
+  sample_list[[i]] <- data.frame(do.call(rbind, apply(sample_x_modal, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
+  
+}
+
+save(sample_list, file = paste0(output_path, "/BOSS_sample_small_n_sim3.rda"))
+```
+
+```{r}
+load(paste0(output_path, "/BOSS_sample_small_n_sim3.rda"))
+load(paste0(output_path, "/MCMC_small_n_sim3.rda"))
+
+
+p_R <- ggplot(MCMC_samp, aes(x = a)) + theme_minimal() + xlab('$R$')
+
+for (i in 1:20) {
+  p_R <- p_R + geom_density(data = sample_list[[i]], aes(x = X1), color = 'red', alpha = 0.1)
+}
+
+p_R <- p_R + geom_density(color = 'violet') 
+
+p_R
+
+p_b <- ggplot(MCMC_samp, aes(x = b)) + theme_minimal() + xlab('$beta$')
+
+for (i in 1:20) {
+  p_b <- p_b + geom_density(data = sample_list[[i]], aes(x = X2), color = 'red', alpha = 0.1)
+}
+
+p_b <- p_b + geom_density(color = 'violet') 
+
+p_b
+```
+
+Compared to the case when $n = 200$, having a smaller sample size causes BOSS to have inferior accuracy. Specifically, surrogate posterior from BOSS (red densities) is lighter-tailed compared to the true posterior (violet densities). The reason here is that BvM theorem does not apply when sample size is small. Under such scenarios, the tail region of the posterior is likely underestimated since the design points used for interpolation for the tail regions are ostly near the boundaries of the search domain and of very low values.
+
+
+
