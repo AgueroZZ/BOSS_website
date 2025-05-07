@@ -149,7 +149,7 @@ eval_func <- function(par){
 ```
 
 
-```{r eval = F}
+```{r, eval = F}
 lower = c(2, 0.15)
 upper = c(12, 4)
 
@@ -344,7 +344,7 @@ sampled_theta2 = pnorm(quad$theta2) * 3.85 + 0.15
 sample_theta <- data.frame(R = sampled_theta1, n = sampled_theta2, count = sampled_freq, prob = prob)
 ```
 
-```{r eval = F}
+```{r, eval = F}
 # compute posterior of U given (R,n)
 get_post_U <- function(st){
   R1 <- st[1,'R']
