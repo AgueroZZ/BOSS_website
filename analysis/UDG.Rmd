@@ -83,7 +83,7 @@ f.gal1 <- function(x, y) {
 
 ## `inlabru`
 
-```{r message=F, warning=F}
+```{r, message=F, warning=F}
 spv <- SpatialPoints(v_acs[,3:4]/4300*76)
 
 # construct mesh for INLA-SPDE
