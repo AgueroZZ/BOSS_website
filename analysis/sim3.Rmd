@@ -161,8 +161,8 @@ We first compare the marginal posterior distributions of $R$ and $\beta$ from `i
 ```{r}
 # inlabru marginal samples
 set.seed(1234)
-inla.samples.a <- a_fun(inla.rmarginal(49500, fit$marginals.fixed$a))
-inla.samples.b <- b_fun(inla.rmarginal(49500, fit$marginals.fixed$b))
+inla.samples.a <- a_fun(inla.rmarginal(76000, fit$marginals.fixed$a))
+inla.samples.b <- b_fun(inla.rmarginal(76000, fit$marginals.fixed$b))
 
 # BOSS-modal marginal samples
 data_to_smooth <- list()
@@ -193,7 +193,7 @@ post_x_modal <- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
 dx <- unique(post_x_modal$x.1)[2] - unique(post_x_modal$x.1)[1]
 dy <- unique(post_x_modal$x.2)[2] - unique(post_x_modal$x.2)[1]
 set.seed(123456)
-sample_idx <- rmultinom(1:90000, size = 49500, prob = post_x_modal$pos)
+sample_idx <- rmultinom(1:90000, size = 76000, prob = post_x_modal$pos)
 sample_x_modal <- data.frame(post_x_modal, n = sample_idx)
 
 samples_BOSS_modal <- data.frame(do.call(rbind, apply(sample_x_modal, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
