@@ -400,7 +400,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-04-29
+<strong>Last updated:</strong> 2025-05-09
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree7b33730cac4b120787dbb542e40ed09de1cd63fftargetblank7b33730a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree8aba5320613c08705cc5d002b2dc719bcc2baee8targetblank8aba532a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/7b33730cac4b120787dbb542e40ed09de1cd63ff" target="_blank">7b33730</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/8aba5320613c08705cc5d002b2dc719bcc2baee8" target="_blank">8aba532</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree7b33730cac4b120787dbb542e40ed09de1cd63fftargetblank7b33730a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree8aba5320613c08705cc5d002b2dc719bcc2baee8targetblank8aba532a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/7b33730cac4b120787dbb542e40ed09de1cd63ff" target="_blank">7b33730</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/8aba5320613c08705cc5d002b2dc719bcc2baee8" target="_blank">8aba532</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -587,20 +587,11 @@ Untracked files:
     Untracked:  output/mortality/BO_result_NL.rda
     Untracked:  output/mortality/mod_BG.rda
     Untracked:  output/mortality/mod_NL.rda
-    Untracked:  output/sim1/figures/
-    Untracked:  output/sim1/result_ad.rda
-    Untracked:  output/sim2/BOSS_result.rda
     Untracked:  output/sim2/quad_sparse_list.rda
     Untracked:  output/simA1/
 
 Unstaged changes:
-    Modified:   analysis/problem_with_opt.rmd
-    Modified:   code/00_BOSS.R
-    Modified:   output/sim1/BO_result_list.rda
-    Modified:   output/sim1/BO_result_original_list.rda
-    Modified:   output/sim1/all_result.rda
-    Modified:   output/sim1/kl_compare.pdf
-    Modified:   output/sim1/ks_compare.pdf
+    Modified:   BOSS_website.Rproj
     Modified:   output/sim2/BO_data_to_smooth.rda
     Modified:   output/sim2/BO_result_list.rda
     Modified:   output/sim2/rel_runtime.rda
@@ -647,6 +638,57 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/8aba5320613c08705cc5d002b2dc719bcc2baee8/analysis/sim1.Rmd" target="_blank">8aba532</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-05-09
+</td>
+<td>
+workflowr::wflow_publish("analysis/sim1.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/88e29b35b519d4137375f511237fa581c0053fd6/analysis/sim1.Rmd" target="_blank">88e29b3</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-30
+</td>
+<td>
+update boss_kl
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/c26029a279527f94b92c855afea9fa0997613c33/docs/sim1.html" target="_blank">c26029a</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-29
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1014,7 +1056,7 @@ surrogate &lt;- function(xvalue, data_to_smooth, choice_cov) {
 <div id="exact-grid-implementation" class="section level2">
 <h2>Exact Grid Implementation</h2>
 <p>First, as an oracle approach, we set up a dense grid on <span
-class="math inline">\(\[0.5,4.5\]\)</span>:</p>
+class="math inline">\([0.5,4.5]\)</span>:</p>
 <pre class="r"><code>x_vals &lt;- seq(lower, upper, by = 0.005)</code></pre>
 <p>Compute the objective function on the grid:</p>
 <pre class="r"><code>begin_time &lt;- Sys.time()
@@ -1173,6 +1215,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/c26029a279527f94b92c855afea9fa0997613c33/docs/figure/sim1.Rmd/unnamed-chunk-9-1.png" target="_blank">c26029a</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-04-29
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/761276f9d13774be37b863d423c03f6a86d8c274/docs/figure/sim1.Rmd/unnamed-chunk-9-1.png" target="_blank">761276f</a>
@@ -1737,8 +1790,8 @@ upper_result &lt;- all_result %&gt;% group_by(eval_num) %&gt;%
   summarise(KL = quantile(KL, 0.9), KS = quantile(KS, 0.9))
 
 plot(median_result$eval_num, median_result$KL, type = &quot;o&quot;, 
-     ylab = &quot;KL&quot;, xlab = &quot;eval number: B&quot;,
-     cex.lab = 1.0, cex.axis = 1.0)
+     ylab = &quot;KL&quot;, xlab = &quot;Evaluation Budget: B&quot;,
+     cex.lab = 1.4, cex.axis = 1.2)
 polygon(c(median_result$eval_num, rev(median_result$eval_num)), 
         c(lower_result$KL, rev(upper_result$KL)), 
         col = rgb(0.2, 0.2, 0.2, 0.2), border = NA)</code></pre>
@@ -1781,8 +1834,8 @@ Ziang Zhang
 </div>
 </div>
 <pre class="r"><code>plot(median_result$eval_num, median_result$KS, type = &quot;o&quot;,
-     ylab = &quot;KS&quot;, xlab = &quot;eval number: B&quot;, 
-     cex.lab = 1.0, cex.axis = 1.0)
+     ylab = &quot;KS&quot;, xlab = &quot;Evaluation Budget: B&quot;, 
+     cex.lab = 1.4, cex.axis = 1.2)
 polygon(c(median_result$eval_num, rev(median_result$eval_num)), 
         c(lower_result$KS, rev(upper_result$KS)), 
         col = rgb(0.2, 0.2, 0.2, 0.2), border = NA)</code></pre>
