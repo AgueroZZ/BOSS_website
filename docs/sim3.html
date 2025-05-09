@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreec72ffd469fa4fa47b5e3c9f97cf1fa0dbcffad04targetblankc72ffd4a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree8f83f92d6843e2d8354a4853941f6b696d11c5b3targetblank8f83f92a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/c72ffd469fa4fa47b5e3c9f97cf1fa0dbcffad04" target="_blank">c72ffd4</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/8f83f92d6843e2d8354a4853941f6b696d11c5b3" target="_blank">8f83f92</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreec72ffd469fa4fa47b5e3c9f97cf1fa0dbcffad04targetblankc72ffd4a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree8f83f92d6843e2d8354a4853941f6b696d11c5b3targetblank8f83f92a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/c72ffd469fa4fa47b5e3c9f97cf1fa0dbcffad04" target="_blank">c72ffd4</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/8f83f92d6843e2d8354a4853941f6b696d11c5b3" target="_blank">8f83f92</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -568,6 +568,7 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
+    Ignored:    analysis/figure/
     Ignored:    data/.DS_Store
     Ignored:    data/dimension/
     Ignored:    data/sim3/
@@ -618,6 +619,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/8f83f92d6843e2d8354a4853941f6b696d11c5b3/analysis/sim3.Rmd" target="_blank">8f83f92</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+<td>
+wflow_publish("analysis/sim3.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/acac9baaecf3ae772ff683dccc24e7ff823a432a/docs/sim3.html" target="_blank">acac9ba</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1226,7 +1261,14 @@ beta_marginal &lt;- data.frame(beta = c(inla.samples.b, samples_BOSS_modal[,2], 
                                            length(samples_BOSS_modal[,2]),  
                                            length(MCMC_samp$b))))</code></pre>
 <p>Plot the marginal posterior densities</p>
-<pre class="r"><code>ggplot(R_marginal, aes(R)) + geom_density(aes(color = method)) + theme_minimal() + xlab(&#39;$R$&#39;)</code></pre>
+<pre class="r"><code>ggplot(R_marginal, aes(R)) + geom_density(aes(color = method), show_guide = F) +
+  stat_density(aes(x = R, colour = method),
+                  geom=&quot;line&quot;,position=&quot;identity&quot;) + theme_minimal() + xlab(&#39;$R$&#39;)</code></pre>
+<pre><code>Warning: The `show_guide` argument of `layer()` is deprecated as of ggplot2 2.0.0.
+ℹ Please use the `show.legend` argument instead.
+This warning is displayed once every 8 hours.
+Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+generated.</code></pre>
 <p><img src="figure/sim3.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-9-1">
@@ -1250,6 +1292,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/acac9baaecf3ae772ff683dccc24e7ff823a432a/docs/figure/sim3.Rmd/unnamed-chunk-9-1.png" target="_blank">acac9ba</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/1881d2e4f0846da200d63e9b3d9a53c84381925e/docs/figure/sim3.Rmd/unnamed-chunk-9-1.png" target="_blank">1881d2e</a>
@@ -1309,7 +1362,9 @@ david.li
 </table>
 </div>
 </div>
-<pre class="r"><code>ggplot(beta_marginal, aes(beta)) + geom_density(aes(color = method)) + theme_minimal() + xlab(&#39;$\\beta$&#39;)</code></pre>
+<pre class="r"><code>ggplot(beta_marginal, aes(beta)) + geom_density(aes(color = method), show_guide = F) +
+  stat_density(aes(x = beta, colour = method),
+                  geom=&quot;line&quot;,position=&quot;identity&quot;) + theme_minimal() + xlab(&#39;$\\beta$&#39;)</code></pre>
 <p><img src="figure/sim3.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>
 <button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-10-1">
@@ -1333,6 +1388,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/acac9baaecf3ae772ff683dccc24e7ff823a432a/docs/figure/sim3.Rmd/unnamed-chunk-10-1.png" target="_blank">acac9ba</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/1881d2e4f0846da200d63e9b3d9a53c84381925e/docs/figure/sim3.Rmd/unnamed-chunk-10-1.png" target="_blank">1881d2e</a>
@@ -1890,6 +1956,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/acac9baaecf3ae772ff683dccc24e7ff823a432a/docs/figure/sim3.Rmd/unnamed-chunk-21-1.png" target="_blank">acac9ba</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/1881d2e4f0846da200d63e9b3d9a53c84381925e/docs/figure/sim3.Rmd/unnamed-chunk-21-1.png" target="_blank">1881d2e</a>
 </td>
 <td>
@@ -1948,6 +2025,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/acac9baaecf3ae772ff683dccc24e7ff823a432a/docs/figure/sim3.Rmd/unnamed-chunk-21-2.png" target="_blank">acac9ba</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/1881d2e4f0846da200d63e9b3d9a53c84381925e/docs/figure/sim3.Rmd/unnamed-chunk-21-2.png" target="_blank">1881d2e</a>
 </td>
 <td>
@@ -1982,6 +2070,43 @@ p_b &lt;- p_b + geom_density(color = &#39;violet&#39;)
 
 p_b</code></pre>
 <p><img src="figure/sim3.Rmd/unnamed-chunk-21-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-unnamed-chunk-21-3">
+Past versions of unnamed-chunk-21-3.png
+</button>
+</p>
+<div id="fig-unnamed-chunk-21-3" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/acac9baaecf3ae772ff683dccc24e7ff823a432a/docs/figure/sim3.Rmd/unnamed-chunk-21-3.png" target="_blank">acac9ba</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>Compared to the case when <span class="math inline">\(n =
 200\)</span>, having a smaller sample size causes BOSS to have inferior
 accuracy. Specifically, surrogate posterior from BOSS (red densities) is
@@ -2032,33 +2157,33 @@ loaded via a namespace (and not attached):
  [7] clue_0.3-65         git2r_0.33.0        matrixStats_1.4.1  
 [10] e1071_1.7-16        compiler_4.4.1      getPass_0.2-4      
 [13] loo_2.8.0           callr_3.7.6         vctrs_0.6.5        
-[16] rmutil_1.1.10       pkgconfig_2.0.3     fastmap_1.2.0      
-[19] labeling_0.4.3      utf8_1.2.4          promises_1.3.0     
-[22] rmarkdown_2.28      tzdb_0.4.0          ps_1.8.0           
-[25] MatrixModels_0.5-3  xfun_0.47           cachem_1.1.0       
-[28] jsonlite_1.8.9      highr_0.11          later_1.3.2        
-[31] parallel_4.4.1      cluster_2.1.6       R6_2.5.1           
-[34] bslib_0.8.0         stringi_1.8.4       rpart_4.1.23       
-[37] numDeriv_2016.8-1.1 jquerylib_0.1.4     Rcpp_1.0.13        
-[40] knitr_1.48          filehash_2.4-6      httpuv_1.6.15      
-[43] splines_4.4.1       timechange_0.3.0    tidyselect_1.2.1   
-[46] rstudioapi_0.16.0   yaml_2.3.10         timeDate_4041.110  
-[49] codetools_0.2-20    processx_3.8.4      pkgbuild_1.4.4     
-[52] lattice_0.22-6      plyr_1.8.9          withr_3.0.1        
-[55] evaluate_1.0.0      stable_1.1.6        sf_1.0-19          
-[58] units_0.8-5         proxy_0.4-27        RcppParallel_5.1.10
-[61] pillar_1.9.0        whisker_0.4.1       KernSmooth_2.23-24 
-[64] stats4_4.4.1        sn_2.1.1            generics_0.1.3     
-[67] rprojroot_2.0.4     hms_1.1.3           munsell_0.5.1      
-[70] scales_1.3.0        timeSeries_4041.111 class_7.3-22       
-[73] glue_1.7.0          statip_0.2.3        tools_4.4.1        
-[76] spatial_7.3-17      fBasics_4041.97     fs_1.6.4           
-[79] grid_4.4.1          QuickJSR_1.6.0      colorspace_2.1-1   
-[82] cli_3.6.3           fansi_1.0.6         viridisLite_0.4.2  
-[85] gtable_0.3.5        stabledist_0.7-2    sass_0.4.9         
-[88] digest_0.6.37       classInt_0.4-10     farver_2.1.2       
-[91] htmltools_0.5.8.1   lifecycle_1.0.4     httr_1.4.7         
-[94] MASS_7.3-61        </code></pre>
+[16] rmutil_1.1.10       crayon_1.5.3        pkgconfig_2.0.3    
+[19] fastmap_1.2.0       labeling_0.4.3      utf8_1.2.4         
+[22] promises_1.3.0      rmarkdown_2.28      tzdb_0.4.0         
+[25] ps_1.8.0            MatrixModels_0.5-3  xfun_0.47          
+[28] cachem_1.1.0        jsonlite_1.8.9      highr_0.11         
+[31] later_1.3.2         parallel_4.4.1      cluster_2.1.6      
+[34] R6_2.5.1            bslib_0.8.0         stringi_1.8.4      
+[37] rpart_4.1.23        numDeriv_2016.8-1.1 jquerylib_0.1.4    
+[40] Rcpp_1.0.13         knitr_1.48          filehash_2.4-6     
+[43] httpuv_1.6.15       splines_4.4.1       timechange_0.3.0   
+[46] tidyselect_1.2.1    rstudioapi_0.16.0   yaml_2.3.10        
+[49] timeDate_4041.110   codetools_0.2-20    processx_3.8.4     
+[52] pkgbuild_1.4.4      lattice_0.22-6      plyr_1.8.9         
+[55] withr_3.0.1         evaluate_1.0.0      stable_1.1.6       
+[58] sf_1.0-19           units_0.8-5         proxy_0.4-27       
+[61] RcppParallel_5.1.10 pillar_1.9.0        whisker_0.4.1      
+[64] KernSmooth_2.23-24  stats4_4.4.1        sn_2.1.1           
+[67] generics_0.1.3      rprojroot_2.0.4     hms_1.1.3          
+[70] munsell_0.5.1       scales_1.3.0        timeSeries_4041.111
+[73] class_7.3-22        glue_1.7.0          statip_0.2.3       
+[76] tools_4.4.1         spatial_7.3-17      fBasics_4041.97    
+[79] fs_1.6.4            grid_4.4.1          QuickJSR_1.6.0     
+[82] colorspace_2.1-1    cli_3.6.3           fansi_1.0.6        
+[85] viridisLite_0.4.2   gtable_0.3.5        stabledist_0.7-2   
+[88] sass_0.4.9          digest_0.6.37       classInt_0.4-10    
+[91] farver_2.1.2        htmltools_0.5.8.1   lifecycle_1.0.4    
+[94] httr_1.4.7          MASS_7.3-61        </code></pre>
 </div>
 </div>
 </div>
