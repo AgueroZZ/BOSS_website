@@ -324,7 +324,7 @@ load(paste0(output_path, "/BO_data_to_smooth.rda"))
 plot_list <- list()
 for (i in 1:length(eval_num)) {
   plot_list[[i]] <- ggplot() +
-    geom_histogram(aes(x = mcmc_samps_selected, y = ..density..), bins = 300, alpha = 0.8, fill = "skyblue") +
+    geom_histogram(aes(x = mcmc_samps_selected, y = ..density..), bins = 600, alpha = 0.8, fill = "skyblue") +
     geom_line(data = BO_result_list[[i]], aes(x = x, y = pos), color = "red", size = 1) +
     geom_line(data = exact_grid_result_smooth, aes(x = x, y = pos), color = "black", size = 0.5, linetype = "dashed") +
     ggtitle(paste0("Comparison Posterior Density: B = ", eval_num[i])) +
