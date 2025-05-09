@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree8f83f92d6843e2d8354a4853941f6b696d11c5b3targetblank8f83f92a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree85dca709f0cf4c2314452443a1422ed5182a3d26targetblank85dca70a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/8f83f92d6843e2d8354a4853941f6b696d11c5b3" target="_blank">8f83f92</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/85dca709f0cf4c2314452443a1422ed5182a3d26" target="_blank">85dca70</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree8f83f92d6843e2d8354a4853941f6b696d11c5b3targetblank8f83f92a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree85dca709f0cf4c2314452443a1422ed5182a3d26targetblank85dca70a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/8f83f92d6843e2d8354a4853941f6b696d11c5b3" target="_blank">8f83f92</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/85dca709f0cf4c2314452443a1422ed5182a3d26" target="_blank">85dca70</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -568,7 +568,6 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
-    Ignored:    analysis/figure/
     Ignored:    data/.DS_Store
     Ignored:    data/dimension/
     Ignored:    data/sim3/
@@ -619,6 +618,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/85dca709f0cf4c2314452443a1422ed5182a3d26/analysis/sim3.Rmd" target="_blank">85dca70</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+<td>
+wflow_publish("analysis/sim3.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/e2f7ebc0026495e5cd433bb9f83c983e6665a4cf/docs/sim3.html" target="_blank">e2f7ebc</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1261,7 +1294,8 @@ beta_marginal &lt;- data.frame(beta = c(inla.samples.b, samples_BOSS_modal[,2], 
                                            length(samples_BOSS_modal[,2]),  
                                            length(MCMC_samp$b))))</code></pre>
 <p>Plot the marginal posterior densities</p>
-<pre class="r"><code>ggplot(R_marginal, aes(R)) + geom_density(aes(color = method), show_guide = F) +
+<pre class="r"><code>#tikz(file = &quot;R_marginal.tex&quot;, standAlone=T, width = 4, height = 3)
+ggplot(R_marginal, aes(R)) + geom_density(aes(color = method), show_guide = F) +
   stat_density(aes(x = R, colour = method),
                   geom=&quot;line&quot;,position=&quot;identity&quot;) + theme_minimal() + xlab(&#39;$R$&#39;)</code></pre>
 <pre><code>Warning: The `show_guide` argument of `layer()` is deprecated as of ggplot2 2.0.0.
@@ -1292,6 +1326,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/e2f7ebc0026495e5cd433bb9f83c983e6665a4cf/docs/figure/sim3.Rmd/unnamed-chunk-9-1.png" target="_blank">e2f7ebc</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/acac9baaecf3ae772ff683dccc24e7ff823a432a/docs/figure/sim3.Rmd/unnamed-chunk-9-1.png" target="_blank">acac9ba</a>
@@ -1362,7 +1407,10 @@ david.li
 </table>
 </div>
 </div>
-<pre class="r"><code>ggplot(beta_marginal, aes(beta)) + geom_density(aes(color = method), show_guide = F) +
+<pre class="r"><code>#dev.off()
+#system(&#39;pdflatex R_marginal.tex&#39;)</code></pre>
+<pre class="r"><code>#tikz(file = &quot;beta_marginal.tex&quot;, standAlone=T, width = 4, height = 3)
+ggplot(beta_marginal, aes(beta)) + geom_density(aes(color = method), show_guide = F) +
   stat_density(aes(x = beta, colour = method),
                   geom=&quot;line&quot;,position=&quot;identity&quot;) + theme_minimal() + xlab(&#39;$\\beta$&#39;)</code></pre>
 <p><img src="figure/sim3.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
@@ -1388,6 +1436,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/e2f7ebc0026495e5cd433bb9f83c983e6665a4cf/docs/figure/sim3.Rmd/unnamed-chunk-10-1.png" target="_blank">e2f7ebc</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/acac9baaecf3ae772ff683dccc24e7ff823a432a/docs/figure/sim3.Rmd/unnamed-chunk-10-1.png" target="_blank">acac9ba</a>
@@ -1458,6 +1517,8 @@ david.li
 </table>
 </div>
 </div>
+<pre class="r"><code>#dev.off()
+#system(&#39;pdflatex beta_marginal.tex&#39;)</code></pre>
 </div>
 <div id="joint-posterior-distribution" class="section level3">
 <h3>Joint Posterior Distribution</h3>
@@ -1473,6 +1534,7 @@ joint_samp &lt;- do.call(&#39;rbind&#39;, lapply(joint_samp, function(x) matrix(
 inla.joint.samps &lt;- data.frame(a = a_fun(joint_samp[,1]), b = b_fun(joint_samp[,2]))
 
 # plot joint posterior of (R, beta) from inlabru
+#tikz(file = &quot;joint_post_R_beta_inlabru.tex&quot;, standAlone=T, width = 4, height = 3)
 ggplot(inla.joint.samps, aes(a, b)) + stat_density_2d(
   geom = &quot;raster&quot;,
   aes(fill = after_stat(density)), n = 300,
@@ -1551,10 +1613,13 @@ david.li
 </table>
 </div>
 </div>
+<pre class="r"><code>#dev.off()
+#system(&#39;pdflatex joint_post_R_beta_inlabru.tex&#39;)</code></pre>
 </div>
 <div id="boss-joint-posterior-distribution" class="section level4">
 <h4>BOSS joint posterior distribution:</h4>
 <pre class="r"><code># plot joint posterior of (R, beta) from BOSS
+#tikz(file = &quot;joint_post_R_beta.tex&quot;, standAlone=T, width = 4, height = 3)
 ggplot(post_x_modal, aes(x.1,x.2)) + geom_raster(aes(fill = (pos))) + 
   geom_point(data = data.frame(x.1 = post_x_modal$x.1[which.max(post_x_modal$pos)], x.2 = post_x_modal$x.2[which.max(post_x_modal$pos)]), color = &#39;red&#39;, shape = 1, size =0.5) +
   geom_point(data = data.frame(x.1 = 2, x.2 = 2), color = &#39;orange&#39;, size =0.5) + coord_fixed() + scale_fill_viridis_c(name = &#39;Density&#39;) + theme_minimal() + xlab(&#39;$R$&#39;) + ylab(&#39;$\\beta$&#39;)</code></pre>
@@ -1607,10 +1672,13 @@ david.li
 </table>
 </div>
 </div>
+<pre class="r"><code>#dev.off()
+#system(&#39;pdflatex joint_post_R_beta.tex&#39;)</code></pre>
 </div>
 <div id="mcmc-joint-posterior-distribution" class="section level4">
 <h4>MCMC joint posterior distribution:</h4>
-<pre class="r"><code>ggplot(MCMC_samp, aes(a, b)) + stat_density_2d(
+<pre class="r"><code>#tikz(file = &quot;joint_post_R_beta_MCMC.tex&quot;, standAlone=T, width = 4, height = 3)
+ggplot(MCMC_samp, aes(a, b)) + stat_density_2d(
   geom = &quot;raster&quot;,
   aes(fill = after_stat(density)), n = 300,
   contour = FALSE) + 
@@ -1665,6 +1733,8 @@ david.li
 </table>
 </div>
 </div>
+<pre class="r"><code>#dev.off()
+#system(&#39;pdflatex joint_post_R_beta_MCMC.tex&#39;)</code></pre>
 <p>From the above results, it is clear that BOSS is much better at
 depicting the joint posterior distribution than <code>inlabru</code>.
 The joint distribution from <code>inlabru</code> is simply the product
