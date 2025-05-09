@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree85dca709f0cf4c2314452443a1422ed5182a3d26targetblank85dca70a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreec17bcc1a79e01fdcad8eb69568019f74222e55a2targetblankc17bcc1a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/85dca709f0cf4c2314452443a1422ed5182a3d26" target="_blank">85dca70</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/c17bcc1a79e01fdcad8eb69568019f74222e55a2" target="_blank">c17bcc1</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree85dca709f0cf4c2314452443a1422ed5182a3d26targetblank85dca70a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreec17bcc1a79e01fdcad8eb69568019f74222e55a2targetblankc17bcc1a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/85dca709f0cf4c2314452443a1422ed5182a3d26" target="_blank">85dca70</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/c17bcc1a79e01fdcad8eb69568019f74222e55a2" target="_blank">c17bcc1</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -572,6 +572,16 @@ Ignored files:
     Ignored:    data/dimension/
     Ignored:    data/sim3/
     Ignored:    output/.DS_Store
+
+Untracked files:
+    Untracked:  R_marginal.aux
+    Untracked:  R_marginal.log
+    Untracked:  R_marginal.pdf
+    Untracked:  R_marginal.tex
+    Untracked:  beta_marginal.aux
+    Untracked:  beta_marginal.log
+    Untracked:  beta_marginal.pdf
+    Untracked:  beta_marginal.tex
 
 Unstaged changes:
     Modified:   output/sim3/MCMC_small_n_sim3.rda
@@ -618,6 +628,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/c17bcc1a79e01fdcad8eb69568019f74222e55a2/analysis/sim3.Rmd" target="_blank">c17bcc1</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+<td>
+wflow_publish("analysis/sim3.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/6120746d5de718fb51c4eb46d67464ec1e74d5ec/docs/sim3.html" target="_blank">6120746</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1240,8 +1284,8 @@ class="math inline">\(\beta\)</span> from <code>inlabru</code>, BOSS,
 and MCMC.</p>
 <pre class="r"><code># inlabru marginal samples
 set.seed(1234)
-inla.samples.a &lt;- a_fun(inla.rmarginal(49500, fit$marginals.fixed$a))
-inla.samples.b &lt;- b_fun(inla.rmarginal(49500, fit$marginals.fixed$b))
+inla.samples.a &lt;- a_fun(inla.rmarginal(76000, fit$marginals.fixed$a))
+inla.samples.b &lt;- b_fun(inla.rmarginal(76000, fit$marginals.fixed$b))
 
 # BOSS-modal marginal samples
 data_to_smooth &lt;- list()
@@ -1272,7 +1316,7 @@ post_x_modal &lt;- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
 dx &lt;- unique(post_x_modal$x.1)[2] - unique(post_x_modal$x.1)[1]
 dy &lt;- unique(post_x_modal$x.2)[2] - unique(post_x_modal$x.2)[1]
 set.seed(123456)
-sample_idx &lt;- rmultinom(1:90000, size = 49500, prob = post_x_modal$pos)
+sample_idx &lt;- rmultinom(1:90000, size = 76000, prob = post_x_modal$pos)
 sample_x_modal &lt;- data.frame(post_x_modal, n = sample_idx)
 
 samples_BOSS_modal &lt;- data.frame(do.call(rbind, apply(sample_x_modal, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
@@ -1326,6 +1370,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/6120746d5de718fb51c4eb46d67464ec1e74d5ec/docs/figure/sim3.Rmd/unnamed-chunk-9-1.png" target="_blank">6120746</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/e2f7ebc0026495e5cd433bb9f83c983e6665a4cf/docs/figure/sim3.Rmd/unnamed-chunk-9-1.png" target="_blank">e2f7ebc</a>
@@ -1436,6 +1491,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/6120746d5de718fb51c4eb46d67464ec1e74d5ec/docs/figure/sim3.Rmd/unnamed-chunk-10-1.png" target="_blank">6120746</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-09
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/e2f7ebc0026495e5cd433bb9f83c983e6665a4cf/docs/figure/sim3.Rmd/unnamed-chunk-10-1.png" target="_blank">e2f7ebc</a>
