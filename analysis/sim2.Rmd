@@ -490,9 +490,11 @@ Let's visualize the AGHQ rule on the exact grid and BOSS surrogate.
 
 ```{r}
 plot(weights ~ theta1, type = "o", col = "black", 
-     data = quad_exact, ylim = c(0, 0.2), 
-     xlim = c(0, 1),
-     xlab = "quadrature", ylab = "weights")
+     data = quad_exact, ylim = c(0, 0.1), 
+     xlim = c(0.1, 0.7),
+     cex.lab  = 1.4,    
+     cex.axis = 1.2, 
+     xlab = "Quadrature", ylab = "Weights")
 points(weights ~ theta1, type = "o", col = "purple", 
        data = quad_BO_list[[9]], pch = 4)
 points(weights ~ theta1, type = "o", col = "red", 
@@ -502,7 +504,7 @@ points(weights ~ theta1, type = "o", col = "blue",
 points(weights ~ theta1, type = "o", col = "green",
        data = quad_BO_list[[2]], pch = 2)
 legend("topright", legend = c("Exact grid", paste0("BOSS: B = ", eval_num[9]), paste0("BOSS: B = ", eval_num[6]), paste0("BOSS: B = ", eval_num[4]), paste0("BOSS: B = ", eval_num[2])),
-       col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2))
+       col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2), cex = 1.2)
        
        
 ```
@@ -606,9 +608,11 @@ save(quad_sparse_list, file = paste0(output_path, "/quad_sparse_list.rda"))
 ```{r}
 load(paste0(output_path, "/quad_sparse_list.rda"))
 plot(weights ~ theta1, type = "o", col = "black", 
-     data = quad_exact, ylim = c(0, 0.2), 
-     xlim = c(0, 1),
-     xlab = "quadrature", ylab = "weights")
+     data = quad_exact, ylim = c(0, 0.1), 
+     xlim = c(0.1, 0.7),
+     cex.lab  = 1.4,    
+     cex.axis = 1.2, 
+     xlab = "Quadrature", ylab = "Weights")
 points(weights ~ theta1, type = "o", col = "purple", 
        data = quad_sparse_list[[9]], pch = 4)
 points(weights ~ theta1, type = "o", col = "red",
@@ -618,7 +622,7 @@ points(weights ~ theta1, type = "o", col = "blue",
 points(weights ~ theta1, type = "o", col = "green",
        data = quad_sparse_list[[2]], pch = 2)
 legend("topright", legend = c("Exact grid", "Sparse: 50", "Sparse: 35", "Sparse: 25", "Sparse: 15"),
-       col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2))
+       col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2), cex = 1.2)
 ```
 
 
