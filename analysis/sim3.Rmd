@@ -473,6 +473,8 @@ save(sample_list, file = paste0(output_path, "/BOSS_sample_small_n_sim3.rda"))
 load(paste0(output_path, "/BOSS_sample_small_n_sim3.rda"))
 load(paste0(output_path, "/MCMC_small_n_sim3.rda"))
 
+plot(MCMC_samp[seq(1, 156000, by = 10),c('a','b')], asp = 1)
+
 
 p_R <- ggplot(MCMC_samp, aes(x = a)) + theme_minimal() + xlab('$R$')
 
