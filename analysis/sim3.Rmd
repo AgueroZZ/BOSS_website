@@ -219,11 +219,15 @@ beta_marginal <- data.frame(beta = c(inla.samples.b, samples_BOSS_modal[,2], MCM
 Plot the marginal posterior densities
 
 ```{r}
-ggplot(R_marginal, aes(R)) + geom_density(aes(color = method)) + theme_minimal() + xlab('$R$')
+ggplot(R_marginal, aes(R)) + geom_density(aes(color = method), show_guide = F) +
+  stat_density(aes(x = R, colour = method),
+                  geom="line",position="identity") + theme_minimal() + xlab('$R$')
 ```
 
 ```{r}
-ggplot(beta_marginal, aes(beta)) + geom_density(aes(color = method)) + theme_minimal() + xlab('$\\beta$')
+ggplot(beta_marginal, aes(beta)) + geom_density(aes(color = method), show_guide = F) +
+  stat_density(aes(x = beta, colour = method),
+                  geom="line",position="identity") + theme_minimal() + xlab('$\\beta$')
 ```
 
 ### Joint Posterior Distribution
