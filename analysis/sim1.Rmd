@@ -496,15 +496,15 @@ upper_result <- all_result %>% group_by(eval_num) %>%
   summarise(KL = quantile(KL, 0.9), KS = quantile(KS, 0.9))
 
 plot(median_result$eval_num, median_result$KL, type = "o", 
-     ylab = "KL", xlab = "eval number: B",
-     cex.lab = 1.0, cex.axis = 1.0)
+     ylab = "KL", xlab = "Evaluation Budget: B",
+     cex.lab = 1.4, cex.axis = 1.2)
 polygon(c(median_result$eval_num, rev(median_result$eval_num)), 
         c(lower_result$KL, rev(upper_result$KL)), 
         col = rgb(0.2, 0.2, 0.2, 0.2), border = NA)
 
 plot(median_result$eval_num, median_result$KS, type = "o",
-     ylab = "KS", xlab = "eval number: B", 
-     cex.lab = 1.0, cex.axis = 1.0)
+     ylab = "KS", xlab = "Evaluation Budget: B", 
+     cex.lab = 1.4, cex.axis = 1.2)
 polygon(c(median_result$eval_num, rev(median_result$eval_num)), 
         c(lower_result$KS, rev(upper_result$KS)), 
         col = rgb(0.2, 0.2, 0.2, 0.2), border = NA)
