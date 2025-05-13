@@ -331,8 +331,9 @@ for (i in 1:length(eval_num)) {
     xlab("Value") +
     ylab("Density") +
     coord_cartesian(ylim = c(0,10), xlim = c(6,7)) + 
-    theme(text = element_text(size = 15), axis.text = element_text(size = 15)) +
-    theme_minimal() 
+    theme_minimal() +
+    theme(text = element_text(size = 15), axis.text = element_text(size = 15))
+    
 }
 ```
 
