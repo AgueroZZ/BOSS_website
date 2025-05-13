@@ -530,15 +530,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2fe4e90ae363f0cfe1799bbb3f0d2bfd5fd165a9targetblank2fe4e90a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree625c3a39cba7b81f66102962709ad5a20a1204a3targetblank625c3a3a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/2fe4e90ae363f0cfe1799bbb3f0d2bfd5fd165a9" target="_blank">2fe4e90</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/625c3a39cba7b81f66102962709ad5a20a1204a3" target="_blank">625c3a3</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree2fe4e90ae363f0cfe1799bbb3f0d2bfd5fd165a9targetblank2fe4e90a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetree625c3a39cba7b81f66102962709ad5a20a1204a3targetblank625c3a3a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -548,7 +548,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/2fe4e90ae363f0cfe1799bbb3f0d2bfd5fd165a9" target="_blank">2fe4e90</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/625c3a39cba7b81f66102962709ad5a20a1204a3" target="_blank">625c3a3</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -637,6 +637,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/625c3a39cba7b81f66102962709ad5a20a1204a3/analysis/sim2.Rmd" target="_blank">625c3a3</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-05-13
+</td>
+<td>
+workflowr::wflow_publish("analysis/sim2.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/319c84f401c59f8876f1120f3f14464e07ebf8d7/docs/sim2.html" target="_blank">319c84f</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-05-13
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1595,8 +1629,9 @@ for (i in 1:length(eval_num)) {
     xlab(&quot;Value&quot;) +
     ylab(&quot;Density&quot;) +
     coord_cartesian(ylim = c(0,10), xlim = c(6,7)) + 
-    theme(text = element_text(size = 15), axis.text = element_text(size = 15)) +
-    theme_minimal() 
+    theme_minimal() +
+    theme(text = element_text(size = 15), axis.text = element_text(size = 15))
+    
 }</code></pre>
 <pre><code>Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
 ℹ Please use `linewidth` instead.
@@ -2190,7 +2225,7 @@ start_time &lt;- Sys.time()
 aghq_result_grid &lt;- obtain_aghq(f = fn, k = 10, optresult = grid_opt_list)
 end_time &lt;- Sys.time()
 end_time - start_time</code></pre>
-<pre><code>Time difference of 0.08004689 secs</code></pre>
+<pre><code>Time difference of 0.08162618 secs</code></pre>
 <pre class="r"><code>quad_exact &lt;- aghq_result_grid$normalized_posterior$nodesandweights</code></pre>
 <p>Now, we compute the AGHQ rule on the BOSS surrogate.</p>
 <pre class="r"><code>quad_BO_list &lt;- list()
