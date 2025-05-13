@@ -265,12 +265,12 @@ joint_samp <- do.call('rbind', lapply(joint_samp, function(x) matrix(x$latent, n
 inla.joint.samps <- data.frame(R = R_fun_1(joint_samp[,1]), n = alpha_fun_1(joint_samp[,2]))
 
 # plot joint posterior density of (R,n) from inlabru
-#tikz(file = "joint_post_R_n_inlabru.tex", standAlone=T, width = 4, height = 3)
+#tikz(file = "joint_post_R_n_inlabru.tex", standAlone=T, width = 4, height = 2)
 ggplot(inla.joint.samps, aes(R, n)) + stat_density_2d(
   geom = "raster",
   aes(fill = after_stat(density)), n = 300,
   contour = FALSE) +
-  geom_point(data = data.frame(R = R_fun_1(fit$summary.fixed$mode[2]), n = alpha_fun_1(fit$summary.fixed$mode[3])), color = 'red', shape = 1, size =0.5) + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$n$') + xlim(c(2, 12)) + ylim(c(0.15, 2))
+  geom_point(data = data.frame(R = R_fun_1(fit$summary.fixed$mode[2]), n = alpha_fun_1(fit$summary.fixed$mode[3])), color = 'red', shape = 1, size =0.5) + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$n$') + xlim(c(2, 12)) + ylim(c(0.15, 2)) + coord_fixed(ratio = 3)
 #dev.off()
 #system('pdflatex joint_post_R_n_inlabru.tex')
 ```
@@ -279,11 +279,11 @@ ggplot(inla.joint.samps, aes(R, n)) + stat_density_2d(
 
 ```{r warning = F}
 # plot joint posterior of (R, n)
-#tikz(file = "joint_post_R_n.tex", standAlone=T, width = 4, height = 3)
+#tikz(file = "joint_post_R_n.tex", standAlone=T, width = 4, height = 2)
 ggplot(post_x, aes(x.1,x.2)) + geom_raster(aes(fill = pos)) + 
   geom_point(data = data.frame(x.1 = post_x$x.1[which.max(post_x$pos)], x.2 = post_x$x.2[which.max(post_x$pos)]), color = 'red', shape = 1, size =0.5) + 
   scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$n$') +
-  xlim(c(2,12)) + ylim(c(0.15, 2))
+  xlim(c(2,12)) + ylim(c(0.15, 2)) + coord_fixed(ratio = 3)
 #dev.off()
 #system('pdflatex joint_post_R_n.tex')
 ```
