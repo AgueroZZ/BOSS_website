@@ -83,7 +83,7 @@ f.gal1 <- function(x, y) {
 
 ## `inlabru`
 
-```{r message=F, warning=F}
+```{r, message=F, warning=F}
 spv <- SpatialPoints(v_acs[,3:4]/4300*76)
 
 # construct mesh for INLA-SPDE
@@ -126,7 +126,7 @@ save(fit, file = paste0(output_path, "/UDG_inlabru.rda"))
 
 ## BOSS
 
-```{r eval = F}
+```{r}
 # specify objective function: unnormalized pi(R,n|y)
 eval_func <- function(par){
   R1 <- par[1]
@@ -149,17 +149,17 @@ eval_func <- function(par){
 ```
 
 
-```{r eval = F}
+```{r, eval = F}
 lower = c(2, 0.15)
 upper = c(12, 4)
 
 res_opt <- BOSS(eval_func, criterion = 'modal', update_step = 5, max_iter = 100, D = 2,
                         lower = lower, upper = upper,
                         noise_var = 1e-6,
-                        modal_iter_check = 10, modal_check_warmup = 20, modal_k.nn = 5,
+                        modal_iter_check = 1, modal_check_warmup = 20, modal_k.nn = 5,
                         modal_eps = 0.01,
-                        initial_design = 5, delta = 0.01^2,
-                        optim.n = 5, optim.max.iter = 100)
+                        initial_design = 10, delta = 0.01^2,
+                        optim.n = 1, optim.max.iter = 100)
 
 save(res_opt, file = paste0(output_path, "/UDG_BOSS.rda"))
 ```
@@ -174,8 +174,8 @@ The above BOSS algorithm converged in $60$ iterations.
 load(paste0(output_path, "/UDG_inlabru.rda"))
 
 set.seed(1234)
-inla.samples.a <- R_fun_1(inla.rmarginal(49500, fit$marginals.fixed$R_internal_1))
-inla.samples.b <- alpha_fun_1(inla.rmarginal(49500, fit$marginals.fixed$alpha_internal_1))
+inla.samples.a <- R_fun_1(inla.rmarginal(50000, fit$marginals.fixed$R_internal_1))
+inla.samples.b <- alpha_fun_1(inla.rmarginal(50000, fit$marginals.fixed$alpha_internal_1))
 
 load(paste0(output_path, "/UDG_BOSS.rda"))
 
@@ -212,7 +212,7 @@ post_x <- data.frame(x_original, pos = exp(fn_vals - lognormal_const))
 dx <- unique(post_x$x.1)[2] - unique(post_x$x.1)[1]
 dy <- unique(post_x$x.2)[2] - unique(post_x$x.2)[1]
 set.seed(123456)
-sample_idx <- rmultinom(1:250000, size = 49500, prob = post_x$pos)
+sample_idx <- rmultinom(1:90000, size = 50000, prob = post_x$pos)
 sample_x <- data.frame(post_x, n = sample_idx)
 
 samples <- data.frame(do.call(rbind, apply(sample_x, 1, function(x) cbind(runif(x[4], x[1], x[1]+dx), runif(x[4], x[2], x[2] + dy)))))
@@ -227,7 +227,7 @@ R_marginal <- data.frame(R = c(inla.samples.a, samples[,1]),
 
 
 # plot marginal of R
-#tikz(file = "R_marginal_UDG.tex", standAlone=T, width = 4, height = 2)
+#tikz(file = "R_marginal_UDG.tex", standAlone=T, width = 4, height = 3)
 ggplot(R_marginal, aes(R)) + geom_density(aes(color = method), show_guide = F) +
   stat_density(aes(x = R, colour = method),
                   geom="line",position="identity") + theme_minimal() + xlab('$R$')
@@ -243,10 +243,11 @@ n_marginal <- data.frame(n = c(inla.samples.b, samples[,2]),
                          method = rep(c('inlabru', 'BOSS'),  c(length(inla.samples.b), length(samples[,2]))))
 
 # plot marginal of n
-#tikz(file = "n_marginal_UDG.tex", standAlone=T, width = 4, height = 2)
+#tikz(file = "n_marginal_UDG.tex", standAlone=T, width = 4, height = 3)
 ggplot(n_marginal, aes(n)) + geom_density(aes(color = method), show_guide = F) +
   stat_density(aes(x = n, colour = method),
                   geom="line",position="identity") + theme_minimal() + xlab('$n$')
+#dev.off()
 #system('pdflatex n_marginal_UDG.tex')
 ```
 
@@ -264,12 +265,12 @@ joint_samp <- do.call('rbind', lapply(joint_samp, function(x) matrix(x$latent, n
 inla.joint.samps <- data.frame(R = R_fun_1(joint_samp[,1]), n = alpha_fun_1(joint_samp[,2]))
 
 # plot joint posterior density of (R,n) from inlabru
-#tikz(file = "joint_post_R_n_inlabru.tex", standAlone=T, width = 5, height = 2)
+#tikz(file = "joint_post_R_n_inlabru.tex", standAlone=T, width = 4, height = 2)
 ggplot(inla.joint.samps, aes(R, n)) + stat_density_2d(
   geom = "raster",
   aes(fill = after_stat(density)), n = 300,
   contour = FALSE) +
-  geom_point(data = data.frame(R = R_fun_1(fit$summary.fixed$mode[2]), n = alpha_fun_1(fit$summary.fixed$mode[3])), color = 'red', shape = 1, size =0.5) + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$n$') + xlim(c(2, 12)) + ylim(c(0, 2))
+  geom_point(data = data.frame(R = R_fun_1(fit$summary.fixed$mode[2]), n = alpha_fun_1(fit$summary.fixed$mode[3])), color = 'red', shape = 1, size =0.5) + scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$n$') + xlim(c(2, 12)) + ylim(c(0.15, 2)) + coord_fixed(ratio = 3)
 #dev.off()
 #system('pdflatex joint_post_R_n_inlabru.tex')
 ```
@@ -278,11 +279,11 @@ ggplot(inla.joint.samps, aes(R, n)) + stat_density_2d(
 
 ```{r warning = F}
 # plot joint posterior of (R, n)
-#tikz(file = "joint_post_R_n.tex", standAlone=T, width = 5, height = 2)
+#tikz(file = "joint_post_R_n.tex", standAlone=T, width = 4, height = 2)
 ggplot(post_x, aes(x.1,x.2)) + geom_raster(aes(fill = pos)) + 
   geom_point(data = data.frame(x.1 = post_x$x.1[which.max(post_x$pos)], x.2 = post_x$x.2[which.max(post_x$pos)]), color = 'red', shape = 1, size =0.5) + 
   scale_fill_viridis_c(name = 'Density') + theme_minimal() + xlab('$R$') + ylab('$n$') +
-  xlim(c(2,12)) + ylim(c(0, 2))
+  xlim(c(2,12)) + ylim(c(0.15, 2)) + coord_fixed(ratio = 3)
 #dev.off()
 #system('pdflatex joint_post_R_n.tex')
 ```
@@ -301,7 +302,7 @@ set.seed(1108)
 sigma <- inla.hyperpar.sample(500000, fit)[,2]
 Q <- rnorm(500000, 0, sigma)
 
-q <- quantile(Q, 0.995)
+q <- quantile(Q, 0.9)
 
 # get exceedance probability through inlabru
 exc_q <- excursions.inla(fit, u = q, type = '>', name = 'field', F.limit = 0.6)
@@ -344,7 +345,7 @@ sampled_theta2 = pnorm(quad$theta2) * 3.85 + 0.15
 sample_theta <- data.frame(R = sampled_theta1, n = sampled_theta2, count = sampled_freq, prob = prob)
 ```
 
-```{r eval = F}
+```{r, eval = F}
 # compute posterior of U given (R,n)
 get_post_U <- function(st){
   R1 <- st[1,'R']
@@ -367,7 +368,7 @@ get_post_U <- function(st){
   sigma <- inla.hyperpar.sample(500000, fit_inner)[,2]
   Q <- rnorm(500000, 0, sigma)
   
-  q <- quantile(Q, 0.995)
+  q <- quantile(Q, 0.9)
   
   exc_0.5 <- excursions.inla(fit_inner, u = q, type = '>', name = 'field', F.limit = 0.6)
   sets_0.5 <- continuous(exc_0.5, v_mesh, 0.05)
