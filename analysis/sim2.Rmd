@@ -332,8 +332,7 @@ for (i in 1:length(eval_num)) {
     ylab("Density") +
     coord_cartesian(ylim = c(0,10), xlim = c(6,7)) + 
     theme_minimal() +
-    theme(text = element_text(size = 15), axis.text = element_text(size = 15))
-    
+    theme(text = element_text(size = 20), axis.text = element_text(size = 25))
 }
 ```
 
@@ -368,6 +367,19 @@ plot_list[[7]]
 ```{r}
 plot_list[[9]]
 ```
+
+```{r eval=FALSE}
+ggsave(plot_list[[3]], width = 8, height = 8,
+       file = paste0(output_path, "/figures/change_point_BO_20.pdf"))
+ggsave(plot_list[[7]], width = 8, height = 8,
+       file = paste0(output_path, "/figures/change_point_BO_40.pdf"))
+ggsave(plot_list[[5]], width = 8, height = 8,
+       file = paste0(output_path, "/figures/change_point_BO_30.pdf"))
+ggsave(plot_list[[9]], width = 8, height = 8,
+       file = paste0(output_path, "/figures/change_point_BO_50.pdf"))
+```
+
+
 
 ### KS and KL
 
@@ -625,5 +637,222 @@ points(weights ~ theta1, type = "o", col = "green",
 legend("topright", legend = c("Exact grid", "Sparse: 50", "Sparse: 35", "Sparse: 25", "Sparse: 15"),
        col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2), cex = 1.2)
 ```
+
+```{r eval=FALSE}
+pdf(file = paste0(output_path, "/figures/sim2_AGHQ1.pdf"), width = 8, height = 8)
+par(mar = c(5, 4.5, 4, 2))  # Try reducing the left margin
+plot(weights ~ theta1, type = "o", col = "black", 
+     data = quad_exact, ylim = c(0, 0.1), 
+     xlim = c(0.1, 0.7),
+     cex.lab  = 1.8,    
+     cex.axis = 1.8, 
+     xlab = "Quadrature", ylab = "Weights")
+points(weights ~ theta1, type = "o", col = "purple", 
+       data = quad_BO_list[[9]], pch = 4)
+points(weights ~ theta1, type = "o", col = "red", 
+       data = quad_BO_list[[6]], pch = 3)
+points(weights ~ theta1, type = "o", col = "blue", 
+       data = quad_BO_list[[4]], pch = 19)
+points(weights ~ theta1, type = "o", col = "green",
+       data = quad_BO_list[[2]], pch = 2)
+legend("topright", legend = c("Exact grid", paste0("BOSS: B = ", eval_num[9]), paste0("BOSS: B = ", eval_num[6]), paste0("BOSS: B = ", eval_num[4]), paste0("BOSS: B = ", eval_num[2])),
+       col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2), cex = 1.8)
+dev.off()
+
+
+
+
+pdf(file = paste0(output_path, "/figures/sim2_AGHQ2.pdf"), width = 8, height = 8)
+par(mar = c(5, 4.5, 4, 2))  # Try reducing the left margin
+plot(weights ~ theta1, type = "o", col = "black", 
+     data = quad_exact, ylim = c(0, 0.1), 
+     xlim = c(0.1, 0.7),
+     cex.lab  = 1.8,    
+     cex.axis = 1.8, 
+     xlab = "Quadrature", ylab = "Weights")
+points(weights ~ theta1, type = "o", col = "purple", 
+       data = quad_sparse_list[[9]], pch = 4)
+points(weights ~ theta1, type = "o", col = "red",
+       data = quad_sparse_list[[6]], pch = 3)
+points(weights ~ theta1, type = "o", col = "blue",
+       data = quad_sparse_list[[4]], pch = 19)
+points(weights ~ theta1, type = "o", col = "green",
+       data = quad_sparse_list[[2]], pch = 2)
+legend("topright", legend = c("Exact grid", "Sparse: 50", "Sparse: 35", "Sparse: 25", "Sparse: 15"),
+       col = c("black", "purple", "red", "blue", "green"), pch = c(1, 4, 3, 19, 2), cex = 1.8)
+dev.off()
+
+
+```
+
+
+
+## Latent Space
+
+Now, let's take a look at the inference of the latent space, using the AGHQ result earlier.
+
+```{r}
+g1 <- function(x){x*log((x^2) + 1)}
+g2 <- function(x){3.3*x + 3.035}
+
+### Function that simulate from Quad, then make inference of the function
+fit_once <- function(alpha, data){
+  a_fit <- alpha
+  data$x1 <- ifelse(data$x <= a_fit, data$x, a_fit)
+  data$x2 <- ifelse(data$x > a_fit, (data$x - a_fit), 0)
+  mod <- model_fit(formula = y ~ f(x1, model = "IWP", order = 2, sd.prior = list(param = 1, h = 1), initial_location = 0) + f(x2, model = "IWP", order = 2, sd.prior = list(param = 1, h = 1), initial_location = 0), 
+                   data = data, method = "aghq", family = "Gaussian", aghq_k = 3
+  )
+  mod
+}
+sim_quad <- function(n, quad){
+  prob_vec = quad$weights * exp(quad$logpost_normalized)
+  freq <- as.numeric(rmultinom(n = 1, size = n, prob = prob_vec))
+  samp_theta <- rep(quad$theta1, times = freq)
+  samp_alpha <- pnorm(samp_theta)*10
+  samp_alpha
+}
+fit_all_mod <- function(alpha_samps){
+  alpha_samps_table <- table(alpha_samps)
+  result_list <- list(alpha = as.numeric(names(alpha_samps_table)), mod = list(), M = as.numeric(alpha_samps_table))
+  for (i in 1:length(alpha_samps_table)) {
+    M <- as.numeric(alpha_samps_table[i])
+    alpha <- as.numeric(names(alpha_samps_table)[i])
+    mod <- fit_once(alpha = alpha, data = data)
+    result_list$mod[[i]] <- mod
+  }
+  result_list
+}
+infer_g1 <- function(xvec, all_mod){
+  all_samps <- matrix(nrow = length(xvec), ncol = 0)
+  for (i in 1:length(all_mod$M)) {
+    mod <- all_mod$mod[[i]]
+    samples_g1 <- predict(mod, variable = "x1",
+                          newdata = data.frame(x1 = xvec), 
+                          only.sample = T)[,-1]
+    all_samps <- cbind(all_samps, samples_g1[,(1:all_mod$M[i])])
+  }
+  all_samps
+}
+infer_g2 <- function(xvec, all_mod){
+  all_samps <- matrix(nrow = length(xvec), ncol = 0)
+  for (i in 1:length(all_mod$M)) {
+    mod <- all_mod$mod[[i]]
+    samples_g2 <- predict(mod, variable = "x2",
+                          newdata = data.frame(x2 = xvec), 
+                          only.sample = T)[,-1]
+    all_samps <- cbind(all_samps, samples_g2[,(1:all_mod$M[i])])
+  }
+  all_samps
+}
+```
+
+Using exact grid:
+
+```{r eval=FALSE}
+set.seed(123)
+exact_all_mod <- fit_all_mod(sim_quad(n = 3000, quad = quad_exact))
+save(exact_all_mod, file = paste0(output_path, "/exact_all_mod.rda"))
+exact_samples_g1 <- infer_g1(xvec = seq(0, 10, by = 0.01), all_mod = exact_all_mod)
+exact_samples_g2 <- infer_g2(xvec = seq(0, 10, by = 0.01), all_mod = exact_all_mod)
+exact_samples_g1_sum <- BayesGP::extract_mean_interval_given_samps(samps = cbind(seq(0, 10, by = 0.01), exact_samples_g1))
+exact_samples_g2_sum <- BayesGP::extract_mean_interval_given_samps(samps = cbind(seq(0, 10, by = 0.01), exact_samples_g2))
+save(exact_samples_g1_sum, file = paste0(output_path, "/exact_samples_g1_sum.rda"))
+save(exact_samples_g2_sum, file = paste0(output_path, "/exact_samples_g2_sum.rda"))
+```
+
+Using BOSS approximation:
+
+```{r eval=FALSE}
+quad_BO <- quad_BO_list[[9]]
+set.seed(123)
+BO_all_mod <- fit_all_mod(sim_quad(n = 3000, quad = quad_BO))
+save(BO_all_mod, file = paste0(output_path, "/BO_all_mod.rda"))
+BO_samples_g1 <- infer_g1(xvec = seq(0, 10, by = 0.01), all_mod = BO_all_mod)
+BO_samples_g2 <- infer_g2(xvec = seq(0, 10, by = 0.01), all_mod = BO_all_mod)
+BO_samples_g1_sum <- BayesGP::extract_mean_interval_given_samps(samps = cbind(seq(0, 10, by = 0.01), BO_samples_g1))
+BO_samples_g2_sum <- BayesGP::extract_mean_interval_given_samps(samps = cbind(seq(0, 10, by = 0.01), BO_samples_g2))
+save(BO_samples_g1_sum, file = paste0(output_path, "/BO_samples_g1_sum.rda"))
+save(BO_samples_g2_sum, file = paste0(output_path, "/BO_samples_g2_sum.rda"))
+```
+
+Plot:
+
+```{r}
+load(paste0(output_path, "/exact_samples_g1_sum.rda"))
+load(paste0(output_path, "/exact_samples_g2_sum.rda"))
+load(paste0(output_path, "/BO_samples_g1_sum.rda"))
+load(paste0(output_path, "/BO_samples_g2_sum.rda"))
+exact_samples_color <- rgb(1, 0, 0, alpha = 0.2) # Red with transparency
+BO_samples_color <- rgb(0, 0, 1, alpha = 0.2) # Blue with transparency
+mar.default <- c(5,4,4,2)
+plot(q0.5~x, data = exact_samples_g1_sum, type = "l", col = "red", ylab = "", lty = "dashed", cex.lab = 2.0, cex.axis = 2.0)
+polygon(c(exact_samples_g1_sum$x, rev(exact_samples_g1_sum$x)),
+        c(exact_samples_g1_sum$q0.025, rev(exact_samples_g1_sum$q0.975)),
+        col = exact_samples_color, border = NA)
+lines(g1(x)~x, exact_samples_g1_sum, col = "black")
+polygon(c(BO_samples_g1_sum$x, rev(BO_samples_g1_sum$x)),
+        c(BO_samples_g1_sum$q0.025, rev(BO_samples_g1_sum$q0.975)),
+        col = BO_samples_color, border = NA)
+lines(q0.5~x, data = BO_samples_g1_sum, col = "blue", lty = "dashed")
+
+plot(q0.5~x, data = exact_samples_g2_sum, type = "l", col = "red", ylab = "", lty = "dashed", cex.lab = 2.0, cex.axis = 2.0)
+polygon(c(exact_samples_g2_sum$x, rev(exact_samples_g2_sum$x)),
+        c(exact_samples_g2_sum$q0.025, rev(exact_samples_g2_sum$q0.975)),
+        col = exact_samples_color, border = NA)
+lines(I(g2(x)-g2(0))~x, exact_samples_g1_sum, col = "black")
+polygon(c(BO_samples_g2_sum$x, rev(BO_samples_g2_sum$x)),
+        c(BO_samples_g2_sum$q0.025, rev(BO_samples_g2_sum$q0.975)),
+        col = BO_samples_color, border = NA)
+lines(q0.5~x, data = BO_samples_g2_sum, col = "blue", lty = "dashed")
+```
+
+
+```{r eval=FALSE}
+exact_samples_color <- rgb(1, 0, 0, alpha = 0.2) # Red with transparency
+BO_samples_color <- rgb(0, 0, 1, alpha = 0.2) # Blue with transparency
+mar.default <- c(5,4,4,2)
+
+tikzDevice::tikz(file = paste0(output_path, "/figures/compare_g1.tex"), 
+                 width = 5, height = 5, standAlone = TRUE)
+plot(q0.5~x, data = exact_samples_g1_sum, type = "l", col = "red", ylab = "", lty = "dashed", cex.lab = 2.0, cex.axis = 2.0)
+polygon(c(exact_samples_g1_sum$x, rev(exact_samples_g1_sum$x)),
+        c(exact_samples_g1_sum$q0.025, rev(exact_samples_g1_sum$q0.975)),
+        col = exact_samples_color, border = NA)
+lines(g1(x)~x, exact_samples_g1_sum, col = "black")
+polygon(c(BO_samples_g1_sum$x, rev(BO_samples_g1_sum$x)),
+        c(BO_samples_g1_sum$q0.025, rev(BO_samples_g1_sum$q0.975)),
+        col = BO_samples_color, border = NA)
+lines(q0.5~x, data = BO_samples_g1_sum, col = "blue", lty = "dashed")
+dev.off()
+system(paste0('pdflatex -output-directory=', output_path, ' ', output_path, "/figures/compare_g1.tex"))
+file.remove(paste0(output_path, "/figures/compare_g1.tex"))
+file.remove(paste0(output_path, "/figures/compare_g1.aux"))
+file.remove(paste0(output_path, "/figures/compare_g1.log"))
+
+
+tikzDevice::tikz(file = paste0(output_path, "/figures/compare_g2.tex"),
+                 width = 5, height = 5, standAlone = TRUE)
+plot(q0.5~x, data = exact_samples_g2_sum, type = "l", col = "red", ylab = "", lty = "dashed", cex.lab = 2.0, cex.axis = 2.0)
+polygon(c(exact_samples_g2_sum$x, rev(exact_samples_g2_sum$x)),
+        c(exact_samples_g2_sum$q0.025, rev(exact_samples_g2_sum$q0.975)),
+        col = exact_samples_color, border = NA)
+lines(I(g2(x)-g2(0))~x, exact_samples_g1_sum, col = "black")
+polygon(c(BO_samples_g2_sum$x, rev(BO_samples_g2_sum$x)),
+        c(BO_samples_g2_sum$q0.025, rev(BO_samples_g2_sum$q0.975)),
+        col = BO_samples_color, border = NA)
+lines(q0.5~x, data = BO_samples_g2_sum, col = "blue", lty = "dashed")
+dev.off()
+system(paste0('pdflatex -output-directory=', output_path, ' ', output_path, "/figures/compare_g2.tex"))
+file.remove(paste0(output_path, "/figures/compare_g2.tex"))
+file.remove(paste0(output_path, "/figures/compare_g2.aux"))
+file.remove(paste0(output_path, "/figures/compare_g2.log"))
+```
+
+
+
+
+
+
 
 
