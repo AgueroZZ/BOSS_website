@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreeb0252b698280d308ab3f1cc0a7eeb53daca7e311targetblankb0252b6a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreeebad34ede24bde51645bfe352ae18ea7e1727683targetblankebad34ea">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/b0252b698280d308ab3f1cc0a7eeb53daca7e311" target="_blank">b0252b6</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/ebad34ede24bde51645bfe352ae18ea7e1727683" target="_blank">ebad34e</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreeb0252b698280d308ab3f1cc0a7eeb53daca7e311targetblankb0252b6a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreeebad34ede24bde51645bfe352ae18ea7e1727683targetblankebad34ea"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/b0252b698280d308ab3f1cc0a7eeb53daca7e311" target="_blank">b0252b6</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/ebad34ede24bde51645bfe352ae18ea7e1727683" target="_blank">ebad34e</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -574,10 +574,6 @@ Ignored files:
     Ignored:    output/.DS_Store
 
 Untracked files:
-    Untracked:  marginal_R_robust.aux
-    Untracked:  marginal_R_robust.log
-    Untracked:  marginal_R_robust.pdf
-    Untracked:  marginal_R_robust.tex
     Untracked:  marginal_beta_robust.aux
     Untracked:  marginal_beta_robust.log
     Untracked:  marginal_beta_robust.pdf
@@ -625,6 +621,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/ebad34ede24bde51645bfe352ae18ea7e1727683/analysis/sim3.Rmd" target="_blank">ebad34e</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-16
+</td>
+<td>
+wflow_publish("analysis/sim3.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/7576b9d4005b7d62ae417c2e3c457f469b92bc8c/docs/sim3.html" target="_blank">7576b9d</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-16
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1472,6 +1502,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/7576b9d4005b7d62ae417c2e3c457f469b92bc8c/docs/figure/sim3.Rmd/unnamed-chunk-11-1.png" target="_blank">7576b9d</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-16
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/2cfedcf8e75e5dfd94e7acb70c2d5b41b1c704aa/docs/figure/sim3.Rmd/unnamed-chunk-11-1.png" target="_blank">2cfedcf</a>
 </td>
 <td>
@@ -1569,6 +1610,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/7576b9d4005b7d62ae417c2e3c457f469b92bc8c/docs/figure/sim3.Rmd/unnamed-chunk-12-1.png" target="_blank">7576b9d</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-05-16
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/AgueroZZ/BOSS_website/blob/2cfedcf8e75e5dfd94e7acb70c2d5b41b1c704aa/docs/figure/sim3.Rmd/unnamed-chunk-12-1.png" target="_blank">2cfedcf</a>
@@ -2003,7 +2055,7 @@ david.li
 <pre class="r"><code>#dev.off()
 #system(&#39;pdflatex marginal_R_robust.tex&#39;)
 
-p_b &lt;- ggplot(samples_true, aes(x = X2)) + theme_minimal() + xlab(&#39;$beta$&#39;)
+p_b &lt;- ggplot(samples_true, aes(x = X2)) + theme_minimal() + xlab(&#39;$\\beta$&#39;)
 
 for (i in 1:20) {
   p_b &lt;- p_b + geom_density(data = sample_list[[i]], aes(x = X2), color = &#39;red&#39;, alpha = 0.1)
