@@ -408,7 +408,7 @@ p_R
 #dev.off()
 #system('pdflatex marginal_R_robust.tex')
 
-p_b <- ggplot(samples_true, aes(x = X2)) + theme_minimal() + xlab('$beta$')
+p_b <- ggplot(samples_true, aes(x = X2)) + theme_minimal() + xlab('$\\beta$')
 
 for (i in 1:20) {
   p_b <- p_b + geom_density(data = sample_list[[i]], aes(x = X2), color = 'red', alpha = 0.1)
