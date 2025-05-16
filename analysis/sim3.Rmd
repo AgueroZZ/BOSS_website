@@ -403,7 +403,10 @@ for (i in 1:20) {
 
 p_R <- p_R + geom_density(color = 'black', size = 1.5) 
 
+#tikz(file = "marginal_R_robust.tex", standAlone=T, width = 4, height = 3)
 p_R
+#dev.off()
+#system('pdflatex marginal_R_robust.tex')
 
 p_b <- ggplot(samples_true, aes(x = X2)) + theme_minimal() + xlab('$beta$')
 
@@ -413,7 +416,10 @@ for (i in 1:20) {
 
 p_b <- p_b + geom_density(color = 'black', size = 1.5) 
 
+#tikz(file = "marginal_beta_robust.tex", standAlone=T, width = 4, height = 3)
 p_b
+#dev.off()
+#system('pdflatex marginal_beta_robust.tex')
 ```
 
 In the above, black density comes from the grid-based oracle posterior while red ones come from BOSS. We can see that BOSS is highly robust to the initial design points selection.
