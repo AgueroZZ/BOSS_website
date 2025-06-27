@@ -7,4 +7,4 @@ editor_options:
   chunk_output_type: console
 ---
 
-Describe your project.
+This is the online tutorial companion to the paper “Bayesian Optimization Sequential Surrogate (BOSS) Algorithm: Fast Bayesian Inference for a Broad Class of Bayesian Hierarchical Models” by Dayi Li and Ziang Zhang.
