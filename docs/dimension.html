@@ -400,7 +400,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-05-01
+<strong>Last updated:</strong> 2025-06-27
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -531,15 +531,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreeb94f3570b8a3171925f808be97261ee24656de17targetblankb94f357a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreed84944a65c9b6d85fa0505bf2f11321e11122dcctargetblankd84944aa">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/b94f3570b8a3171925f808be97261ee24656de17" target="_blank">b94f357</a>
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/d84944a65c9b6d85fa0505bf2f11321e11122dcc" target="_blank">d84944a</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreeb94f3570b8a3171925f808be97261ee24656de17targetblankb94f357a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomAgueroZZBOSSwebsitetreed84944a65c9b6d85fa0505bf2f11321e11122dcctargetblankd84944aa"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -549,7 +549,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/AgueroZZ/BOSS_website/tree/b94f3570b8a3171925f808be97261ee24656de17" target="_blank">b94f357</a>.
+<a href="https://github.com/AgueroZZ/BOSS_website/tree/d84944a65c9b6d85fa0505bf2f11321e11122dcc" target="_blank">d84944a</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -568,33 +568,13 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
-    Ignored:    analysis/.Rhistory
-    Ignored:    code/.DS_Store
     Ignored:    data/.DS_Store
-    Ignored:    data/sim1/
+    Ignored:    data/dimension/
+    Ignored:    data/sim3/
     Ignored:    output/.DS_Store
-    Ignored:    output/sim2/.DS_Store
 
 Untracked files:
-    Untracked:  code/mortality_BG_grid.R
-    Untracked:  code/mortality_NL_grid.R
-    Untracked:  data/co2/
-    Untracked:  data/mortality/
-    Untracked:  data/simA1/
-    Untracked:  output/co2/
-    Untracked:  output/mortality/BOSS_result.rds
-    Untracked:  output/mortality/BO_result_BG.rda
-    Untracked:  output/mortality/BO_result_NL.rda
-    Untracked:  output/mortality/mod_BG.rda
-    Untracked:  output/mortality/mod_NL.rda
-    Untracked:  output/sim2/quad_sparse_list.rda
-    Untracked:  output/simA1/
-
-Unstaged changes:
-    Modified:   BOSS_website.Rproj
-    Modified:   output/sim2/BO_data_to_smooth.rda
-    Modified:   output/sim2/BO_result_list.rda
-    Modified:   output/sim2/rel_runtime.rda
+    Untracked:  output/dimension/dimension_test_wall_time.rda
 
 </code></pre>
 <p>
@@ -639,6 +619,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/AgueroZZ/BOSS_website/blob/d84944a65c9b6d85fa0505bf2f11321e11122dcc/analysis/dimension.Rmd" target="_blank">d84944a</a>
+</td>
+<td>
+david.li
+</td>
+<td>
+2025-06-27
+</td>
+<td>
+wflow_publish("analysis/dimension.Rmd")
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/AgueroZZ/BOSS_website/814c9f95ac8d56f8f6bb292b0ea63f81cf7e85d1/docs/dimension.html" target="_blank">814c9f9</a>
+</td>
+<td>
+Ziang Zhang
+</td>
+<td>
+2025-05-01
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -917,8 +931,11 @@ sim_id &lt;- 1:20
 
 # pre-allocate result container
 res_list &lt;- vector(&quot;list&quot;, length(d))
-for (i in d) 
-  res_list[[i]] &lt;- vector(&quot;list&quot;, length(sim_id))</code></pre>
+res_time &lt;- vector(&quot;list&quot;, length(d))
+for (i in d){ 
+  res_list[[i]] &lt;- vector(&quot;list&quot;, length(sim_id))
+  res_time[[i]] &lt;- vector(&quot;list&quot;, length(sim_id))
+}</code></pre>
 <div id="run-boss" class="section level3">
 <h3>Run BOSS</h3>
 <pre class="r"><code>for (i in d) {
@@ -941,6 +958,7 @@ for (i in d)
       upper    &lt;- rep( 4 * max(Sigma), i)
       
       # try BOSS on this Sigma
+      start &lt;- Sys.time()
       out &lt;- try(
         BOSS(obj_func,
              criterion          = &quot;modal&quot;,
@@ -960,10 +978,13 @@ for (i in d)
              optim.max.iter     = 100),
         silent = TRUE
       )
+      end &lt;- Sys.time()
+      time &lt;- end - start
       
       if (!inherits(out, &quot;try-error&quot;)) {
         # success: save and break out of retry loop
         res_list[[i]][[j]] &lt;- out
+        res_time[[i]][[j]] &lt;- time
         success &lt;- TRUE
       } else {
         message(sprintf(
@@ -977,15 +998,24 @@ for (i in d)
 }
 
 
-save(res_list, file = paste0(output_path, &quot;/dimension_test.rda&quot;))</code></pre>
+save(res_list, file = paste0(output_path, &quot;/dimension_test.rda&quot;))
+save(res_time, file = paste0(output_path, &quot;/dimension_test_wall_time.rda&quot;))</code></pre>
 <pre class="r"><code>load(paste0(output_path, &quot;/dimension_test.rda&quot;))
+load(paste0(output_path, &quot;/dimension_test_wall_time.rda&quot;))
 
 dim &lt;- rep(d, each = 20)
 iter &lt;- unlist(lapply(res_list, function(x) lapply(x, function(y) max(y$modal_result$i)))) + 5*dim
+wall_time_units &lt;- unlist(lapply(res_time, function(sublist) lapply(sublist, units)))
+wall_time &lt;- unlist(lapply(res_time, as.numeric))
+wall_time &lt;- wall_time*(wall_time_units ==&#39;secs&#39;) + 60*wall_time*(wall_time_units ==&#39;mins&#39;)
 
 iter.data &lt;- data.frame(d= dim, Iteration = iter) %&gt;%
   group_by(d) %&gt;%
   mutate(med = median(Iteration))
+
+wall_time.data &lt;- data.frame(d= dim, time = wall_time) %&gt;%
+  group_by(d) %&gt;%
+  mutate(med = median(time))
 
 ggplot(iter.data, aes(d, Iteration)) + geom_point() + geom_line(aes(d, med))</code></pre>
 <p><img src="figure/dimension.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
@@ -1026,9 +1056,19 @@ david.li
 </table>
 </div>
 </div>
+<pre class="r"><code>ggplot(wall_time.data, aes(d, time)) + geom_point() + geom_line(aes(d, med)) + ylab(&#39;Seconds&#39;)</code></pre>
+<p><img src="figure/dimension.Rmd/unnamed-chunk-4-2.png" width="672" style="display: block; margin: auto;" /></p>
 <p>We can see pretty clearly that the number of iterations required for
 convergence roughly grows exponentially, which is consistent with the
 existing theoretical analysis of BO convergence.</p>
+<p>In terms of the exact wall-clock time, we can see an even more
+drastic increase in the computational time as the dimension grows. This
+is because as larger dimension requires more iterations, it leads to
+additional computational cost in inferring the GP posterior. Since the
+actual evaluation of the objective function in this simulation example
+is negligible (evaluating the density of Gaussian), the computational
+time for GP posterior then eventually dominates as dimension and the
+iteration grows.</p>
 <p>We also note that the above test only showcases the performance of
 BOSS when the true posterior is a multivariate Gaussian. We have
 observed that if there is deviation from normality, then convergence
@@ -1278,13 +1318,13 @@ Session information
 </p>
 <div id="workflowr-sessioninfo" class="collapse">
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>R version 4.3.1 (2023-06-16)
-Platform: aarch64-apple-darwin20 (64-bit)
-Running under: macOS Monterey 12.7.4
+<pre><code>R version 4.4.1 (2024-06-14)
+Platform: aarch64-apple-darwin20
+Running under: macOS 15.0
 
 Matrix products: default
-BLAS:   /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRblas.0.dylib 
-LAPACK: /Library/Frameworks/R.framework/Versions/4.3-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.11.0
+BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib 
+LAPACK: /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.0
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -1303,18 +1343,18 @@ other attached packages:
 loaded via a namespace (and not attached):
  [1] sass_0.4.9        utf8_1.2.4        generics_0.1.3    stringi_1.8.4    
  [5] hms_1.1.3         digest_0.6.37     magrittr_2.0.3    timechange_0.3.0 
- [9] evaluate_1.0.1    grid_4.3.1        fastmap_1.2.0     filehash_2.4-6   
+ [9] evaluate_1.0.0    grid_4.4.1        fastmap_1.2.0     filehash_2.4-6   
 [13] rprojroot_2.0.4   jsonlite_1.8.9    processx_3.8.4    whisker_0.4.1    
 [17] ps_1.8.0          promises_1.3.0    httr_1.4.7        fansi_1.0.6      
 [21] scales_1.3.0      jquerylib_0.1.4   cli_3.6.3         rlang_1.1.4      
-[25] munsell_0.5.1     withr_3.0.2       cachem_1.1.0      yaml_2.3.10      
-[29] tools_4.3.1       tzdb_0.4.0        colorspace_2.1-1  httpuv_1.6.15    
+[25] munsell_0.5.1     withr_3.0.1       cachem_1.1.0      yaml_2.3.10      
+[29] tools_4.4.1       tzdb_0.4.0        colorspace_2.1-1  httpuv_1.6.15    
 [33] vctrs_0.6.5       R6_2.5.1          lifecycle_1.0.4   git2r_0.33.0     
 [37] fs_1.6.4          pkgconfig_2.0.3   callr_3.7.6       pillar_1.9.0     
-[41] bslib_0.8.0       later_1.3.2       gtable_0.3.6      glue_1.8.0       
-[45] Rcpp_1.0.13-1     highr_0.11        xfun_0.48         tidyselect_1.2.1 
+[41] bslib_0.8.0       later_1.3.2       gtable_0.3.5      glue_1.7.0       
+[45] Rcpp_1.0.13       highr_0.11        xfun_0.47         tidyselect_1.2.1 
 [49] rstudioapi_0.16.0 knitr_1.48        farver_2.1.2      htmltools_0.5.8.1
-[53] labeling_0.4.3    rmarkdown_2.28    compiler_4.3.1    getPass_0.2-4    </code></pre>
+[53] labeling_0.4.3    rmarkdown_2.28    compiler_4.4.1    getPass_0.2-4    </code></pre>
 </div>
 </div>
 </div>
